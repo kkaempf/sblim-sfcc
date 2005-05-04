@@ -1,0 +1,5 @@
+%.dep: %.c
+	$(CC) -MM $(CPPFLAGS) $< | sed 's!\($*\)\.o[ :]*!\1.o $@ : !g' > $@
+
+LINK_LIB = $(LINK.c) -shared $^ $(LOADLIBES) $(LDLIBS) -o $@
+LINK_BIN = $(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
