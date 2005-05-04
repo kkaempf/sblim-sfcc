@@ -22,9 +22,9 @@
 #ifndef _CMPIC_H_
 #define _CMPIC_H_
 
-#include "cmpidt.h"
-#include "cmpift.h"
-#include "cmpimacs.h"
+#include "cmcidt.h"
+#include "cmcift.h"
+#include "cmcimacs.h"
 #include "utilList.h"
 
 #ifdef __cplusplus
@@ -173,7 +173,7 @@ typedef struct _CMCIClientFT {
 	 @return Enumeration of Instances.
      */
      CMPIEnumeration* (*associators)
-                (CMCIClient* cl,CMPIContext* ctx,
+                (CMCIClient* cl,
                  CMPIObjectPath* op, const char *assocClass, const char *resultClass,
 		 const char *role, const char *resultRole, char** properties, CMPIStatus* rc);
 
@@ -291,7 +291,7 @@ typedef struct _CMCIClientFT {
 	 @return Property value.
       */
      CMPIData (*getProperty)
-                (CMCIClient *cl, CMPIContext *ctx,
+                (CMCIClient *cl, 
                  CMPIObjectPath *op, const char *name, CMPIStatus *rc);
 
 } CMCIClientFT;
@@ -299,7 +299,6 @@ typedef struct _CMCIClientFT {
 typedef struct clientData {
    char *hostName;
    char *port;
-   UtilList *nameSpace;
    char *user;
    char *pwd;
    char *scheme;
@@ -311,7 +310,7 @@ struct _CMCIClient {
    CMCIClientFT *ft;
 };   
 
-CMCIClient *cmciConnect(const char *hn, const char *port, const char *ns, 
+CMCIClient *cmciConnect(const char *hn, const char *port, 
                         const char *user, const char *pwd, CMPIStatus *rc);   
    
 #ifdef __cplusplus

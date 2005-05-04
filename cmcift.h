@@ -22,7 +22,7 @@
 #ifndef _CMCIFT_H_
 #define _CMCIFT_H_
 
-#include "cmpidt.h"
+#include "cmcidt.h"
 
 #ifdef __cplusplus
 extern "C" {

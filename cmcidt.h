@@ -19,8 +19,8 @@
  *
 */
 
-#ifndef _CMPIDT_H_
-#define _CMPIDT_H_
+#ifndef _CMCIDT_H_
+#define _CMCIDT_H_
 
 #include <stdio.h>
 
@@ -188,7 +188,6 @@ extern "C" {
         CMPIInstance*        inst;
         CMPIObjectPath*      ref;
         CMPIArgs*            args;
-        CMPISelectExp*       filter;
         CMPIEnumeration*     Enum;
         CMPIArray*           array;
         CMPIString*          string;
@@ -388,7 +387,7 @@ extern "C" {
  };
 #endif
 
-#endif // _CMPIDT_H_
+#endif // _CMCIDT_H_
 
 
 
