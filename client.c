@@ -279,6 +279,8 @@ static void emitdeep(UtilStringBuffer *sb, int f)
       sb->ft->appendChars(sb,"<IPARAMVALUE NAME=\"DeepInheritance\"><VALUE>FALSE</VALUE></IPARAMVALUE>\n");
 }
 
+
+
 static CMPIEnumeration *enumInstanceNames(CMCIClient* mb,
     CMPIObjectPath* cop, CMPIStatus* rc)
 {   
@@ -330,6 +332,8 @@ static CMPIEnumeration *enumInstanceNames(CMCIClient* mb,
    CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
    return NULL;
 }
+
+
 
 static CMPIInstance* getInstance(CMCIClient* mb,
     CMPIObjectPath* cop, char** properties, CMPIStatus* rc)
@@ -400,10 +404,329 @@ static CMPIInstance* getInstance(CMCIClient* mb,
 }    
      
 
+
+static CMPIEnumeration* execQuery (CMCIClient* cl,
+                 CMPIObjectPath* op, const char *query, const char *lang, CMPIStatus* rc)
+{    
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Not implemented by sfcc");
+   return NULL;
+}                 
+
+
+
+static CMPIEnumeration* associators (CMCIClient* mb,
+          CMPIObjectPath* cop, const char *assocClass, const char *resultClass,
+          const char *role, const char *resultRole, char** properties, CMPIStatus* rc)
+    
+{
+   ClientEnc *cl=(ClientEnc*)mb;
+   CMCIConnection *con=cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   UtilList *nsc;
+   CMPIString *cn;
+   char *ns,*error;
+   
+   cn=cop->ft->getClassName(cop,NULL);
+   con->ft->genRequest(cl,"Associators",cop,0,0);
+   sb->ft->appendChars(sb,xmlHeader);
+   
+   nsc=getNameSpaceComponents(cop);
+   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"Associators\">\n"
+          "<LOCALNAMESPACEPATH>");
+   for (ns=nsc->ft->getFirst(nsc); ns; ns=nsc->ft->getNext(nsc))
+      sb->ft->append3Chars(sb,"<NAMESPACE NAME=\"",ns,"\"></NAMESPACE>");
+   sb->ft->appendChars(sb,"</LOCALNAMESPACEPATH>\n");
+   
+   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ObjectName\">\n"
+          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
+   pathToXml(sb, cop);
+   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
+
+   if (assocClass!=NULL)
+      sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"AssocClass\"><CLASSNAME NAME=\"", assocClass,
+          "\"/></IPARAMVALUE>\n");
+   if (resultClass!=NULL)
+      sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ResultClass\"><CLASSNAME NAME=\"", resultClass,
+          "\"/></IPARAMVALUE>\n");
+
+   if (role)
+      sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
+         "</VALUE></IPARAMVALUE>\n");
+   if (resultRole)
+      sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"ResultRole\"><VALUE>", resultRole,
+         "</VALUE></IPARAMVALUE>\n");
+   
+   emitorigin(sb,0);
+   emitqual(sb,0);
+
+   if (properties) {
+      sb->ft->appendChars(sb,"<IPARAMVALUE NAME=\"PropertyList\"><VALUE.ARRAY>");
+      while (*properties) {
+          sb->ft->append3Chars(sb,"<VALUE>",*properties,"</VALUE>");
+          properties++;
+      }    
+      sb->ft->appendChars(sb,"</VALUE.ARRAY></IPARAMVALUE>\n");
+   }
+
+   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+   
+   if ((error=con->ft->getResponse(con,cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      return NULL;
+   }
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+   
+   ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+
+   if (rh.errCode!=0) {
+      CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      return NULL;
+   }
+   
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL)==CMPI_instance) {
+      CMPIEnumeration *enm=newCMPIEnumeration(rh.rvArray,NULL);
+      CMSetStatus(rc,CMPI_RC_OK);
+      return enm;
+   }   
+   
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
+   return NULL;
+}
+
+static CMPIEnumeration* associatorNames(CMCIClient* mb,
+       CMPIObjectPath* cop, const char *assocClass, const char *resultClass,
+       const char *role, const char *resultRole, CMPIStatus* rc)
+{
+   ClientEnc *cl=(ClientEnc*)mb;
+   CMCIConnection *con=cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   UtilList *nsc;
+   CMPIString *cn;
+   char *ns,*error;
+   
+   cn=cop->ft->getClassName(cop,NULL);
+   con->ft->genRequest(cl,"AssociatorNames",cop,0,0);
+   sb->ft->appendChars(sb,xmlHeader);
+   
+   nsc=getNameSpaceComponents(cop);
+   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"AssociatorNames\">\n"
+          "<LOCALNAMESPACEPATH>");
+   for (ns=nsc->ft->getFirst(nsc); ns; ns=nsc->ft->getNext(nsc))
+      sb->ft->append3Chars(sb,"<NAMESPACE NAME=\"",ns,"\"></NAMESPACE>");
+   sb->ft->appendChars(sb,"</LOCALNAMESPACEPATH>\n");
+   
+   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ObjectName\">\n"
+          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
+   pathToXml(sb, cop);
+   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
+
+   if (assocClass!=NULL)
+      sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"AssocClass\"><CLASSNAME NAME=\"", assocClass,
+          "\"/></IPARAMVALUE>\n");
+   if (resultClass!=NULL)
+      sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ResultClass\"><CLASSNAME NAME=\"", resultClass,
+          "\"/></IPARAMVALUE>\n");
+
+   if (role)
+      sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
+         "</VALUE></IPARAMVALUE>\n");
+   if (resultRole)
+      sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"ResultRole\"><VALUE>", resultRole,
+         "</VALUE></IPARAMVALUE>\n");
+   
+   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+   
+   if ((error=con->ft->getResponse(con,cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      return NULL;
+   }
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+   
+   ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+
+   if (rh.errCode!=0) {
+      CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      return NULL;
+   }
+   
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL)==CMPI_ref) {
+      CMPIEnumeration *enm=newCMPIEnumeration(rh.rvArray,NULL);
+      CMSetStatus(rc,CMPI_RC_OK);
+      return enm;
+   }   
+   
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
+   return NULL;
+}       
+
+
+
+static CMPIEnumeration* references(CMCIClient* mb,
+         CMPIObjectPath* cop, const char *resultClass ,const char *role ,
+         char** properties, CMPIStatus* rc)
+{         
+   ClientEnc *cl=(ClientEnc*)mb;
+   CMCIConnection *con=cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   UtilList *nsc;
+   CMPIString *cn;
+   char *ns,*error;
+   
+   cn=cop->ft->getClassName(cop,NULL);
+   con->ft->genRequest(cl,"References",cop,0,0);
+   sb->ft->appendChars(sb,xmlHeader);
+   
+   nsc=getNameSpaceComponents(cop);
+   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"References\">\n"
+          "<LOCALNAMESPACEPATH>");
+   for (ns=nsc->ft->getFirst(nsc); ns; ns=nsc->ft->getNext(nsc))
+      sb->ft->append3Chars(sb,"<NAMESPACE NAME=\"",ns,"\"></NAMESPACE>");
+   sb->ft->appendChars(sb,"</LOCALNAMESPACEPATH>\n");
+   
+   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ObjectName\">\n"
+          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
+   pathToXml(sb, cop);
+   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
+
+   if (resultClass)
+      sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"ResultClass\"><VALUE>", resultClass,
+         "</VALUE></IPARAMVALUE>\n");
+   if (role)
+      sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
+         "</VALUE></IPARAMVALUE>\n");
+   
+   emitorigin(sb,0);
+   emitqual(sb,0);
+
+   if (properties) {
+      sb->ft->appendChars(sb,"<IPARAMVALUE NAME=\"PropertyList\"><VALUE.ARRAY>");
+      while (*properties) {
+          sb->ft->append3Chars(sb,"<VALUE>",*properties,"</VALUE>");
+          properties++;
+      }    
+      sb->ft->appendChars(sb,"</VALUE.ARRAY></IPARAMVALUE>\n");
+   }
+
+   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+   
+   if ((error=con->ft->getResponse(con,cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      return NULL;
+   }
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+   
+   ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+
+   if (rh.errCode!=0) {
+      CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      return NULL;
+   }
+   
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL)==CMPI_instance) {
+      CMPIEnumeration *enm=newCMPIEnumeration(rh.rvArray,NULL);
+      CMSetStatus(rc,CMPI_RC_OK);
+      return enm;
+   }   
+   
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
+   return NULL;
+}
+
+
+
+static CMPIEnumeration* referenceNames(CMCIClient* mb,
+                 CMPIObjectPath* cop, const char *resultClass ,const char *role,
+                 CMPIStatus* rc)
+{
+   ClientEnc *cl=(ClientEnc*)mb;
+   CMCIConnection *con=cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   UtilList *nsc;
+   CMPIString *cn;
+   char *ns,*error;
+   
+   cn=cop->ft->getClassName(cop,NULL);
+   con->ft->genRequest(cl,"ReferenceNames",cop,0,0);
+   sb->ft->appendChars(sb,xmlHeader);
+   
+   nsc=getNameSpaceComponents(cop);
+   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"ReferenceNames\">\n"
+          "<LOCALNAMESPACEPATH>");
+   for (ns=nsc->ft->getFirst(nsc); ns; ns=nsc->ft->getNext(nsc))
+      sb->ft->append3Chars(sb,"<NAMESPACE NAME=\"",ns,"\"></NAMESPACE>");
+   sb->ft->appendChars(sb,"</LOCALNAMESPACEPATH>\n");
+   
+   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ObjectName\">\n"
+          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
+   pathToXml(sb, cop);
+   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
+
+   if (resultClass!=NULL)
+      sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ResultClass\"><CLASSNAME NAME=\"", resultClass,
+          "\"/></IPARAMVALUE>\n");
+   if (role)
+      sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
+         "</VALUE></IPARAMVALUE>\n");
+   
+   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+   
+   if ((error=con->ft->getResponse(con,cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      return NULL;
+   }
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+   
+   ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+
+   if (rh.errCode!=0) {
+      CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      return NULL;
+   }
+   
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL)==CMPI_ref) {
+      CMPIEnumeration *enm=newCMPIEnumeration(rh.rvArray,NULL);
+      CMSetStatus(rc,CMPI_RC_OK);
+      return enm;
+   }   
+   
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
+   return NULL;
+}                 
+
+
+
+
+
+
 static CMCIClientFT clientFt = { 
    enumInstanceNames,
-   getInstance
+   getInstance,
+   NULL, // createInstance
+   NULL, // setInstance,
+   NULL, // deleteInstance,
+   execQuery,
+   NULL, // enumInstances,
+   associators,
+   associatorNames,
+   references,
+   referenceNames,
+   NULL, // invokeMethod,
+   NULL, // setProperty,
+   NULL, // getProperty
 };
+
 
 CMCIClient *cmciConnect(const char *hn, const char *port, 
                         const char *user, const char *pwd, CMPIStatus *rc)
