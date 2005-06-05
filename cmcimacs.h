@@ -66,13 +66,13 @@ inline static  void CMSetStatus(CMPIStatus* st, CMPIrc rcp)
   */
 inline static   void CMSetStatusWithChars(CMPIStatus* st, CMPIrc rcp,
                                  char* chars)
-      { if (rc) {
+      { if (st) {
           (st)->rc=(rcp);
           (st)->msg=newCMPIString((chars),NULL); 
       } }
 #else
 #define CMSetStatusWithChars(st,rcp,chars) \
-      { if (rc) { (st)->rc=(rcp); \
+      { if (st) { (st)->rc=(rcp); \
         (st)->msg=newCMPIString((chars),NULL); }}
 #endif
 

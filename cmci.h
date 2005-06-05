@@ -73,6 +73,8 @@ typedef struct _CMCIClientFT {
          controled using the CMPIInvocationFlags entry in &lt;ctx&gt;.
 	 @param cl Client this pointer.
 	 @param op ObjectPath containing namespace, classname and key components.
+	 @param flags Any combination of the following flags are supported: 
+	    CMPI_FLAG_LocalOnly, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
 	 @param properties If not NULL, the members of the array define one or more Property
 	     names. Each returned Object MUST NOT include elements for any Properties
 	     missing from this list
@@ -81,7 +83,7 @@ typedef struct _CMCIClientFT {
      */
      CMPIInstance* (*getInstance)
                 (CMCIClient* cl,
-                 CMPIObjectPath* op, char** properties, CMPIStatus* rc);
+                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc);
 
      // class 2 services
 
@@ -100,11 +102,14 @@ typedef struct _CMCIClientFT {
 	 @param cl Client this pointer.
 	 @param op ObjectPath containing namespace, classname and key components.
 	 @param inst Complete instance.
+	 @param flags The following flag is supported: CMPI_FLAG_IncludeQualifiers.
+	 @param properties If not NULL, the members of the array define one or more Property
+	     names, only those properties will be updated. Else, all properties will be updated. 
 	 @return Service return status.
      */
      CMPIStatus (*setInstance)
                 (CMCIClient* cl,
-                 CMPIObjectPath* op, CMPIInstance* inst, char ** properties);
+                 CMPIObjectPath* op, CMPIInstance* inst, CMPIFlags flags, char ** properties);
 
       /** Delete an existing Instance using &lt;op&gt; as reference.
 	 @param cl Client this pointer.
@@ -133,6 +138,8 @@ typedef struct _CMCIClientFT {
 	 CMPIInvocationFlags entry in &lt;ctx&gt;.
 	 @param cl Client this pointer.
 	 @param op ObjectPath containing namespace and classname components.
+	 @param flags Any combination of the following flags are supported: CMPI_FLAG_LocalOnly, 
+	     CMPI_FLAG_DeepInheritance, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
 	 @param properties If not NULL, the members of the array define one or more Property
 	     names. Each returned Object MUST NOT include elements for any Properties
 	     missing from this list
@@ -141,7 +148,7 @@ typedef struct _CMCIClientFT {
      */
      CMPIEnumeration* (*enumInstances)
                 (CMCIClient* cl,
-                 CMPIObjectPath* op, char** properties, CMPIStatus* rc);
+                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc);
 
       /** Enumerate instances associated with the Instance defined by the &lt;op&gt;.
 	 @param cl Client this pointer.
@@ -166,6 +173,8 @@ typedef struct _CMCIClientFT {
 	    via an Association in which the returned Object plays the specified role
 	    (i.e. the name of the Property in the Association Class that refers to
 	    the returned Object MUST match the value of this parameter).
+	 @param flags Any combination of the following flags are supported: 
+	    CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
 	 @param properties If not NULL, the members of the array define one or more Property
 	     names. Each returned Object MUST NOT include elements for any Properties
 	     missing from this list
@@ -175,7 +184,8 @@ typedef struct _CMCIClientFT {
      CMPIEnumeration* (*associators)
                 (CMCIClient* cl,
                  CMPIObjectPath* op, const char *assocClass, const char *resultClass,
-		 const char *role, const char *resultRole, char** properties, CMPIStatus* rc);
+		 const char *role, const char *resultRole, CMPIFlags flags, 
+                 char** properties, CMPIStatus* rc);
 
       /** Enumerate ObjectPaths associated with the Instance defined by &lt;op&gt;.
 	 @param cl Client this pointer.
@@ -222,6 +232,8 @@ typedef struct _CMCIClientFT {
 	    via an Association in which the source Object plays the specified role
 	    (i.e. the name of the Property in the Association Class that refers
 	    to the source Object MUST match the value of this parameter).
+	 @param flags Any combination of the following flags are supported: 
+	    CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
 	 @param properties If not NULL, the members of the array define one or more Property
 	     names. Each returned Object MUST NOT include elements for any Properties
 	     missing from this list
@@ -231,7 +243,7 @@ typedef struct _CMCIClientFT {
      CMPIEnumeration* (*references)
                 (CMCIClient* cl,
                  CMPIObjectPath* op, const char *resultClass ,const char *role ,
-		 char** properties, CMPIStatus* rc);
+		 CMPIFlags flags, char** properties, CMPIStatus* rc);
 
        /** Enumerates the association ObjectPaths that refer to the instance defined by
            &lt;op&gt;.
