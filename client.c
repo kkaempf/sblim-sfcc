@@ -1052,7 +1052,7 @@ static CMPIEnumeration* enumClassNames (CMCIClient* mb,
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       return NULL;
    }
-//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
   
    ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
 

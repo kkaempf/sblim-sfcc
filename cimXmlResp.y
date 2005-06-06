@@ -92,6 +92,11 @@ static void createPath(CMPIObjectPath **op, XtokInstanceName *p)
    printf("parh: %s\n",(char*)path->hdl);
 }
 
+static void createClassPath(CMPIObjectPath **op, char *ns, char *cn)
+{   
+   *op = newCMPIObjectPath(NULL, cn, NULL);
+}
+
 static void setError(void *parm, XtokErrorResp *e)
 {
    int err=atoi(e->code);
@@ -355,10 +360,10 @@ iReturnValue
     : XTOK_IRETVALUE instanceNames ZTOK_IRETVALUE
     {
     }
-    | /* XTOK_IRETVALUE classNames ZTOK_IRETVALUE
+    |  XTOK_IRETVALUE classNames ZTOK_IRETVALUE
     {
     }
-    | XTOK_IRETVALUE values ZTOK_IRETVALUE
+    | /* XTOK_IRETVALUE values ZTOK_IRETVALUE
     {
     }
     | XTOK_IRETVALUE valueObjectsWithPath ZTOK_IRETVALUE
@@ -381,10 +386,10 @@ iReturnValue
     }
     | XTOK_IRETVALUE valueRef ZTOK_IRETVALUE
     {
-    } 
+    } */
     | XTOK_IRETVALUE classes ZTOK_IRETVALUE
     {
-    } */
+    } 
     | XTOK_IRETVALUE instances ZTOK_IRETVALUE
     {
     } /*
@@ -408,13 +413,13 @@ instances
     | instance
     {
        setInstNsAndCn(PARM->curInstance,$1.className,PARM->nameSpace);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)PARM->curInstance,CMPI_instance);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance=NULL;
     }    
     | instances instance
     {
        setInstNsAndCn(PARM->curInstance,$2.className,PARM->nameSpace);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)PARM->curInstance,CMPI_instance);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance=NULL;
     }    
 ;
@@ -423,13 +428,13 @@ instanceNames
     : /* empty */
     | instanceName
     {
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)PARM->curPath,CMPI_ref);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
        PARM->curPath=NULL;
     }    
     | instanceNames instanceName
     {
        setInstNsAndCn(PARM->curInstance,$2.className,PARM->nameSpace);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)PARM->curPath,CMPI_ref);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
        PARM->curPath=NULL;
     }    
 ;
@@ -600,9 +605,25 @@ boolValue
     }
 ;
 
+classNames
+    : /* empty */
+    | className
+    {
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
+       PARM->curPath=NULL;
+    }    
+    | classNames className
+    {
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
+       PARM->curPath=NULL;
+    }    
+;
+
 className
     : XTOK_CLASSNAME ZTOK_CLASSNAME
     {
+        createClassPath(&PARM->curPath, NULL, $$);
+       printf("className.y: %s %p\n",$$,PARM->curPath);
     }
 ;
 

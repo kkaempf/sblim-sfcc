@@ -210,7 +210,7 @@
 
 
 /*
- * cimXmlOps.y
+ * cimXmlResp.y
  *
  * (C) Copyright IBM Corp. 2005
  *
@@ -225,7 +225,7 @@
  *
  * Description:
  *
- * CIM XML grammar for sfcb.
+ * CIM XML grammar for sfcc.
  *
 */
 
@@ -301,6 +301,11 @@ static void createPath(CMPIObjectPath **op, XtokInstanceName *p)
    printf("parh: %s\n",(char*)path->hdl);
 }
 
+static void createClassPath(CMPIObjectPath **op, char *ns, char *cn)
+{   
+   *op = newCMPIObjectPath(NULL, cn, NULL);
+}
+
 static void setError(void *parm, XtokErrorResp *e)
 {
    int err=atoi(e->code);
@@ -325,7 +330,7 @@ static void setError(void *parm, XtokErrorResp *e)
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 116 "cimXmlResp.y"
+#line 121 "cimXmlResp.y"
 typedef union YYSTYPE {
    int                           intValue;
    char                          boolValue;
@@ -367,7 +372,7 @@ typedef union YYSTYPE {
    XtokParam                     xtokParam;
 } YYSTYPE;
 /* Line 191 of yacc.c.  */
-#line 370 "cimXmlResp.c"
+#line 375 "cimXmlResp.c"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -379,7 +384,7 @@ typedef union YYSTYPE {
 
 
 /* Line 214 of yacc.c.  */
-#line 382 "cimXmlResp.c"
+#line 387 "cimXmlResp.c"
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
@@ -478,16 +483,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state. */
 #define YYFINAL  4
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   85
+#define YYLAST   108
 
 /* YYNTOKENS -- Number of terminals. */
 #define YYNTOKENS  76
 /* YYNNTS -- Number of nonterminals. */
-#define YYNNTS  26
+#define YYNNTS  34
 /* YYNRULES -- Number of rules. */
-#define YYNRULES  48
+#define YYNRULES  68
 /* YYNRULES -- Number of states. */
-#define YYNSTATES  95
+#define YYNSTATES  119
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
@@ -541,10 +546,12 @@ static const unsigned char yytranslate[] =
 static const unsigned char yyprhs[] =
 {
        0,     0,     3,     7,    11,    15,    19,    23,    27,    30,
-      33,    37,    38,    42,    43,    45,    48,    49,    51,    54,
-      58,    59,    62,    65,    69,    72,    78,    81,    84,    86,
-      88,    91,    93,    96,   100,   104,   108,   114,   118,   121,
-     125,   130,   133,   138,   141,   145,   147,   150,   155
+      33,    37,    41,    42,    46,    50,    51,    53,    56,    57,
+      59,    62,    63,    65,    68,    72,    73,    76,    79,    82,
+      86,    87,    90,    95,    96,    99,   103,   104,   107,   110,
+     114,   117,   123,   126,   129,   131,   133,   136,   138,   141,
+     145,   149,   150,   152,   155,   158,   162,   168,   172,   175,
+     179,   184,   187,   192,   195,   199,   201,   204,   209
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS. */
@@ -553,29 +560,37 @@ static const yysigned_char yyrhs[] =
       77,     0,    -1,     3,     4,    78,    -1,     5,    79,     6,
       -1,     7,    80,     8,    -1,     9,    81,    10,    -1,    11,
       82,    12,    -1,    11,    83,    12,    -1,    11,    12,    -1,
-      15,    16,    -1,    17,    85,    18,    -1,    -1,    17,    84,
-      18,    -1,    -1,    86,    -1,    84,    86,    -1,    -1,    99,
-      -1,    85,    99,    -1,    66,    87,    67,    -1,    -1,    87,
-      93,    -1,    87,    88,    -1,    48,    89,    49,    -1,    48,
-      49,    -1,    50,    32,    91,    33,    51,    -1,    50,    51,
-      -1,    89,    93,    -1,    90,    -1,    92,    -1,    30,    31,
-      -1,    90,    -1,    91,    90,    -1,    34,    98,    35,    -1,
-      34,    99,    35,    -1,    46,    90,    47,    -1,    46,    32,
-      91,    33,    47,    -1,    23,    95,    24,    -1,    25,    26,
-      -1,    95,    25,    26,    -1,    21,    97,    94,    22,    -1,
-      28,    29,    -1,    70,    96,    99,    71,    -1,    38,    39,
-      -1,    38,   100,    39,    -1,   101,    -1,   100,   101,    -1,
-      40,    42,    43,    41,    -1,    40,    92,    41,    -1
+      15,    16,    -1,    17,    86,    18,    -1,    17,    99,    18,
+      -1,    -1,    17,    84,    18,    -1,    17,    85,    18,    -1,
+      -1,    87,    -1,    84,    87,    -1,    -1,    92,    -1,    85,
+      92,    -1,    -1,   107,    -1,    86,   107,    -1,    64,    88,
+      65,    -1,    -1,    88,   101,    -1,    88,    94,    -1,    88,
+      89,    -1,    62,    90,    63,    -1,    -1,    90,   101,    -1,
+      90,    54,    91,    55,    -1,    -1,    91,   101,    -1,    66,
+      93,    67,    -1,    -1,    93,   101,    -1,    93,    94,    -1,
+      48,    95,    49,    -1,    48,    49,    -1,    50,    32,    97,
+      33,    51,    -1,    50,    51,    -1,    95,   101,    -1,    96,
+      -1,    98,    -1,    30,    31,    -1,    96,    -1,    97,    96,
+      -1,    34,   106,    35,    -1,    34,   107,    35,    -1,    -1,
+     100,    -1,    99,   100,    -1,    36,    37,    -1,    46,    96,
+      47,    -1,    46,    32,    97,    33,    47,    -1,    23,   103,
+      24,    -1,    25,    26,    -1,   103,    25,    26,    -1,    21,
+     105,   102,    22,    -1,    28,    29,    -1,    70,   104,   107,
+      71,    -1,    38,    39,    -1,    38,   108,    39,    -1,   109,
+      -1,   108,   109,    -1,    40,    42,    43,    41,    -1,    40,
+      98,    41,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned short yyrline[] =
 {
-       0,   309,   309,   315,   321,   330,   336,   339,   342,   348,
-     355,   358,   388,   406,   408,   414,   422,   424,   429,   500,
-     506,   507,   510,   522,   526,   530,   534,   541,   544,   548,
-     561,   568,   575,   583,   588,   614,   618,   632,   639,   643,
-     656,   664,   670,   713,   720,   729,   739,   750,   756
+       0,   314,   314,   320,   326,   335,   341,   344,   347,   353,
+     360,   363,   366,   390,   393,   401,   403,   406,   411,   413,
+     419,   427,   429,   434,   460,   466,   467,   470,   472,   477,
+     483,   484,   487,   493,   494,   505,   511,   512,   515,   527,
+     531,   535,   539,   546,   549,   553,   566,   573,   580,   588,
+     593,   608,   610,   615,   623,   635,   639,   653,   660,   664,
+     677,   685,   691,   734,   741,   750,   760,   771,   777
 };
 #endif
 
@@ -607,11 +622,12 @@ static const char *const yytname[] =
   "XTOK_INSTANCEPATH", "ZTOK_INSTANCEPATH", "XTOK_LOCALINSTANCEPATH", 
   "ZTOK_LOCALINSTANCEPATH", "XTOK_LOCALCLASSPATH", "ZTOK_LOCALCLASSPATH", 
   "$accept", "start", "cimOperation", "message", "simpleResp", 
-  "iMethodResp", "errorResp", "iReturnValue", "instances", 
-  "instanceNames", "instance", "instanceData", "property", "propertyData", 
-  "value", "valueArray", "valueReference", "qualifier", 
-  "localNameSpacePath", "namespaces", "nameSpacePath", "host", 
-  "instancePath", "instanceName", "keyBindings", "keyBinding", 0
+  "iMethodResp", "errorResp", "iReturnValue", "classes", "instances", 
+  "instanceNames", "class", "classData", "method", "methodData", 
+  "parameter", "instance", "instanceData", "property", "propertyData", 
+  "value", "valueArray", "valueReference", "classNames", "className", 
+  "qualifier", "localNameSpacePath", "namespaces", "nameSpacePath", 
+  "host", "instancePath", "instanceName", "keyBindings", "keyBinding", 0
 };
 #endif
 
@@ -635,19 +651,23 @@ static const unsigned short yytoknum[] =
 static const unsigned char yyr1[] =
 {
        0,    76,    77,    78,    79,    80,    81,    81,    81,    82,
-      83,    83,    83,    84,    84,    84,    85,    85,    85,    86,
-      87,    87,    87,    88,    88,    88,    88,    89,    89,    89,
-      90,    91,    91,    92,    92,    93,    93,    94,    95,    95,
-      96,    97,    98,    99,    99,   100,   100,   101,   101
+      83,    83,    83,    83,    83,    84,    84,    84,    85,    85,
+      85,    86,    86,    86,    87,    88,    88,    88,    88,    89,
+      90,    90,    90,    91,    91,    92,    93,    93,    93,    94,
+      94,    94,    94,    95,    95,    95,    96,    97,    97,    98,
+      98,    99,    99,    99,   100,   101,   101,   102,   103,   103,
+     104,   105,   106,   107,   107,   108,   108,   109,   109
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const unsigned char yyr2[] =
 {
        0,     2,     3,     3,     3,     3,     3,     3,     2,     2,
-       3,     0,     3,     0,     1,     2,     0,     1,     2,     3,
-       0,     2,     2,     3,     2,     5,     2,     2,     1,     1,
-       2,     1,     2,     3,     3,     3,     5,     3,     2,     3,
+       3,     3,     0,     3,     3,     0,     1,     2,     0,     1,
+       2,     0,     1,     2,     3,     0,     2,     2,     2,     3,
+       0,     2,     4,     0,     2,     3,     0,     2,     2,     3,
+       2,     5,     2,     2,     1,     1,     2,     1,     2,     3,
+       3,     0,     1,     2,     2,     3,     5,     3,     2,     3,
        4,     2,     4,     2,     3,     1,     2,     4,     3
 };
 
@@ -657,48 +677,54 @@ static const unsigned char yyr2[] =
 static const unsigned char yydefact[] =
 {
        0,     0,     0,     0,     1,     0,     2,     0,     0,     0,
-       0,     3,     0,     0,     4,     8,     0,    13,     0,     0,
-       5,     9,     0,    20,     0,     0,    14,    17,     6,     7,
-      43,     0,     0,    45,     0,    12,    15,    10,    18,     0,
-       0,     0,    44,    46,     0,     0,     0,    19,    22,    21,
-       0,     0,     0,     0,    48,     0,     0,     0,    24,     0,
-      28,    29,     0,    26,     0,     0,    33,    34,    47,    30,
-      31,     0,    35,    23,    27,     0,     0,     0,     0,     0,
-      32,     0,    41,     0,     0,    42,    36,    25,     0,     0,
-      40,    38,    37,     0,    39
+       0,     3,     0,     0,     4,     8,     0,    15,     0,     0,
+       5,     9,     0,     0,    25,    36,     0,     0,     0,    16,
+      19,     0,    52,    22,     6,     7,    54,    63,     0,     0,
+      65,     0,     0,    13,    17,    14,    20,    10,    23,    11,
+      53,     0,     0,     0,    64,    66,     0,     0,     0,    30,
+      24,    28,    27,    26,    35,    38,    37,     0,     0,     0,
+       0,    68,     0,     0,     0,    40,     0,    44,    45,     0,
+      42,     0,     0,     0,    49,    50,    67,    46,    47,     0,
+      55,    39,    43,     0,    33,    29,    31,     0,     0,     0,
+       0,    48,     0,     0,    61,     0,     0,    62,    56,    41,
+      32,    34,     0,     0,    60,    58,    57,     0,    59
 };
 
 /* YYDEFGOTO[NTERM-NUM]. */
 static const yysigned_char yydefgoto[] =
 {
-      -1,     2,     6,     8,    10,    13,    18,    19,    24,    25,
-      26,    34,    48,    59,    70,    71,    41,    49,    84,    89,
-      65,    77,    51,    27,    32,    33
+      -1,     2,     6,     8,    10,    13,    18,    19,    26,    27,
+      28,    29,    41,    61,    81,   103,    30,    42,    62,    76,
+      88,    89,    53,    31,    32,    63,   106,   113,    83,    98,
+      68,    33,    39,    40
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -41
+#define YYPACT_NINF -53
 static const yysigned_char yypact[] =
 {
-      14,    22,    38,    35,   -41,    39,   -41,    40,    41,    42,
-      43,   -41,     1,    44,   -41,   -41,    34,   -30,    45,    46,
-     -41,   -41,    -7,   -41,   -18,   -15,   -41,   -41,   -41,   -41,
-     -41,   -22,     3,   -41,   -39,   -41,   -41,   -41,   -41,   -36,
-       9,    15,   -41,   -41,     7,   -20,   -26,   -41,   -41,   -41,
-      47,    24,    25,    21,   -41,    30,    33,     8,   -41,   -27,
-     -41,   -41,    33,   -41,    36,    27,   -41,   -41,   -41,   -41,
-     -41,    -9,   -41,   -41,   -41,    -3,    37,    48,    -4,    23,
-     -41,    18,   -41,    49,    50,   -41,   -41,   -41,    51,    20,
-     -41,   -41,   -41,    52,   -41
+      16,    49,    54,    53,   -53,    57,   -53,    59,    63,    60,
+      62,   -53,    40,    64,   -53,   -53,    56,   -24,    61,    65,
+     -53,   -53,    38,   -18,   -53,   -53,   -15,   -16,    -8,   -53,
+     -53,   -10,   -53,   -53,   -53,   -53,   -53,   -53,   -11,     7,
+     -53,   -33,   -39,   -53,   -53,   -53,   -53,   -53,   -53,   -53,
+     -53,   -32,    35,    39,   -53,   -53,    33,   -14,    -7,   -53,
+     -53,   -53,   -53,   -53,   -53,   -53,   -53,    55,    44,    46,
+      41,   -53,    52,    58,    37,   -53,   -13,   -53,   -53,    58,
+     -53,    -3,    66,    47,   -53,   -53,   -53,   -53,   -53,    15,
+     -53,   -53,   -53,    29,   -53,   -53,   -53,    67,    68,    18,
+      43,   -53,    36,   -28,   -53,    70,    71,   -53,   -53,   -53,
+     -53,   -53,    72,    42,   -53,   -53,   -53,    73,   -53
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yysigned_char yypgoto[] =
 {
-     -41,   -41,   -41,   -41,   -41,   -41,   -41,   -41,   -41,   -41,
-      55,   -41,   -41,   -41,   -40,    11,    31,    16,   -41,   -41,
-     -41,   -41,   -41,   -24,   -41,    53
+     -53,   -53,   -53,   -53,   -53,   -53,   -53,   -53,   -53,   -53,
+     -53,    74,   -53,   -53,   -53,   -53,    75,   -53,    50,   -53,
+     -52,    22,    48,   -53,    76,   -42,   -53,   -53,   -53,   -53,
+     -53,   -27,   -53,    69
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -708,28 +734,32 @@ static const yysigned_char yypgoto[] =
 #define YYTABLE_NINF -1
 static const unsigned char yytable[] =
 {
-      35,    38,    22,    37,    57,    60,    62,    44,    22,    45,
-      55,    46,    39,    15,    39,    52,    16,     1,    17,    44,
-      40,    55,    73,    22,    79,    63,     3,    55,    47,    58,
-      81,    80,    30,    31,    50,    80,    23,    55,     4,    56,
-       5,    78,    42,    31,    92,    93,     7,    11,    23,     9,
-      21,    14,    53,    12,    20,    72,    54,    28,    29,    66,
-      67,    69,    68,    55,    76,    22,    82,    85,    64,    87,
-      86,    83,    90,    75,    88,    74,    61,    91,    94,    36,
-       0,     0,     0,     0,     0,    43
+      66,    48,    45,    43,    74,    77,    23,    56,    49,    57,
+      47,    58,    22,    56,    23,    57,    72,    58,    56,     1,
+      51,    37,    38,    51,    69,    79,    22,   110,    64,    59,
+      23,    52,    60,    56,    92,    75,    91,   101,    67,    96,
+      24,   101,    25,    56,    80,    72,    54,    38,   100,    24,
+      25,    94,    15,     3,     4,    16,    99,    17,     5,    72,
+      95,   111,   102,    72,     7,    73,   116,   117,     9,    11,
+      14,    12,    21,    34,    20,    36,    82,    35,    70,    84,
+      71,    85,    86,    87,    90,    23,     0,   109,    72,   107,
+     108,   105,    65,   114,    97,   112,   104,     0,   115,   118,
+      44,    93,    46,     0,     0,    78,     0,    50,    55
 };
 
 static const yysigned_char yycheck[] =
 {
-      18,    25,    38,    18,    44,    45,    32,    46,    38,    48,
-      30,    50,    34,    12,    34,    39,    15,     3,    17,    46,
-      42,    30,    49,    38,    33,    51,     4,    30,    67,    49,
-      33,    71,    39,    40,    70,    75,    66,    30,     0,    32,
-       5,    65,    39,    40,    24,    25,     7,     6,    66,     9,
-      16,     8,    43,    11,    10,    47,    41,    12,    12,    35,
-      35,    31,    41,    30,    28,    38,    29,    71,    21,    51,
-      47,    23,    22,    62,    25,    59,    45,    26,    26,    24,
-      -1,    -1,    -1,    -1,    -1,    32
+      42,    28,    18,    18,    56,    57,    38,    46,    18,    48,
+      18,    50,    36,    46,    38,    48,    30,    50,    46,     3,
+      34,    39,    40,    34,    51,    32,    36,    55,    67,    62,
+      38,    42,    65,    46,    76,    49,    49,    89,    70,    81,
+      64,    93,    66,    46,    51,    30,    39,    40,    33,    64,
+      66,    54,    12,     4,     0,    15,    83,    17,     5,    30,
+      63,   103,    33,    30,     7,    32,    24,    25,     9,     6,
+       8,    11,    16,    12,    10,    37,    21,    12,    43,    35,
+      41,    35,    41,    31,    47,    38,    -1,    51,    30,    71,
+      47,    23,    42,    22,    28,    25,    29,    -1,    26,    26,
+      26,    79,    27,    -1,    -1,    57,    -1,    31,    39
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -738,14 +768,16 @@ static const unsigned char yystos[] =
 {
        0,     3,    77,     4,     0,     5,    78,     7,    79,     9,
       80,     6,    11,    81,     8,    12,    15,    17,    82,    83,
-      10,    16,    38,    66,    84,    85,    86,    99,    12,    12,
-      39,    40,   100,   101,    87,    18,    86,    18,    99,    34,
-      42,    92,    39,   101,    46,    48,    50,    67,    88,    93,
-      70,    98,    99,    43,    41,    30,    32,    90,    49,    89,
-      90,    92,    32,    51,    21,    96,    35,    35,    41,    31,
-      90,    91,    47,    49,    93,    91,    28,    97,    99,    33,
-      90,    33,    29,    23,    94,    71,    47,    51,    25,    95,
-      22,    26,    24,    25,    26
+      10,    16,    36,    38,    64,    66,    84,    85,    86,    87,
+      92,    99,   100,   107,    12,    12,    37,    39,    40,   108,
+     109,    88,    93,    18,    87,    18,    92,    18,   107,    18,
+     100,    34,    42,    98,    39,   109,    46,    48,    50,    62,
+      65,    89,    94,   101,    67,    94,   101,    70,   106,   107,
+      43,    41,    30,    32,    96,    49,    95,    96,    98,    32,
+      51,    90,    21,   104,    35,    35,    41,    31,    96,    97,
+      47,    49,   101,    97,    54,    63,   101,    28,   105,   107,
+      33,    96,    33,    91,    29,    23,   102,    71,    47,    51,
+      55,   101,    25,   103,    22,    26,    24,    25,    26
 };
 
 #if ! defined (YYSIZE_T) && defined (__SIZE_TYPE__)
@@ -1356,182 +1388,269 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 310 "cimXmlResp.y"
+#line 315 "cimXmlResp.y"
     {
     }
     break;
 
   case 3:
-#line 316 "cimXmlResp.y"
+#line 321 "cimXmlResp.y"
     {
     }
     break;
 
   case 4:
-#line 322 "cimXmlResp.y"
+#line 327 "cimXmlResp.y"
     {
     }
     break;
 
   case 5:
-#line 331 "cimXmlResp.y"
+#line 336 "cimXmlResp.y"
     {
     }
     break;
 
   case 6:
-#line 337 "cimXmlResp.y"
+#line 342 "cimXmlResp.y"
     {
     }
     break;
 
   case 7:
-#line 340 "cimXmlResp.y"
+#line 345 "cimXmlResp.y"
     {
     }
     break;
 
   case 8:
-#line 343 "cimXmlResp.y"
+#line 348 "cimXmlResp.y"
     {
     }
     break;
 
   case 9:
-#line 349 "cimXmlResp.y"
+#line 354 "cimXmlResp.y"
     {
         setError(parm,&yyval.xtokErrorResp);
     }
     break;
 
   case 10:
-#line 356 "cimXmlResp.y"
+#line 361 "cimXmlResp.y"
     {
     }
     break;
 
-  case 12:
-#line 389 "cimXmlResp.y"
+  case 11:
+#line 364 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 13:
+#line 391 "cimXmlResp.y"
     {
     }
     break;
 
   case 14:
-#line 409 "cimXmlResp.y"
+#line 394 "cimXmlResp.y"
     {
-       setInstNsAndCn(PARM->curInstance,yyvsp[0].xtokInstance.className,PARM->nameSpace);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)PARM->curInstance,CMPI_instance);
-       PARM->curInstance=NULL;
     }
     break;
 
-  case 15:
-#line 415 "cimXmlResp.y"
+  case 16:
+#line 404 "cimXmlResp.y"
     {
-       setInstNsAndCn(PARM->curInstance,yyvsp[0].xtokInstance.className,PARM->nameSpace);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)PARM->curInstance,CMPI_instance);
-       PARM->curInstance=NULL;
     }
     break;
 
   case 17:
-#line 425 "cimXmlResp.y"
+#line 407 "cimXmlResp.y"
     {
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)PARM->curPath,CMPI_ref);
-       PARM->curPath=NULL;
-    }
-    break;
-
-  case 18:
-#line 430 "cimXmlResp.y"
-    {
-       setInstNsAndCn(PARM->curInstance,yyvsp[0].xtokInstanceName.className,PARM->nameSpace);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)PARM->curPath,CMPI_ref);
-       PARM->curPath=NULL;
     }
     break;
 
   case 19:
-#line 501 "cimXmlResp.y"
+#line 414 "cimXmlResp.y"
     {
+       setInstNsAndCn(PARM->curInstance,yyvsp[0].xtokInstance.className,PARM->nameSpace);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
+       PARM->curInstance=NULL;
     }
     break;
 
   case 20:
-#line 506 "cimXmlResp.y"
-    {;}
-    break;
-
-  case 21:
-#line 508 "cimXmlResp.y"
+#line 420 "cimXmlResp.y"
     {
+       setInstNsAndCn(PARM->curInstance,yyvsp[0].xtokInstance.className,PARM->nameSpace);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
+       PARM->curInstance=NULL;
     }
     break;
 
   case 22:
-#line 511 "cimXmlResp.y"
+#line 430 "cimXmlResp.y"
     {
-       addInstProperty(&(PARM->curInstance),&yyvsp[0].xtokProperty);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
+       PARM->curPath=NULL;
     }
     break;
 
   case 23:
-#line 523 "cimXmlResp.y"
+#line 435 "cimXmlResp.y"
     {
-       yyval.xtokProperty.val=yyvsp[-1].xtokPropertyData;
+       setInstNsAndCn(PARM->curInstance,yyvsp[0].xtokInstanceName.className,PARM->nameSpace);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
+       PARM->curPath=NULL;
     }
     break;
 
   case 24:
-#line 527 "cimXmlResp.y"
+#line 461 "cimXmlResp.y"
     {
-       yyval.xtokProperty.val.null=1;
     }
     break;
 
   case 25:
-#line 531 "cimXmlResp.y"
-    {
-       yyval.xtokProperty.val.array=yyvsp[-3].xtokValueArray;
-    }
+#line 466 "cimXmlResp.y"
+    {;}
     break;
 
   case 26:
-#line 535 "cimXmlResp.y"
+#line 468 "cimXmlResp.y"
     {
-       yyval.xtokProperty.val.null=1;
     }
     break;
 
   case 27:
-#line 542 "cimXmlResp.y"
+#line 470 "cimXmlResp.y"
     {
     }
     break;
 
   case 28:
-#line 545 "cimXmlResp.y"
+#line 472 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 29:
+#line 478 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 30:
+#line 483 "cimXmlResp.y"
+    {;}
+    break;
+
+  case 31:
+#line 485 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 32:
+#line 488 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 33:
+#line 493 "cimXmlResp.y"
+    {;}
+    break;
+
+  case 34:
+#line 495 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 35:
+#line 506 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 36:
+#line 511 "cimXmlResp.y"
+    {;}
+    break;
+
+  case 37:
+#line 513 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 38:
+#line 516 "cimXmlResp.y"
+    {
+       addInstProperty(&(PARM->curInstance),&yyvsp[0].xtokProperty);
+    }
+    break;
+
+  case 39:
+#line 528 "cimXmlResp.y"
+    {
+       yyval.xtokProperty.val=yyvsp[-1].xtokPropertyData;
+    }
+    break;
+
+  case 40:
+#line 532 "cimXmlResp.y"
+    {
+       yyval.xtokProperty.val.null=1;
+    }
+    break;
+
+  case 41:
+#line 536 "cimXmlResp.y"
+    {
+       yyval.xtokProperty.val.array=yyvsp[-3].xtokValueArray;
+    }
+    break;
+
+  case 42:
+#line 540 "cimXmlResp.y"
+    {
+       yyval.xtokProperty.val.null=1;
+    }
+    break;
+
+  case 43:
+#line 547 "cimXmlResp.y"
+    {
+    }
+    break;
+
+  case 44:
+#line 550 "cimXmlResp.y"
     {
        yyval.xtokPropertyData.value=yyvsp[0].xtokValue.value;
     }
     break;
 
-  case 29:
-#line 549 "cimXmlResp.y"
+  case 45:
+#line 554 "cimXmlResp.y"
     {
        yyval.xtokPropertyData.ref=yyvsp[0].xtokValueReference;
     }
     break;
 
-  case 30:
-#line 562 "cimXmlResp.y"
+  case 46:
+#line 567 "cimXmlResp.y"
     {
        yyval.xtokValue.value=yyvsp[-1].xtokValue.value;
     }
     break;
 
-  case 31:
-#line 569 "cimXmlResp.y"
+  case 47:
+#line 574 "cimXmlResp.y"
     {
        yyval.xtokValueArray.next=1;
        yyval.xtokValueArray.max=64;
@@ -1540,60 +1659,84 @@ yyreduce:
     }
     break;
 
-  case 32:
-#line 576 "cimXmlResp.y"
+  case 48:
+#line 581 "cimXmlResp.y"
     {
        yyval.xtokValueArray.values[yyval.xtokValueArray.next]=yyvsp[0].xtokValue.value;
        yyval.xtokValueArray.next++;
     }
     break;
 
-  case 33:
-#line 584 "cimXmlResp.y"
+  case 49:
+#line 589 "cimXmlResp.y"
     {
        yyval.xtokValueReference.instancePath=yyvsp[-1].xtokInstancePath;
        yyval.xtokValueReference.type=typeValRef_InstancePath;
     }
     break;
 
-  case 34:
-#line 589 "cimXmlResp.y"
+  case 50:
+#line 594 "cimXmlResp.y"
     {
        yyval.xtokValueReference.instanceName=yyvsp[-1].xtokInstanceName;
        yyval.xtokValueReference.type=typeValRef_InstanceName;
     }
     break;
 
-  case 35:
-#line 615 "cimXmlResp.y"
+  case 52:
+#line 611 "cimXmlResp.y"
+    {
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
+       PARM->curPath=NULL;
+    }
+    break;
+
+  case 53:
+#line 616 "cimXmlResp.y"
+    {
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
+       PARM->curPath=NULL;
+    }
+    break;
+
+  case 54:
+#line 624 "cimXmlResp.y"
+    {
+        createClassPath(&PARM->curPath, NULL, yyval.className);
+       printf("className.y: %s %p\n",yyval.className,PARM->curPath);
+    }
+    break;
+
+  case 55:
+#line 636 "cimXmlResp.y"
     {
        yyval.xtokQualifier.value=yyvsp[-1].xtokValue.value;
     }
     break;
 
-  case 36:
-#line 619 "cimXmlResp.y"
+  case 56:
+#line 640 "cimXmlResp.y"
     {
 //       $$.value=$2.value;
     }
     break;
 
-  case 37:
-#line 633 "cimXmlResp.y"
+  case 57:
+#line 654 "cimXmlResp.y"
     {
        yyval.xtokLocalNameSpacePath=yyvsp[-1].xtokNameSpace.cns;
     }
     break;
 
-  case 38:
-#line 640 "cimXmlResp.y"
+  case 58:
+#line 661 "cimXmlResp.y"
     {
        yyval.xtokNameSpace.cns=strdup(yyvsp[-1].xtokNameSpace.ns);
     }
     break;
 
-  case 39:
-#line 644 "cimXmlResp.y"
+  case 59:
+#line 665 "cimXmlResp.y"
     {
        int l=strlen(yyvsp[-2].xtokNameSpace.cns)+strlen(yyvsp[-1].xtokNameSpace.ns)+2;
        yyval.xtokNameSpace.cns=(char*)malloc(l);
@@ -1604,22 +1747,22 @@ yyreduce:
     }
     break;
 
-  case 40:
-#line 657 "cimXmlResp.y"
+  case 60:
+#line 678 "cimXmlResp.y"
     {
        yyval.xtokNameSpacePath.host=yyvsp[-2].xtokHost;
        yyval.xtokNameSpacePath.nameSpacePath=yyvsp[-1].xtokLocalNameSpacePath;
     }
     break;
 
-  case 41:
-#line 665 "cimXmlResp.y"
+  case 61:
+#line 686 "cimXmlResp.y"
     {
     }
     break;
 
-  case 42:
-#line 671 "cimXmlResp.y"
+  case 62:
+#line 692 "cimXmlResp.y"
     {
        yyval.xtokInstancePath.path=yyvsp[-2].xtokNameSpacePath;
        yyval.xtokInstancePath.instanceName=yyvsp[-1].xtokInstanceName;
@@ -1627,8 +1770,8 @@ yyreduce:
     }
     break;
 
-  case 43:
-#line 714 "cimXmlResp.y"
+  case 63:
+#line 735 "cimXmlResp.y"
     {
        yyval.xtokInstanceName.className=yyvsp[-1].xtokInstanceName.className;
        yyval.xtokInstanceName.bindings.next=0;
@@ -1637,8 +1780,8 @@ yyreduce:
     }
     break;
 
-  case 44:
-#line 721 "cimXmlResp.y"
+  case 64:
+#line 742 "cimXmlResp.y"
     {
        yyval.xtokInstanceName.className=yyvsp[-2].xtokInstanceName.className;
        yyval.xtokInstanceName.bindings=yyvsp[-1].xtokKeyBindings;
@@ -1646,8 +1789,8 @@ yyreduce:
     }
     break;
 
-  case 45:
-#line 730 "cimXmlResp.y"
+  case 65:
+#line 751 "cimXmlResp.y"
     {
        yyval.xtokKeyBindings.next=1;
        yyval.xtokKeyBindings.max=16;
@@ -1659,8 +1802,8 @@ yyreduce:
     }
     break;
 
-  case 46:
-#line 740 "cimXmlResp.y"
+  case 66:
+#line 761 "cimXmlResp.y"
     {
        yyval.xtokKeyBindings.keyBindings[yyval.xtokKeyBindings.next].name=yyvsp[0].xtokKeyBinding.name;
        yyval.xtokKeyBindings.keyBindings[yyval.xtokKeyBindings.next].value=yyvsp[0].xtokKeyBinding.value;
@@ -1670,8 +1813,8 @@ yyreduce:
     }
     break;
 
-  case 47:
-#line 751 "cimXmlResp.y"
+  case 67:
+#line 772 "cimXmlResp.y"
     {
        yyval.xtokKeyBinding.name=yyvsp[-3].xtokKeyBinding.name;
        yyval.xtokKeyBinding.value=yyvsp[-2].xtokKeyValue.value;
@@ -1679,8 +1822,8 @@ yyreduce:
     }
     break;
 
-  case 48:
-#line 757 "cimXmlResp.y"
+  case 68:
+#line 778 "cimXmlResp.y"
     {
        yyval.xtokKeyBinding.name=yyvsp[-2].xtokKeyBinding.name;
        yyval.xtokKeyBinding.value=NULL;
@@ -1693,7 +1836,7 @@ yyreduce:
     }
 
 /* Line 999 of yacc.c.  */
-#line 1696 "cimXmlResp.c"
+#line 1839 "cimXmlResp.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1887,6 +2030,6 @@ yyreturn:
 }
 
 
-#line 765 "cimXmlResp.y"
+#line 786 "cimXmlResp.y"
 
 
