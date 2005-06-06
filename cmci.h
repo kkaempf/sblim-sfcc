@@ -98,16 +98,13 @@ typedef struct _CMCIClientFT {
 	 @param op ObjectPath containing namespace and classname components.
 	 @param flags Any combination of the following flags are supported: CMPI_FLAG_LocalOnly, 
 	     CMPI_FLAG_DeepInheritance, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
-	 @param properties If not NULL, the members of the array define one or more Property
-	     names. Each returned Object MUST NOT include elements for any Properties
-	     missing from this list
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return Enumeration of Instances.
      */
      
      CMPIEnumeration* (*enumClasses)
                 (CMCIClient* cl,
-                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc);
+                 CMPIObjectPath* op, CMPIFlags flags, CMPIStatus* rc);
 
       /** Get Instance using &lt;op&gt; as reference. Instance structure can be
          controled using the &lt;flags&gt; parameter.

@@ -307,10 +307,11 @@ static inline void addXmlHeader(UtilStringBuffer *sb)
 static inline void addXmlClassnameParam(UtilStringBuffer *sb,
 					CMPIObjectPath *cop)
 {
-   sb->ft->append3Chars(sb,
-	"<IPARAMVALUE NAME=\"ClassName\"><CLASSNAME NAME=\"",
-	(char*)cop->ft->getClassName(cop, NULL),
-        "\"/></IPARAMVALUE>\n");
+	CMPIString *cn=cop->ft->getClassName(cop, NULL);
+   if (cn && cn->hdl && *((char*)cn->hdl)) 
+      sb->ft->append3Chars(sb,
+	      "<IPARAMVALUE NAME=\"ClassName\"><CLASSNAME NAME=\"",
+	      (char*)cn->hdl,"\"/></IPARAMVALUE>\n");
 }
 
 static void addXmlPropertyListParam(UtilStringBuffer *sb, char** properties)
@@ -575,7 +576,7 @@ static CMPIEnumeration * enumInstances(CMCIClient* mb,
         return NULL;
     }
 
-    if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_ref) {
+    if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_instance) {
         CMPIEnumeration *enm = newCMPIEnumeration(rh.rvArray,NULL);
         CMSetStatus(rc, CMPI_RC_OK);
         return enm;
@@ -966,23 +967,159 @@ static CMPIData getProperty(CMCIClient *mb,
 }
 
 
-static CMPIConstClass* getClass (CMCIClient* cl,
-                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc)
+static CMPIConstClass* getClass (CMCIClient* mb,
+                 CMPIObjectPath* cop, CMPIFlags flags, char** properties, CMPIStatus* rc)
 {
-    CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
-    return NULL;
+   ClientEnc *cl=(ClientEnc*)mb;
+   CMCIConnection *con=cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   char *error;
+  
+   addXmlClassnameParam(sb, cop);
+   con->ft->genRequest(cl,"GetClass",cop,0,0);
+
+   addXmlHeader(sb);
+  
+   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"GetClass\">");
+
+   addXmlNamespace(sb, getNameSpaceComponents(cop));
+
+   emitlocal(sb,flags & CMPI_FLAG_LocalOnly);
+   emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
+   emitqual(sb,flags & CMPI_FLAG_IncludeQualifiers);
+
+   addXmlPropertyListParam(sb, properties);
+
+   addXmlClassnameParam(sb, cop);
+
+   pathToXml(sb, cop);
+
+   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
+
+   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+  
+   if ((error=con->ft->getResponse(con,cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      return NULL;
+   }
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+  
+   ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+
+   if (rh.errCode!=0) {
+      CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      return NULL;
+   }
+  
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_class) {
+      CMSetStatus(rc,CMPI_RC_OK);
+      return (CMPIConstClass*)(rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL).value.inst);
+   }  
+  
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
+   return NULL;
 }
 
-static CMPIEnumeration* enumClassNames (CMCIClient* cl,
-                 CMPIObjectPath* op, CMPIFlags flags, CMPIStatus* rc)
+static CMPIEnumeration* enumClassNames (CMCIClient* mb,
+                 CMPIObjectPath* cop, CMPIFlags flags, CMPIStatus* rc)
 {
-    CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
-    return NULL;
+   ClientEnc *cl=(ClientEnc*)mb;
+   CMCIConnection *con=cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   char *error;
+
+   con->ft->genRequest(cl,"EnumerateClassNames",cop,0,0);
+
+   addXmlHeader(sb);
+
+   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"EnumerateClassNames\">");
+
+   addXmlNamespace(sb, getNameSpaceComponents(cop));
+
+   emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
+   
+   addXmlClassnameParam(sb, cop);
+
+   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+  
+   if ((error = con->ft->getResponse(con,cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      return NULL;
+   }
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+  
+   ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+
+   if (rh.errCode!=0) {
+      CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      return NULL;
+   }
+  
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_ref) {
+      CMPIEnumeration *enm = newCMPIEnumeration(rh.rvArray,NULL);
+      CMSetStatus(rc,CMPI_RC_OK);
+      return enm;
+   }  
+  
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
+   return NULL;
 }
 
-static CMPIEnumeration* enumClasses (CMCIClient* cl,
-                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc)
+static CMPIEnumeration* enumClasses (CMCIClient* mb,
+                 CMPIObjectPath* cop, CMPIFlags flags, CMPIStatus* rc)
 {
+    ClientEnc	     *cl  = (ClientEnc *)mb;
+    CMCIConnection   *con = cl->connection;
+    UtilStringBuffer *sb  = newStringBuffer(2048);
+    char             *error;
+    ResponseHdr	     rh;
+
+    con->ft->genRequest(cl, "EnumerateClasses", cop, 0, 0);
+
+    addXmlHeader(sb);
+
+    sb->ft->appendChars(sb, "<IMETHODCALL NAME=\"EnumerateClasses\">");
+    addXmlNamespace(sb, getNameSpaceComponents(cop));
+
+    addXmlClassnameParam(sb, cop);
+
+    emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
+    emitlocal(sb,flags & CMPI_FLAG_LocalOnly);
+    emitqual(sb,flags & CMPI_FLAG_IncludeQualifiers);
+    emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
+   
+   addXmlClassnameParam(sb, cop);
+   
+    sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+
+//  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+    con->ft->addPayload(con,sb);
+  
+    if ((error = con->ft->getResponse(con, cop))) {
+        CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+        return NULL;
+    }
+//  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+
+    rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse), cop);
+
+    if (rh.errCode != 0) {
+        CMSetStatusWithChars(rc, rh.errCode, rh.description);
+        return NULL;
+    }
+
+    if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_class) {
+        CMPIEnumeration *enm = newCMPIEnumeration(rh.rvArray,NULL);
+        CMSetStatus(rc, CMPI_RC_OK);
+        return enm;
+    }  
+
     CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
     return NULL;
 }
