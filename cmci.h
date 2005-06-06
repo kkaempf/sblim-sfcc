@@ -56,21 +56,61 @@ typedef struct _CMCIConnection CMCIConnection;
    
 struct _ClientEnc;
 typedef struct _ClientEnc ClientEnc;
+
+struct _CMPIConstClass;
+typedef struct _CMPIConstClass CMPIConstClass;
    
 typedef struct _CMCIClientFT {
    
-      /** Enumerate Instance Names of the class (and subclasses) defined by &lt;op&gt;.
+      /** Get Class using &lt;op&gt; as reference. Class structure can be
+         controled using the flags parameter.
 	 @param cl Client this pointer.
 	 @param op ObjectPath containing namespace and classname components.
+	 @param flags Any combination of the following flags are supported: 
+	    CMPI_FLAG_LocalOnly, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
+	 @param properties If not NULL, the members of the array define one or more Property
+	     names. Each returned Object MUST NOT include elements for any Properties
+	     missing from this list
+	 @param rc Output: Service return status (suppressed when NULL).
+	 @return The Class.
+     */
+     CMPIConstClass* (*getClass)
+                (CMCIClient* cl,
+                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc);
+
+
+       /** Enumerate Class Names (and subclass names) in the namespace defined by &lt;op&gt;. Inheritance scope can be controled using the
+	        flags parameter.
+	 @param cl Client this pointer.
+	 @param op ObjectPath containing namespace component.
+	 @param flags The following flag is supported: CMPI_FLAG_DeepInheritance.
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return Enumeration of ObjectPathes.
      */
-     CMPIEnumeration* (*enumInstanceNames)
+     
+     CMPIEnumeration* (*enumClassNames)
                 (CMCIClient* cl,
-                 CMPIObjectPath* op, CMPIStatus* rc);
+                 CMPIObjectPath* op, CMPIFlags flags, CMPIStatus* rc);
+
+     /** Enumerate Classes (and subclasses) in the namespace  defined by &lt;op&gt;.
+         Class structure and inheritance scope can be controled using the &lt;flags&gt; parameter.
+	 @param cl Client this pointer.
+	 @param op ObjectPath containing namespace and classname components.
+	 @param flags Any combination of the following flags are supported: CMPI_FLAG_LocalOnly, 
+	     CMPI_FLAG_DeepInheritance, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
+	 @param properties If not NULL, the members of the array define one or more Property
+	     names. Each returned Object MUST NOT include elements for any Properties
+	     missing from this list
+	 @param rc Output: Service return status (suppressed when NULL).
+	 @return Enumeration of Instances.
+     */
+     
+     CMPIEnumeration* (*enumClasses)
+                (CMCIClient* cl,
+                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc);
 
       /** Get Instance using &lt;op&gt; as reference. Instance structure can be
-         controled using the CMPIInvocationFlags entry in &lt;ctx&gt;.
+         controled using the &lt;flags&gt; parameter.
 	 @param cl Client this pointer.
 	 @param op ObjectPath containing namespace, classname and key components.
 	 @param flags Any combination of the following flags are supported: 
@@ -84,8 +124,6 @@ typedef struct _CMCIClientFT {
      CMPIInstance* (*getInstance)
                 (CMCIClient* cl,
                  CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc);
-
-     // class 2 services
 
       /** Create Instance from &lt;inst&gt; using &lt;op&gt; as reference.
 	 @param cl Client this pointer.
@@ -133,9 +171,19 @@ typedef struct _CMCIClientFT {
                 (CMCIClient* cl,
                  CMPIObjectPath* op, const char *query, const char *lang, CMPIStatus* rc);
 
-      /** Enumerate Instances of the class (and subclasses) defined by &lt;op&gt;.
+       /** Enumerate Instance Names of the class (and subclasses) defined by &lt;op&gt;.
+	 @param cl Client this pointer.
+	 @param op ObjectPath containing namespace and classname components.
+	 @param rc Output: Service return status (suppressed when NULL).
+	 @return Enumeration of ObjectPathes.
+     */
+     CMPIEnumeration* (*enumInstanceNames)
+                (CMCIClient* cl,
+                 CMPIObjectPath* op, CMPIStatus* rc);
+
+     /** Enumerate Instances of the class (and subclasses) defined by &lt;op&gt;.
          Instance structure and inheritance scope can be controled using the
-	 CMPIInvocationFlags entry in &lt;ctx&gt;.
+	      &lt;flags&gt; parameter.
 	 @param cl Client this pointer.
 	 @param op ObjectPath containing namespace and classname components.
 	 @param flags Any combination of the following flags are supported: CMPI_FLAG_LocalOnly, 

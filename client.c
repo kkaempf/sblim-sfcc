@@ -965,13 +965,39 @@ static CMPIData getProperty(CMCIClient *mb,
     return retval;
 }
 
+
+static CMPIConstClass* getClass (CMCIClient* cl,
+                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc)
+{
+    CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
+    return NULL;
+}
+
+static CMPIEnumeration* enumClassNames (CMCIClient* cl,
+                 CMPIObjectPath* op, CMPIFlags flags, CMPIStatus* rc)
+{
+    CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
+    return NULL;
+}
+
+static CMPIEnumeration* enumClasses (CMCIClient* cl,
+                 CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc)
+{
+    CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
+    return NULL;
+}
+
+
 static CMCIClientFT clientFt = {
-   enumInstanceNames,
+   getClass,
+   enumClassNames,
+   enumClasses,
    getInstance,
    createInstance,
    setInstance,
    deleteInstance,
    execQuery,
+   enumInstanceNames,
    enumInstances,
    associators,
    associatorNames,
