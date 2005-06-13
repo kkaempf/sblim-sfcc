@@ -17,8 +17,10 @@ SOURCES.CmpiSfcc = args.c \
                    datetime.c \
                    enumeration.c \
                    instance.c \
+                   constClass.c \
                    objectpath.c \
                    property.c \
+                   qualifier.c \
                    string.c \
                    value.c \
                    client.c \
@@ -58,7 +60,7 @@ libCmpiSfcc.so: LOADLIBES += -lcurl
 libCmpiSfcc.so: $(SOURCES.CmpiSfcc:.c=.o)
 	$(LINK_LIB)
 
-test: LOADLIBES += -lCmpiSfcc -L. 
+test: LOADLIBES += -lCmpiSfcc -L. -lsfcBrokerCore
 test: $(SOURCES.test:.c=.o)
 	$(LINK_BIN)
 

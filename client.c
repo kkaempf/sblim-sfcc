@@ -380,8 +380,9 @@ static CMPIInstance * getInstance(CMCIClient* mb,
    CMCIConnection *con=cl->connection;
    UtilStringBuffer *sb=newStringBuffer(2048);
    char *error;
+   CMPIString *cn;
   
-   addXmlClassnameParam(sb, cop);
+   cn=cop->ft->getClassName(cop,NULL);
    con->ft->genRequest(cl,"GetInstance",cop,0,0);
 
    addXmlHeader(sb);
@@ -396,8 +397,9 @@ static CMPIInstance * getInstance(CMCIClient* mb,
 
    addXmlPropertyListParam(sb, properties);
 
-   addXmlClassnameParam(sb, cop);
-
+   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"InstanceName\">\n"
+          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
+   
    pathToXml(sb, cop);
 
    sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
@@ -975,7 +977,6 @@ static CMPIConstClass* getClass (CMCIClient* mb,
    UtilStringBuffer *sb=newStringBuffer(2048);
    char *error;
   
-   addXmlClassnameParam(sb, cop);
    con->ft->genRequest(cl,"GetClass",cop,0,0);
 
    addXmlHeader(sb);
@@ -991,10 +992,6 @@ static CMPIConstClass* getClass (CMCIClient* mb,
    addXmlPropertyListParam(sb, properties);
 
    addXmlClassnameParam(sb, cop);
-
-   pathToXml(sb, cop);
-
-   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
 
    sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
 
@@ -1052,7 +1049,7 @@ static CMPIEnumeration* enumClassNames (CMCIClient* mb,
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       return NULL;
    }
-   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
   
    ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
 

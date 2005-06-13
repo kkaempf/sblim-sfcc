@@ -166,7 +166,10 @@ inline static   void CMSetStatusWithChars(CMPIStatus* st, CMPIrc rcp,
   #define CMClone(o,rc)                        ((o)->ft->clone((o),(rc)))
   #define CMRelease(o)                            ((o)->ft->release((o)))
   #define CMGetCharPtr(s)                                 ((char*)s->hdl)
-
+  #define CMReleaseData(d) \
+       if (((d)->type >= CMPI_instance  && (d)->type <= CMPI_dateTime) || \
+           ((d)->type >= CMPI_instanceA && (d)->type <= CMPI_dateTimeA)) \
+                                                    CMRelease((d)->value);
 
     // CMPIInstance macros
 

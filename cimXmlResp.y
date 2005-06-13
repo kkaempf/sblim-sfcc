@@ -48,6 +48,10 @@
 extern int yyerror(char*);
 extern int yylex (void *lvalp, ParserControl *parm);
 
+extern CMPIConstClass * native_new_CMPIConstClass ( char  *cn, CMPIStatus * rc );
+extern int addClassProperty( CMPIConstClass * ccls, char * name, CMPIValue * value, CMPIType type, 
+				      CMPIValueState state);
+
 
 int isBoolean(CMPIData data)
 {
@@ -56,22 +60,6 @@ int isBoolean(CMPIData data)
       if (strcasecmp(data.value.chars,"false")==0) return 0;
    }
    return -1;
-}
-
-static void addInstProperty(CMPIInstance **ci, XtokProperty *p)
-{
-   CMPIValue val;
-   
-   if (*ci==NULL) *ci=newCMPIInstance(NULL,NULL);
-   switch (p->propType) {
-   case typeProperty_Value: ;
-      val=str2CMPIValue(p->valueType, p->val.value, NULL);
-      (*ci)->ft->setProperty(*ci,p->name,&val,p->valueType);
-      break;
-   case typeProperty_Reference: ;
-   case typeProperty_Array: ;
-      break;
-   }
 }
 
 static void createPath(CMPIObjectPath **op, XtokInstanceName *p)
@@ -88,13 +76,125 @@ static void createPath(CMPIObjectPath **op, XtokInstanceName *p)
                                 &val, &type);
       CMAddKey(*op, p->bindings.keyBindings[i].name, valp, type);
    }
-   CMPIString *path=(*op)->ft->toString(*op,NULL);
-   printf("parh: %s\n",(char*)path->hdl);
 }
 
 static void createClassPath(CMPIObjectPath **op, char *ns, char *cn)
 {   
    *op = newCMPIObjectPath(NULL, cn, NULL);
+}
+
+static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
+{
+   XtokProperty *np=NULL,*p= ps ? ps->first : NULL;
+   CMPIValue val;
+   
+   while (p) {
+      switch (p->propType) {
+      case typeProperty_Value: ;
+         val=str2CMPIValue(p->valueType, p->val.value, NULL);
+         ci->ft->setProperty(ci,p->name,&val,p->valueType);
+         break;
+      case typeProperty_Reference: ;
+      case typeProperty_Array: ;
+         break;
+      }   
+      np=p->next;
+      free(p);
+      p=np;
+   } 
+   if (ps) ps->first=ps->last=NULL;
+}
+
+static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
+{
+   XtokProperty *np=NULL,*p= ps ? ps->first : NULL;
+   CMPIValue val;
+   CMPIValueState state;
+   
+   while (p) {
+      switch (p->propType) {
+      case typeProperty_Value: 
+         if (p->val.null) state=CMPI_nullValue;
+         else {
+            state=0;
+            val=str2CMPIValue(p->valueType, p->val.value, NULL);
+         }   
+         addClassProperty(cls,p->name,&val,p->valueType,state);
+         break;
+      case typeProperty_Reference: ;
+      case typeProperty_Array: ;
+         break;
+      }   
+      np=p->next;
+      free(p);
+      p=np;
+   } 
+   if (ps) ps->first=ps->last=NULL;
+}
+
+static void addProperty(XtokProperties *ps, XtokProperty *p)
+{
+   XtokProperty *np;
+   np=(XtokProperty*)malloc(sizeof(XtokProperty));
+   memcpy(np,p,sizeof(XtokProperty));
+   np->next=NULL;
+   if (ps->last) {
+      ps->last->next=np;
+   }
+   else ps->first=np;
+   ps->last=np;
+}
+
+static void addParamValue(XtokParamValues *vs, XtokParamValue *v)
+{
+   XtokParamValue *nv;
+   nv=(XtokParamValue*)malloc(sizeof(XtokParamValue));
+   memcpy(nv,v,sizeof(XtokParamValue));
+   nv->next=NULL;
+   if (vs->last) {
+      vs->last->next=nv;
+   }
+   else vs->first=nv;
+   vs->last=nv;
+}
+
+static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
+{
+   XtokQualifier *nq;
+   nq=(XtokQualifier*)malloc(sizeof(XtokQualifier));
+   memcpy(nq,q,sizeof(XtokQualifier));
+   nq->next=NULL;
+   if (qs->last) {
+      qs->last->next=nq;
+   }
+   else qs->first=nq;
+   qs->last=nq;
+}
+
+static void addMethod(XtokMethods *ms, XtokMethod *m)
+{
+   XtokMethod *nm;
+   nm=(XtokMethod*)malloc(sizeof(XtokMethod));
+   memcpy(nm,m,sizeof(XtokMethod));
+   nm->next=NULL;
+   if (ms->last) {
+      ms->last->next=nm;
+   }
+   else ms->first=nm;
+   ms->last=nm;
+}
+
+static void addParam(XtokParams *ps, XtokParam *p)
+{
+   XtokParam *np;
+   np=(XtokParam*)malloc(sizeof(XtokParam));
+   memcpy(np,p,sizeof(XtokParam));
+   np->next=NULL;
+   if (ps->last) {
+      ps->last->next=np;
+   }
+   else ps->first=np;
+   ps->last=np;
 }
 
 static void setError(void *parm, XtokErrorResp *e)
@@ -402,9 +502,17 @@ classes
     : /* empty */
     | class
     {
+       PARM->curClass=native_new_CMPIConstClass($1.className,NULL);
+       setClassProperties(PARM->curClass,&PARM->properties);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curClass,CMPI_class);
+       PARM->curClass=NULL;
     }    
     | classes class
     {
+       PARM->curClass=native_new_CMPIConstClass($2.className,NULL);
+       setClassProperties(PARM->curClass,&PARM->properties);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curClass,CMPI_class);
+       PARM->curClass=NULL;
     }    
 ;
 
@@ -412,12 +520,15 @@ instances
     : /* empty */
     | instance
     {
+       PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
        setInstNsAndCn(PARM->curInstance,$1.className,PARM->nameSpace);
+       setInstProperties(PARM->curInstance,&PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance=NULL;
     }    
     | instances instance
     {
+       PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
        setInstNsAndCn(PARM->curInstance,$2.className,PARM->nameSpace);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance=NULL;
@@ -459,6 +570,15 @@ namedInstance
 class
     : XTOK_CLASS classData ZTOK_CLASS
     {
+       if (PARM->Qs) 
+          $$.qualifiers=PARM->qualifiers;
+       else memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       if (PARM->Ps) 
+          $$.properties=PARM->properties;
+       else memset(&$$.properties,0,sizeof($$.properties));
+       if (PARM->Ms) 
+          $$.methods=PARM->methods;
+       else memset(&$$.methods,0,sizeof($$.methods));
     }
 ;
 
@@ -466,16 +586,31 @@ classData
     : /* empty */ {;}
     | classData qualifier
     {
+       PARM->Qs++;
+       addQualifier(&(PARM->qualifiers),&$2);
     }
     | classData property     {
+       PARM->Ps++;
+       addProperty(&(PARM->properties),&$2);
     }
     | classData method     {
+        PARM->Ms++;
+        addMethod(&(PARM->methods),&$2);
     }
 ;
 
 method
     : XTOK_METHOD methodData ZTOK_METHOD
     {
+       if (PARM->MQs) 
+          $$.qualifiers=$2.qualifiers;
+       else memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       if (PARM->MPs) 
+          $$.params=$2.params;
+       else memset(&$$.params,0,sizeof($$.params));
+       PARM->MQs=0; 
+       PARM->MPs=0; 
+       PARM->MPQs=0; 
     }   
 ;
 
@@ -483,9 +618,21 @@ methodData
     : /* empty */ {;}
     | methodData qualifier
     {
+       if (PARM->MQs==0) 
+          memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       PARM->MQs++;
+       addQualifier(&($$.qualifiers),&$2);
     }      
     | methodData XTOK_PARAM parameter ZTOK_PARAM 
     {
+       if (PARM->MPs==0) 
+          memset(&$$.params,0,sizeof($$.params));
+       PARM->MPs++;
+       if (PARM->MPQs) 
+          $2.qualifiers=$3.qualifiers;
+       else memset(&$2.qualifiers,0,sizeof($2.qualifiers));
+       addParam(&($$.params),&$2);
+       PARM->MPQs=0; 
     }      
 ;  
 
@@ -493,6 +640,10 @@ parameter
     : /* empty */ {;}
     | parameter qualifier
     {
+       if (PARM->MPQs==0) 
+          memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       PARM->MPQs++; 
+       addQualifier(&($$.qualifiers),&$2);
     }
 ;
 
@@ -504,6 +655,12 @@ parameter
 instance
     : XTOK_INSTANCE instanceData ZTOK_INSTANCE
     {
+       if (PARM->Qs) 
+          $$.qualifiers=PARM->qualifiers;
+       else memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       if (PARM->Ps) 
+          $$.properties=PARM->properties;
+       else memset(&$$.properties,0,sizeof($$.properties)); 
     }
 ;
 
@@ -511,10 +668,13 @@ instanceData
     : /* empty */ {;}
     | instanceData qualifier 
     {
+       PARM->Qs++;
+       addQualifier(&(PARM->qualifiers),&$2);
     }
     | instanceData property 
     {
-       addInstProperty(&(PARM->curInstance),&$2);
+       PARM->Ps++;
+       addProperty(&(PARM->properties),&$2);
     }
 ;
 
@@ -527,34 +687,50 @@ property
     : XTOK_PROPERTY propertyData ZTOK_PROPERTY
     {
        $$.val=$2;
-    }   
-    | XTOK_PROPERTY ZTOK_PROPERTY
+    }  
+    | XTOK_PROPERTYREFERENCE propertyData ZTOK_PROPERTYREFERENCE
     {
-       $$.val.null=1;
-    }   
-    | XTOK_PROPERTYARRAY XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY ZTOK_PROPERTYARRAY
+       $$.val=$2;
+    }
+    | XTOK_PROPERTYARRAY propertyData ZTOK_PROPERTYARRAY
     {
-       $$.val.array=$2;
-    }   
-    | XTOK_PROPERTYARRAY ZTOK_PROPERTYARRAY
-    {
-       $$.val.null=1;
-    }   
+       $$.val=$2;
+    }
 ;
 
 propertyData 
-    : propertyData qualifier
+    : /* empty */ {$$.null=1;}
+    | propertyData qualifier
     {
+       addQualifier(&(PARM->qualifiers),&$2);
     }
-    | value
+    | propertyData value
     {
-       $$.value=$1.value;
+    //   printf("--- value: %s\n",$1.value);
+       $$.value=$2.value;
+       $$.null=0;
     }
-    | valueReference
+    | propertyData valueReference
     {
-       $$.ref=$1;
+       $$.ref=$2;
+       $$.null=0;
+    }
+    | propertyData XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY
+    {
+    //   printf("--- valueArray: \n");
+       $$.array=$2;
+       $$.null=0;
     }
 ;  
+
+//propertyArray
+//    : XTOK_PROPERTYARRAY  ZTOK_PROPERTYARRAY
+//    {
+  //  printf("--- propertyArray\n");
+//    }
+//;
+
+
 
 
 /*
@@ -623,7 +799,6 @@ className
     : XTOK_CLASSNAME ZTOK_CLASSNAME
     {
         createClassPath(&PARM->curPath, NULL, $$);
-       printf("className.y: %s %p\n",$$,PARM->curPath);
     }
 ;
 

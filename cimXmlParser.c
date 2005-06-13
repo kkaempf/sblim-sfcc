@@ -1079,7 +1079,7 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
       if (next == NULL) {
          return 0;
       }   
- //     fprintf(stderr,"--- token: %.32s\n",next);
+//      fprintf(stderr,"--- token: %.32s\n",next);
       if (parm->xmb->eTagFound) {
          parm->xmb->eTagFound = 0;
          return parm->xmb->etag;

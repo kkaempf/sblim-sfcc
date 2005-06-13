@@ -297,6 +297,12 @@ typedef struct parser_control {
    char *nameSpace;
    CMPIInstance *curInstance;
    CMPIObjectPath *curPath;
+   CMPIConstClass *curClass;
+   XtokProperties properties;
+   XtokQualifiers qualifiers;
+   XtokMethods     methods;
+   XtokParamValues paramValues;
+   int Qs,Ps,Ms,MPs,MQs,MPQs;
 } ParserControl;
 
 extern ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop);

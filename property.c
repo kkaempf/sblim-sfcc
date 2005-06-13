@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -36,11 +36,12 @@
   for various native data types.
 */
 struct native_property {
-	char * name;		        //!< Property identifier.
-	CMPIType type;		        //!< Associated CMPIType.
-	CMPIValueState state; 	        //!< Current value state.
-	CMPIValue value;	        //!< Current value.
-	struct native_property * next;	//!< Pointer to next property.
+	char * name;		                //!< Property identifier.
+	CMPIType type;		                //!< Associated CMPIType.
+	CMPIValueState state; 	                //!< Current value state.
+	CMPIValue value;	                //!< Current value.
+	struct native_qualifier *qualifiers;	//!< Qualifiers.
+	struct native_property * next;	        //!< Pointer to next property.
 };
 
 
@@ -87,35 +88,36 @@ static int __addProperty ( struct native_property ** prop,
 			tool_mm_alloc ( mm_add,
 					sizeof ( struct native_property ) );
   
+		tmp->qualifiers = NULL;
 		tmp->name = strdup ( name );
 
 		if ( mm_add == TOOL_MM_ADD ) tool_mm_add ( tmp->name );
 
 		if ( type == CMPI_chars ) {
-
 			type = CMPI_string;
-			v.string = native_new_CMPIString ( (char *) value,
-							   NULL );
+			v.string = native_new_CMPIString ( (char *) value, NULL );
 			value = &v;
 		}
 
 		tmp->type  = type;
 
-		if ( type != CMPI_null ) {
+		if ( type != CMPI_null && state != CMPI_nullValue) {
 			tmp->state = state;
 
 			if ( mm_add == TOOL_MM_ADD ) {
 
 				tmp->value = *value;
-			} else {
-			
+			} 
+         else {
 				CMPIStatus rc;
-				tmp->value = native_clone_CMPIValue ( type,
-								      value,
-								      &rc );
+				tmp->value = native_clone_CMPIValue ( type, value, &rc );
 				// what if clone() fails???
 			}
-		} else tmp->state = CMPI_nullValue;
+		} 
+      else {
+         tmp->state = CMPI_nullValue;
+         tmp->value.uint64=0;
+      }   
 
 		return 0;
 	}
@@ -199,6 +201,20 @@ static CMPIData __getDataProperty ( struct native_property * prop,
 				CMPI_RC_ERR_NO_SUCH_PROPERTY );
 
 	return __convert2CMPIData ( p, NULL );
+}
+
+static struct native_qualifier *__getDataPropertyQualifiers ( struct native_property * prop, 
+				    const char * name,
+				    CMPIStatus * rc )
+{
+	struct native_property * p = __getProperty ( prop, name );
+
+	if ( rc ) CMSetStatus ( rc,
+				( p )?
+				CMPI_RC_OK:
+				CMPI_RC_ERR_NO_SUCH_PROPERTY );
+
+	return p ? p->qualifiers : NULL;
 }
 
 
@@ -299,6 +315,7 @@ struct native_propertyFT propertyFT = {
 	__getDataProperty,
 	__getDataPropertyAt,
 	__getPropertyCount,
+        __getDataPropertyQualifiers,
 	__release,
 	__clone
 };

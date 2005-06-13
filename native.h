@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #ifndef _REMOTE_CMPI_NATIVE_DATA_H
@@ -32,6 +32,20 @@
 #include "cmci.h"
 #include "cimXmlParser.h"
 
+
+//! Forward declaration for anonymous struct.
+struct native_property;
+struct native_qualifier;
+
+struct native_constClass {
+	CMPIConstClass ccls;
+	int mem_state;
+
+	char * classname;
+
+	struct native_property * props;
+        struct native_qualifier *qualifiers;
+};
 
 struct native_instance {
 	CMPIInstance instance;
@@ -46,9 +60,6 @@ struct native_instance {
 
 	struct native_property * props;
 };
-
-//! Forward declaration for anonymous struct.
-struct native_property;
 
 
 //! Function table for native_property handling functions.
@@ -90,6 +101,11 @@ struct native_propertyFT {
 	CMPICount (* getPropertyCount) ( struct native_property *,
 					 CMPIStatus * );
 
+	//! Looks up a specifix native_property and return qualifier chain.
+	struct native_qualifier *(*__getDataPropertyQualifiers ) ( struct native_property *, 
+				       const char *,
+				       CMPIStatus * );
+
 	//! Releases a complete list of native_property items.
 	void (* release) ( struct native_property * );
 
@@ -98,6 +114,46 @@ struct native_propertyFT {
 					     CMPIStatus * );
 };
 
+
+struct native_qualifierFT {
+	
+	//! Adds a new native_qualifier to a list.
+	int (* addQualifier) ( struct native_qualifier **,
+			      int, 
+			      const char *,
+			      CMPIType, 
+			      CMPIValueState, 
+			      CMPIValue * );
+
+	//! Resets the values of an existing native_qualifier, if existant.
+	int (* setQualifier) ( struct native_qualifier *, 
+			      int,
+			      const char *, 
+			      CMPIType,
+			      CMPIValue * );
+
+	//! Looks up a specifix native_qualifier in CMPIData format.
+	CMPIData (* getDataQualifier) ( struct native_qualifier *, 
+				       const char *,
+				       CMPIStatus * );
+
+	//! Extract an indexed native_qualifier in CMPIData format.
+	CMPIData (* getDataQualifierAt) ( struct native_qualifier *, 
+					 unsigned int,
+					 CMPIString **,
+					 CMPIStatus * );
+
+	//! Yields the number of native_qualifier items in a list.
+	CMPICount (* getQualifierCount) ( struct native_qualifier *,
+					 CMPIStatus * );
+
+	//! Releases a complete list of native_qualifier items.
+	void (* release) ( struct native_qualifier * );
+
+	//! Clones a complete list of native_qualifier items.
+	struct native_qualifier * (* clone) ( struct native_qualifier *,
+					     CMPIStatus * );
+};
 
 
 
