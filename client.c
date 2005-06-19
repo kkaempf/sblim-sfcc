@@ -173,7 +173,7 @@ static char* genRequest(ClientEnc *cle, char *op, CMPIObjectPath *cop, int cls, 
     rv = curl_easy_setopt(con->mHandle, CURLOPT_FAILONERROR, 1);
 
     // Turn this on to enable debugging
-    // rv = curl_easy_setopt(mHandle, CURLOPT_VERBOSE, 1);
+    rv = curl_easy_setopt(con->mHandle, CURLOPT_VERBOSE, 1);
    
     return NULL;
 }
@@ -222,6 +222,8 @@ CMCIConnectionFT conFt={
   initializeHeaders
 };
 
+/* --------------------------------------------------------------------------*/
+
 CMCIConnection *initConnection(CMCIClientData *cld)
 {
    CMCIConnection *c=(CMCIConnection*)calloc(1,sizeof(CMCIConnection)); 
@@ -235,10 +237,13 @@ CMCIConnection *initConnection(CMCIClientData *cld)
    return c;   
 }
 
+/* --------------------------------------------------------------------------*/
 
 extern UtilList *getNameSpaceComponents(CMPIObjectPath * cop);
 extern char *keytype2Chars(CMPIType type);
 extern void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop);
+
+/* --------------------------------------------------------------------------*/
 
 static void emitlocal(UtilStringBuffer *sb, int f)
 {
@@ -248,6 +253,8 @@ static void emitlocal(UtilStringBuffer *sb, int f)
       sb->ft->appendChars(sb,"<IPARAMVALUE NAME=\"LocalOnly\"><VALUE>FALSE</VALUE></IPARAMVALUE>\n");
 }     
 
+/* --------------------------------------------------------------------------*/
+
 static void emitqual(UtilStringBuffer *sb, int f)
 {
    if (f)
@@ -256,6 +263,8 @@ static void emitqual(UtilStringBuffer *sb, int f)
       sb->ft->appendChars(sb,"<IPARAMVALUE NAME=\"IncludeQualifiers\"><VALUE>FALSE</VALUE></IPARAMVALUE>\n");
 }
 
+/* --------------------------------------------------------------------------*/
+
 static void emitorigin(UtilStringBuffer *sb, int f)
 {
    if (f)
@@ -263,6 +272,8 @@ static void emitorigin(UtilStringBuffer *sb, int f)
    else
       sb->ft->appendChars(sb,"<IPARAMVALUE NAME=\"IncludeClassOrigin\"><VALUE>FALSE</VALUE></IPARAMVALUE>\n");
 }     
+
+/* --------------------------------------------------------------------------*/
 
 static void emitdeep(UtilStringBuffer *sb, int f)
 {
@@ -282,6 +293,8 @@ static void addXmlProperty(UtilStringBuffer *sb, char *name, char *value)
 }
 #endif
 
+/* --------------------------------------------------------------------------*/
+
 static void addXmlNamespace(UtilStringBuffer *sb, UtilList *nsc)
 {
     char  *nsp;
@@ -291,6 +304,8 @@ static void addXmlNamespace(UtilStringBuffer *sb, UtilList *nsc)
         sb->ft->append3Chars(sb, "<NAMESPACE NAME=\"", nsp, "\"></NAMESPACE>");
     sb->ft->appendChars(sb, "</LOCALNAMESPACEPATH>\n");
 }
+
+/* --------------------------------------------------------------------------*/
 
 static inline void addXmlHeader(UtilStringBuffer *sb)
 {
@@ -304,6 +319,8 @@ static inline void addXmlHeader(UtilStringBuffer *sb)
     sb->ft->appendChars(sb, xmlHeader);
 }
 
+/* --------------------------------------------------------------------------*/
+
 static inline void addXmlClassnameParam(UtilStringBuffer *sb,
 					CMPIObjectPath *cop)
 {
@@ -313,6 +330,8 @@ static inline void addXmlClassnameParam(UtilStringBuffer *sb,
 	      "<IPARAMVALUE NAME=\"ClassName\"><CLASSNAME NAME=\"",
 	      (char*)cn->hdl,"\"/></IPARAMVALUE>\n");
 }
+
+/* --------------------------------------------------------------------------*/
 
 static void addXmlPropertyListParam(UtilStringBuffer *sb, char** properties)
 {
@@ -326,9 +345,12 @@ static void addXmlPropertyListParam(UtilStringBuffer *sb, char** properties)
    }
 }
 
+/* --------------------------------------------------------------------------*/
 
-
-static CMPIEnumeration *enumInstanceNames(CMCIClient* mb, CMPIObjectPath* cop, CMPIStatus* rc)
+static CMPIEnumeration * enumInstanceNames(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIStatus * rc)
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -373,8 +395,14 @@ static CMPIEnumeration *enumInstanceNames(CMCIClient* mb, CMPIObjectPath* cop, C
    return NULL;
 }
 
-static CMPIInstance * getInstance(CMCIClient* mb,
-   CMPIObjectPath* cop, CMPIFlags flags, char** properties, CMPIStatus* rc)
+/* --------------------------------------------------------------------------*/
+
+static CMPIInstance * getInstance(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	char ** properties,
+	CMPIStatus * rc)
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -431,8 +459,13 @@ static CMPIInstance * getInstance(CMCIClient* mb,
    return NULL;
 }
 
-static CMPIObjectPath *createInstance(CMCIClient *mb,
-   CMPIObjectPath *cop, CMPIInstance *inst, CMPIStatus *rc)
+/* --------------------------------------------------------------------------*/
+
+static CMPIObjectPath * createInstance(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIInstance * inst,
+	CMPIStatus * rc)
 {
     ClientEnc        *cl  = (ClientEnc*)mb;
     CMCIConnection   *con = cl->connection;
@@ -477,15 +510,25 @@ static CMPIObjectPath *createInstance(CMCIClient *mb,
     return NULL;
 }
 
-static CMPIStatus setInstance(CMCIClient* cl,
-            CMPIObjectPath* op, CMPIInstance* inst, CMPIFlags flags, char ** properties)
+/* --------------------------------------------------------------------------*/
+
+static CMPIStatus setInstance(
+	CMCIClient * cl,
+	CMPIObjectPath * op,
+	CMPIInstance * inst,
+	CMPIFlags flags,
+	char ** properties)
 {
     CMPIStatus rc;
     CMSetStatusWithChars(&rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
     return rc;
 }
 
-static CMPIStatus deleteInstance(CMCIClient* mb, CMPIObjectPath* cop)
+/* --------------------------------------------------------------------------*/
+
+static CMPIStatus deleteInstance(
+	CMCIClient * mb,
+	CMPIObjectPath * cop)
 {
     ClientEnc	     *cl  = (ClientEnc *)mb;
     CMCIConnection   *con = cl->connection;
@@ -528,15 +571,27 @@ static CMPIStatus deleteInstance(CMCIClient* mb, CMPIObjectPath* cop)
     return rc;
 }
 
-static CMPIEnumeration *execQuery(CMCIClient* cl, CMPIObjectPath* op,
-   const char *query, const char *lang, CMPIStatus* rc)
+/* --------------------------------------------------------------------------*/
+
+static CMPIEnumeration * execQuery(
+	CMCIClient * cl,
+	CMPIObjectPath * op,
+	const char * query,
+	const char * lang,
+	CMPIStatus * rc)
 {
     CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
     return NULL;
 }
 
-static CMPIEnumeration * enumInstances(CMCIClient* mb,
-   CMPIObjectPath* cop, CMPIFlags flags, char** properties, CMPIStatus* rc)
+/* --------------------------------------------------------------------------*/
+
+static CMPIEnumeration * enumInstances(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	char ** properties,
+	CMPIStatus * rc)
 {
     ClientEnc	     *cl  = (ClientEnc *)mb;
     CMCIConnection   *con = cl->connection;
@@ -588,12 +643,18 @@ static CMPIEnumeration * enumInstances(CMCIClient* mb,
     return NULL;
 }
 
+/* --------------------------------------------------------------------------*/
 
-static CMPIEnumeration* associators (CMCIClient* mb,
-   CMPIObjectPath* cop, const char *assocClass, const char *resultClass,
-   const char *role, const char *resultRole, CMPIFlags flags, char** properties, 
-   CMPIStatus* rc)
-    
+static CMPIEnumeration * associators(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	const char * assocClass,
+	const char * resultClass,
+	const char * role,
+	const char * resultRole,
+	CMPIFlags flags,
+	char ** properties, 
+	CMPIStatus * rc)
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -673,9 +734,16 @@ static CMPIEnumeration* associators (CMCIClient* mb,
    return NULL;
 }
 
-static CMPIEnumeration* associatorNames(CMCIClient* mb,
-   CMPIObjectPath* cop, const char *assocClass, const char *resultClass,
-   const char *role, const char *resultRole, CMPIStatus* rc)
+/* --------------------------------------------------------------------------*/
+
+static CMPIEnumeration * associatorNames(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	const char * assocClass,
+	const char * resultClass,
+	const char * role,
+	const char * resultRole,
+	CMPIStatus * rc)
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -742,11 +810,16 @@ static CMPIEnumeration* associatorNames(CMCIClient* mb,
    return NULL;
 }       
 
+/* --------------------------------------------------------------------------*/
 
-
-static CMPIEnumeration* references(CMCIClient* mb,
-   CMPIObjectPath* cop, const char *resultClass ,const char *role ,
-   CMPIFlags flags, char** properties, CMPIStatus* rc)
+static CMPIEnumeration * references(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	const char * resultClass,
+	const char * role ,
+	CMPIFlags flags,
+	char ** properties,
+	CMPIStatus * rc)
 {         
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -819,11 +892,14 @@ static CMPIEnumeration* references(CMCIClient* mb,
    return NULL;
 }
 
+/* --------------------------------------------------------------------------*/
 
-
-static CMPIEnumeration* referenceNames(CMCIClient* mb,
-   CMPIObjectPath* cop, const char *resultClass ,const char *role,
-   CMPIStatus* rc)
+static CMPIEnumeration * referenceNames(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	const char * resultClass,
+	const char * role,
+	CMPIStatus * rc)
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -883,29 +959,42 @@ static CMPIEnumeration* referenceNames(CMCIClient* mb,
    return NULL;
 }                 
 
+/* --------------------------------------------------------------------------*/
 
-static CMPIData invokeMethod(CMCIClient* cl, CMPIObjectPath* op,const char *method,
-   CMPIArgs* in, CMPIArgs* out, CMPIStatus* rc)
+static CMPIData invokeMethod(
+	CMCIClient * cl,
+	CMPIObjectPath * op,
+	const char * method,
+	CMPIArgs * in,
+	CMPIArgs * out,
+	CMPIStatus * rc)
 {
-    CMPIData rv = {CMPI_null, CMPI_notFound};
-    CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
-    return rv;
+   CMPIData rv = {CMPI_null, CMPI_notFound};
+   CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
+   return rv;
 }
 
+/* --------------------------------------------------------------------------*/
 
-static CMPIStatus setProperty(CMCIClient* cl,
-    CMPIObjectPath* op, const char *name , CMPIValue* value,
-    CMPIType type)
+static CMPIStatus setProperty(
+	CMCIClient * cl,
+	CMPIObjectPath * op,
+	const char * name,
+	CMPIValue * value,
+	CMPIType type)
 {
-
-    CMPIStatus rc;
-    CMSetStatusWithChars(&rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
-    return rc;
+   CMPIStatus rc;
+   CMSetStatusWithChars(&rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
+   return rc;
 }
 
+/* --------------------------------------------------------------------------*/
 
-static CMPIData getProperty(CMCIClient *mb,
-    CMPIObjectPath *cop, const char *name, CMPIStatus *rc)
+static CMPIData getProperty(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	const char * name,
+	CMPIStatus * rc)
 {
     ClientEnc	     *cl = (ClientEnc*)mb;
     CMCIConnection   *con = cl->connection;
@@ -968,9 +1057,14 @@ static CMPIData getProperty(CMCIClient *mb,
     return retval;
 }
 
+/* --------------------------------------------------------------------------*/
 
-static CMPIConstClass* getClass (CMCIClient* mb,
-                 CMPIObjectPath* cop, CMPIFlags flags, char** properties, CMPIStatus* rc)
+static CMPIConstClass * getClass(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	char ** properties,
+	CMPIStatus * rc)
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -1020,8 +1114,13 @@ static CMPIConstClass* getClass (CMCIClient* mb,
    return NULL;
 }
 
-static CMPIEnumeration* enumClassNames (CMCIClient* mb,
-                 CMPIObjectPath* cop, CMPIFlags flags, CMPIStatus* rc)
+/* --------------------------------------------------------------------------*/
+
+static CMPIEnumeration* enumClassNames(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	CMPIStatus * rc)
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -1068,8 +1167,13 @@ static CMPIEnumeration* enumClassNames (CMCIClient* mb,
    return NULL;
 }
 
-static CMPIEnumeration* enumClasses (CMCIClient* mb,
-                 CMPIObjectPath* cop, CMPIFlags flags, CMPIStatus* rc)
+/* --------------------------------------------------------------------------*/
+
+static CMPIEnumeration * enumClasses(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	CMPIStatus * rc)
 {
     ClientEnc	     *cl  = (ClientEnc *)mb;
     CMCIConnection   *con = cl->connection;
@@ -1121,6 +1225,7 @@ static CMPIEnumeration* enumClasses (CMCIClient* mb,
     return NULL;
 }
 
+/* --------------------------------------------------------------------------*/
 
 static CMCIClientFT clientFt = {
    getClass,
@@ -1142,29 +1247,23 @@ static CMCIClientFT clientFt = {
    getProperty
 };
 
-
-
-
+/* --------------------------------------------------------------------------*/
 
 CMCIClient *cmciConnect(const char *hn, const char *port,
                         const char *user, const char *pwd, CMPIStatus *rc)
 {
-  
    ClientEnc *cc=(ClientEnc*)calloc(1,sizeof(ClientEnc));
-  
+                                                                                                                  
    cc->enc.hdl=&cc->data;
    cc->enc.ft=&clientFt;
-  
+                                                                                                                  
    cc->data.hostName=  hn ?   strdup(hn)   : "localhost";
    cc->data.port=      port ? strdup(port) : "5988";
    cc->data.user=      user ? strdup(user) : NULL;
    cc->data.pwd=       pwd ?  strdup(pwd)  : NULL;
    cc->data.scheme=    "http";
-  
+                                                                                                                  
    cc->connection=initConnection(&cc->data);
-  
+                                                                                                                  
    return (CMCIClient*)cc;
-  
-}                         
-
-
+}
