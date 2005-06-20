@@ -143,8 +143,6 @@ typedef struct xtokKeyBinding {
 } XtokKeyBinding;
 
 
-
-
 typedef struct xtokQualifier {
    struct xtokQualifier *next;
    char *name;
@@ -199,6 +197,11 @@ typedef struct xtokNamedInstance {
    XtokInstanceName path;
    XtokInstance instance;
 } XtokNamedInstance;
+
+typedef struct xtokObjectWithPath {
+   XtokInstancePath path;
+   XtokInstance instance;
+} XtokObjectWithPath;
 
 typedef struct xtokPropertyList {
    XtokValueArray list;

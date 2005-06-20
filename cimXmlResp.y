@@ -238,7 +238,7 @@ static void setError(void *parm, XtokErrorResp *e)
    XtokValue                     xtokValue;
    XtokValueArray                xtokValueArray;
    XtokValueReference            xtokValueReference;
-
+   XtokObjectWithPath            xtokObjectWithPath;
    XtokInstanceName              xtokInstanceName;
    XtokKeyBinding                xtokKeyBinding;
    XtokKeyBindings               xtokKeyBindings;
@@ -384,6 +384,10 @@ static void setError(void *parm, XtokErrorResp *e)
 %type  <xtokInstance>            instance
 %type  <xtokInstanceData>        instanceData
 
+%token <xtokObjectWithPath>      XTOK_VALUEOBJECTWITHPATH
+%token <intValue>                ZTOK_VALUEOBJECTWITHPATH
+%type  <xtokObjectWithPath>      objectWithPath
+
 //%type  <xtokParamValue>          paramValue
 %token <xtokParamValue>          XTOK_PARAMVALUE
 %token <intValue>                ZTOK_PARAMVALUE
@@ -469,9 +473,6 @@ iReturnValue
     | XTOK_IRETVALUE valueObjectsWithPath ZTOK_IRETVALUE
     {
     }
-    | XTOK_IRETVALUE valueObjectsWithPath ZTOK_IRETVALUE
-    {
-    }
     | XTOK_IRETVALUE valueObjectsWithLocalPath ZTOK_IRETVALUE
     {
     }
@@ -487,6 +488,9 @@ iReturnValue
     | XTOK_IRETVALUE valueRef ZTOK_IRETVALUE
     {
     } */
+    | XTOK_IRETVALUE objectsWithPath ZTOK_IRETVALUE
+    {
+    }
     | XTOK_IRETVALUE classes ZTOK_IRETVALUE
     {
     } 
@@ -497,7 +501,9 @@ iReturnValue
     {
     } */
 ;
-  
+ 
+
+ 
 classes
     : /* empty */
     | class
@@ -521,7 +527,7 @@ instances
     | instance
     {
        PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
-       setInstNsAndCn(PARM->curInstance,$1.className,PARM->nameSpace);
+       setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$1.className);
        setInstProperties(PARM->curInstance,&PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance=NULL;
@@ -529,7 +535,7 @@ instances
     | instances instance
     {
        PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
-       setInstNsAndCn(PARM->curInstance,$2.className,PARM->nameSpace);
+       setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$2.className);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance=NULL;
     }    
@@ -544,11 +550,31 @@ instanceNames
     }    
     | instanceNames instanceName
     {
-       setInstNsAndCn(PARM->curInstance,$2.className,PARM->nameSpace);
+//       setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$2.className);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
        PARM->curPath=NULL;
     }    
 ;
+
+objectsWithPath
+    : /* empty */
+    | objectWithPath
+    {
+       PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
+       setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$1.instance.className);
+       setInstProperties(PARM->curInstance,&PARM->properties);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
+       PARM->curInstance=NULL;
+    }    
+    | objectsWithPath objectWithPath
+    {
+       PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
+       setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$2.instance.className);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
+       PARM->curInstance=NULL;
+    }    
+;
+
 
 /*
  *    valueNamedInstance
@@ -561,6 +587,20 @@ namedInstance
        $$.instance=$3;
     }
 ;
+
+
+/*
+ *    objectWithPath
+*/
+
+objectWithPath
+    : XTOK_VALUEOBJECTWITHPATH instancePath instance ZTOK_VALUEOBJECTWITHPATH
+    {
+       $$.path=$2;
+       $$.instance=$3;
+    }
+;
+
 
 
 /*
@@ -900,6 +940,7 @@ localClassPath
 ;
 
 
+
 /*
  *    instanceName
 */
@@ -912,12 +953,14 @@ instanceName
        $$.bindings.next=0;
        $$.bindings.keyBindings=NULL;
        PARM->curPath=NULL;
+       fprintf(stderr,"### instanceName 0\n");
     }
     | XTOK_INSTANCENAME keyBindings ZTOK_INSTANCENAME
     {
        $$.className=$1.className;
        $$.bindings=$2;
        createPath(&(PARM->curPath), &$$);
+       fprintf(stderr,"### instanceName 1\n");
     }
 ;
 

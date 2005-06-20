@@ -94,14 +94,16 @@
      ZTOK_CLASS = 320,
      XTOK_INSTANCE = 321,
      ZTOK_INSTANCE = 322,
-     XTOK_PARAMVALUE = 323,
-     ZTOK_PARAMVALUE = 324,
-     XTOK_INSTANCEPATH = 325,
-     ZTOK_INSTANCEPATH = 326,
-     XTOK_LOCALINSTANCEPATH = 327,
-     ZTOK_LOCALINSTANCEPATH = 328,
-     XTOK_LOCALCLASSPATH = 329,
-     ZTOK_LOCALCLASSPATH = 330
+     XTOK_VALUEOBJECTWITHPATH = 323,
+     ZTOK_VALUEOBJECTWITHPATH = 324,
+     XTOK_PARAMVALUE = 325,
+     ZTOK_PARAMVALUE = 326,
+     XTOK_INSTANCEPATH = 327,
+     ZTOK_INSTANCEPATH = 328,
+     XTOK_LOCALINSTANCEPATH = 329,
+     ZTOK_LOCALINSTANCEPATH = 330,
+     XTOK_LOCALCLASSPATH = 331,
+     ZTOK_LOCALCLASSPATH = 332
    };
 #endif
 #define XTOK_XML 258
@@ -169,14 +171,16 @@
 #define ZTOK_CLASS 320
 #define XTOK_INSTANCE 321
 #define ZTOK_INSTANCE 322
-#define XTOK_PARAMVALUE 323
-#define ZTOK_PARAMVALUE 324
-#define XTOK_INSTANCEPATH 325
-#define ZTOK_INSTANCEPATH 326
-#define XTOK_LOCALINSTANCEPATH 327
-#define ZTOK_LOCALINSTANCEPATH 328
-#define XTOK_LOCALCLASSPATH 329
-#define ZTOK_LOCALCLASSPATH 330
+#define XTOK_VALUEOBJECTWITHPATH 323
+#define ZTOK_VALUEOBJECTWITHPATH 324
+#define XTOK_PARAMVALUE 325
+#define ZTOK_PARAMVALUE 326
+#define XTOK_INSTANCEPATH 327
+#define ZTOK_INSTANCEPATH 328
+#define XTOK_LOCALINSTANCEPATH 329
+#define ZTOK_LOCALINSTANCEPATH 330
+#define XTOK_LOCALCLASSPATH 331
+#define ZTOK_LOCALCLASSPATH 332
 
 
 
@@ -203,7 +207,7 @@ typedef union YYSTYPE {
    XtokValue                     xtokValue;
    XtokValueArray                xtokValueArray;
    XtokValueReference            xtokValueReference;
-
+   XtokObjectWithPath            xtokObjectWithPath;
    XtokInstanceName              xtokInstanceName;
    XtokKeyBinding                xtokKeyBinding;
    XtokKeyBindings               xtokKeyBindings;
@@ -224,7 +228,7 @@ typedef union YYSTYPE {
    XtokParam                     xtokParam;
 } YYSTYPE;
 /* Line 1240 of yacc.c.  */
-#line 227 "cimXmlResp.h"
+#line 231 "cimXmlResp.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

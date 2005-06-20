@@ -864,12 +864,13 @@ static CMPIEnumeration * execQuery(
       return NULL;
    }
                                                                                                                   
-   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_ref) {
+   int rv;
+   if ((rv=rh.rvArray->ft->getSimpleType(rh.rvArray,NULL)) == CMPI_instance) {
       CMPIEnumeration *enm = newCMPIEnumeration(rh.rvArray,NULL);
       CMSetStatus(rc, CMPI_RC_OK);
       return enm;
    }
-                                                                                                                  
+   fprintf(stderr,"rv: %x %d\n",rv,rv);                                                                                                             
    CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
    return NULL;
 }

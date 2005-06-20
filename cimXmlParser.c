@@ -737,6 +737,21 @@ static int procValueReference(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
+static int procValueObjectWithPath(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+      {NULL}
+   };
+   XmlAttr attr[1];
+   if (tagEquals(parm->xmb, "VALUE.OBJECTWITHPATH")) {
+      if (attrsOk(parm->xmb, elm, attr, "VALUE.OBJECTWITHPATH",
+           XTOK_VALUEOBJECTWITHPATH)) {
+         return XTOK_VALUEOBJECTWITHPATH;
+      }
+   }
+   return 0;
+}
+         
 static int procQualifier(YYSTYPE * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = { {"NAME"},
@@ -1050,6 +1065,7 @@ static Tags tags[] = {
    {"VALUE.ARRAY", procValueArray, ZTOK_VALUEARRAY},
    {"VALUE.NAMEDINSTANCE", procValueNamedInstance, ZTOK_VALUENAMEDINSTANCE},
    {"VALUE.REFERENCE", procValueReference, ZTOK_VALUEREFERENCE},
+   {"VALUE.OBJECTWITHPATH", procValueObjectWithPath, ZTOK_VALUEOBJECTWITHPATH},
    {"VALUE", procValue, ZTOK_VALUE},
    {"HOST", procHost, ZTOK_HOST},
    {"KEYVALUE", procKeyValue, ZTOK_KEYVALUE},

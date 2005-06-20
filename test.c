@@ -418,12 +418,12 @@ int main( int argc, char * argv[] )
       enumeration = cc->ft->execQuery(cc, objectpath, query, "WQL", &status);
                                                                                                                 
       /* Print the results */
-      printf("enumInstanceNames() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      printf("execQuery() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
       if (!status.rc) {
          printf("result(s):\n");
          while (enumeration->ft->hasNext(enumeration, NULL)) {
             CMPIData data = enumeration->ft->getNext(enumeration, NULL);
-            showObjectPath(data.value.ref);
+            showInstance(data.value.inst);
          }
       }
       if (enumeration) CMRelease(enumeration);
