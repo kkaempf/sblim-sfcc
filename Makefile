@@ -10,7 +10,8 @@ CPPFLAGS  = -I$(CIMOMINC) -I. -Inative
 LIBRARIES = libCmpiSfcc.so 
 BINARIES  = test
 
-SOURCES.test     = test.c
+SOURCES.test     = test.c \
+		   value.c
 
 SOURCES.CmpiSfcc = args.c \
                    array.c \
