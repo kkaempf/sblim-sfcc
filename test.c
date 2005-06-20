@@ -68,7 +68,9 @@ static void showClass( CMPIConstClass * class )
       for (i=0; i<numproperties; i++) {
          CMPIString * propertyname;
          CMPIData data = class->ft->getPropertyAt(class, i, &propertyname, NULL);
-         printf("\t%s=%s\n", (char *)propertyname->hdl, value2Chars(data.type, &data.value));
+         if (data.state==0)
+            printf("\t%s=%s\n", (char *)propertyname->hdl, value2Chars(data.type, &data.value));
+         else printf("\t%s=NIL\n", (char *)propertyname->hdl);
       }
    }
 
@@ -128,7 +130,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test getClass() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing getClass() ...\n");
@@ -141,7 +143,7 @@ int main( int argc, char * argv[] )
          printf("result:\n");
          showClass(class);
       }
-      if (instance) CMRelease(instance);
+      if (class) CMRelease(class);
       if (objectpath) CMRelease(objectpath);
    }
 

@@ -566,7 +566,7 @@ objectsWithPath
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance=NULL;
     }    
-    | objectsWithPath objectWithPath
+    | objectsWithPath objectWithPath 
     {
        PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
        setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$2.instance.className);
@@ -953,14 +953,12 @@ instanceName
        $$.bindings.next=0;
        $$.bindings.keyBindings=NULL;
        PARM->curPath=NULL;
-       fprintf(stderr,"### instanceName 0\n");
     }
     | XTOK_INSTANCENAME keyBindings ZTOK_INSTANCENAME
     {
        $$.className=$1.className;
        $$.bindings=$2;
        createPath(&(PARM->curPath), &$$);
-       fprintf(stderr,"### instanceName 1\n");
     }
 ;
 

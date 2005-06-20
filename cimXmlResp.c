@@ -698,7 +698,7 @@ static const unsigned short yyrline[] =
      696,   708,   709,   714,   727,   731,   735,   742,   743,   747,
      753,   758,   782,   789,   796,   804,   809,   824,   826,   831,
      839,   850,   854,   868,   875,   879,   892,   900,   906,   950,
-     958,   968,   978,   989,   995
+     957,   966,   976,   987,   993
 };
 #endif
 
@@ -2001,22 +2001,20 @@ yyreduce:
        yyval.xtokInstanceName.bindings.next=0;
        yyval.xtokInstanceName.bindings.keyBindings=NULL;
        PARM->curPath=NULL;
-       fprintf(stderr,"### instanceName 0\n");
     }
     break;
 
   case 70:
-#line 959 "cimXmlResp.y"
+#line 958 "cimXmlResp.y"
     {
        yyval.xtokInstanceName.className=yyvsp[-2].xtokInstanceName.className;
        yyval.xtokInstanceName.bindings=yyvsp[-1].xtokKeyBindings;
        createPath(&(PARM->curPath), &yyval.xtokInstanceName);
-       fprintf(stderr,"### instanceName 1\n");
     }
     break;
 
   case 71:
-#line 969 "cimXmlResp.y"
+#line 967 "cimXmlResp.y"
     {
        yyval.xtokKeyBindings.next=1;
        yyval.xtokKeyBindings.max=16;
@@ -2029,7 +2027,7 @@ yyreduce:
     break;
 
   case 72:
-#line 979 "cimXmlResp.y"
+#line 977 "cimXmlResp.y"
     {
        yyval.xtokKeyBindings.keyBindings[yyval.xtokKeyBindings.next].name=yyvsp[0].xtokKeyBinding.name;
        yyval.xtokKeyBindings.keyBindings[yyval.xtokKeyBindings.next].value=yyvsp[0].xtokKeyBinding.value;
@@ -2040,7 +2038,7 @@ yyreduce:
     break;
 
   case 73:
-#line 990 "cimXmlResp.y"
+#line 988 "cimXmlResp.y"
     {
        yyval.xtokKeyBinding.name=yyvsp[-3].xtokKeyBinding.name;
        yyval.xtokKeyBinding.value=yyvsp[-2].xtokKeyValue.value;
@@ -2049,7 +2047,7 @@ yyreduce:
     break;
 
   case 74:
-#line 996 "cimXmlResp.y"
+#line 994 "cimXmlResp.y"
     {
        yyval.xtokKeyBinding.name=yyvsp[-2].xtokKeyBinding.name;
        yyval.xtokKeyBinding.value=NULL;
@@ -2062,7 +2060,7 @@ yyreduce:
     }
 
 /* Line 999 of yacc.c.  */
-#line 2065 "cimXmlResp.c"
+#line 2063 "cimXmlResp.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2256,6 +2254,6 @@ yyreturn:
 }
 
 
-#line 1004 "cimXmlResp.y"
+#line 1002 "cimXmlResp.y"
 
 
