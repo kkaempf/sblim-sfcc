@@ -88,7 +88,7 @@ int main( int argc, char * argv[] )
    /* Setup a conncetion to the CIMOM */   
    cc = cmciConnect("localhost",NULL,NULL,NULL,NULL);
 
-   if (0) {
+   if (1) {
       /* Test enumClassNames() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing enumClassNames() ...\n");   
@@ -145,7 +145,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test enumInstanceNames() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing enumInstanceNames() ...\n");
@@ -185,7 +185,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test getInstance() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing getInstance() ...\n");
@@ -259,6 +259,130 @@ int main( int argc, char * argv[] )
       /* Print the results */
       printf("deleteInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
       if (instance) CMRelease(instance);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (0) {
+      /* Test associators() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing associators() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+      CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
+      enumeration = cc->ft->associators(cc, objectpath, "Linux_RunningOS", NULL, NULL, NULL, 0, NULL, &status);
+
+      /* Print the results */
+      printf("associators() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         while (enumeration->ft->hasNext(enumeration, NULL)) {
+            CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+            showInstance(data.value.inst);
+         }
+      }
+      if (enumeration) CMRelease(enumeration);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (1) {
+      /* Test associatorNames() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing associatorNames() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+      CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
+      enumeration = cc->ft->associatorNames(cc, objectpath, "Linux_RunningOS", NULL, NULL, NULL, &status);
+                                                                                                                
+      /* Print the results */
+      printf("associatorNames() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         while (enumeration->ft->hasNext(enumeration, NULL)) {
+            CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+            showObjectPath(data.value.ref);
+         }
+      }
+      if (enumeration) CMRelease(enumeration);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (0) {
+      /* Test references() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing references() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+      CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
+      enumeration = cc->ft->references(cc, objectpath, NULL, NULL, 0, NULL, &status);
+                                                                                                                
+      /* Print the results */
+      printf("references() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         while (enumeration->ft->hasNext(enumeration, NULL)) {
+            CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+            showInstance(data.value.inst);
+         }
+      }
+      if (enumeration) CMRelease(enumeration);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (0) {
+      /* Test referenceNames() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing referenceNames() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+      CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
+      enumeration = cc->ft->referenceNames(cc, objectpath, NULL, NULL, &status);
+                                                                                                                
+      /* Print the results */
+      printf("referenceNames() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         while (enumeration->ft->hasNext(enumeration, NULL)) {
+            CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+            showObjectPath(data.value.ref);
+         }
+      }
+      if (enumeration) CMRelease(enumeration);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (1) {
+      /* Test getProperty() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing getProperty() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+      CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
+      CMPIData data = cc->ft->getProperty(cc, objectpath, "PrimaryOwnerName", &status);
+
+      /* Print the results */
+      printf("getProperty() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         printf("PrimaryOwnerName=%s\n", (char*)(data.value.string)->hdl);
+      }
+      if (enumeration) CMRelease(enumeration);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (1) {
+      /* Test setProperty() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing setProperty() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+      CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
+      CMPIValue value;
+      value.string = newCMPIString("Gareth Bestor", NULL);
+      status = cc->ft->setProperty(cc, objectpath, "PrimaryOwnerName", &value, CMPI_chars);
+
+      /* Print the results */
+      printf("setProperty() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
    }
 
