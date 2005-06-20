@@ -14,7 +14,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -332,6 +332,9 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
    }
    
    switch (type) {
+   case CMPI_char16:
+      value.char16 = *val;
+      break;
    case CMPI_chars:
       value.char16 = *val;
       break;
