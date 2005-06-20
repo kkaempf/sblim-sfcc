@@ -386,5 +386,28 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
+   if (1) {
+      /* Test invokeMethod() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing invokeMethod() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "CWS_Authorization", NULL);
+      CMAddKey(objectpath, "Username", "bestorga", CMPI_chars);
+      CMAddKey(objectpath, "Classname", "CIM_OperatingSystem", CMPI_chars);
+      CMPIArgs * argsin = newCMPIArgs(NULL);
+      CMPIValue value;
+      value.string = newCMPIString("Query", NULL);
+      argsin->ft->addArg(argsin, "operation", &value, CMPI_string);
+      CMPIData data = cc->ft->invokeMethod(cc, objectpath, "IsAuthorized", argsin, NULL, &status);
+                                                                                                                
+      /* Print the results */
+      printf("getProperty() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         printf("PrimaryOwnerName=%s\n", (char*)(data.value.string)->hdl);
+      }
+      if (enumeration) CMRelease(enumeration);
+      if (objectpath) CMRelease(objectpath);
+   }
+
    return 0;
 }
