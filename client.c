@@ -777,6 +777,7 @@ static CMPIStatus deleteInstance(
 
 /* --------------------------------------------------------------------------*/
 
+/* unfinished */
 static CMPIEnumeration * execQuery(
 	CMCIClient * cl,
 	CMPIObjectPath * op,
@@ -850,6 +851,7 @@ static CMPIEnumeration * enumInstances(
 
 /* --------------------------------------------------------------------------*/
 
+/* finished but not working - scanCimXmlResponse fails parsing XML results */ 
 static CMPIEnumeration * associators(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -860,6 +862,40 @@ static CMPIEnumeration * associators(
 	CMPIFlags flags,
 	char ** properties, 
 	CMPIStatus * rc)
+/*
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="Associators">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="cimv2"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="ObjectName">
+          <INSTANCENAME CLASSNAME="Linux_ComputerSystem">
+            <KEYBINDING NAME="CreationClassName">
+              <KEYVALUE VALUETYPE="string">Linux_ComputerSystem</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="Name">
+              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
+            </KEYBINDING>
+          </INSTANCENAME>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="AssocClass">
+          <CLASSNAME NAME="Linux_RunningOS"/>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="IncludeQualifiers">
+          <VALUE>FALSE</VALUE>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="IncludeClassOrigin">
+          <VALUE>TRUE</VALUE>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+*/
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -884,9 +920,11 @@ static CMPIEnumeration * associators(
    pathToXml(sb, cop);
    sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
 
+   /* Add optional parameters */
    if (assocClass!=NULL)
       sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"AssocClass\"><CLASSNAME NAME=\"", assocClass,
           "\"/></IPARAMVALUE>\n");
+
    if (resultClass!=NULL)
       sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ResultClass\"><CLASSNAME NAME=\"", resultClass,
           "\"/></IPARAMVALUE>\n");
@@ -894,14 +932,16 @@ static CMPIEnumeration * associators(
    if (role)
       sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
          "</VALUE></IPARAMVALUE>\n");
+
    if (resultRole)
       sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"ResultRole\"><VALUE>", resultRole,
          "</VALUE></IPARAMVALUE>\n");
-   
+
+   /* Add optional flags */   
    emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
    emitqual(sb,flags & CMPI_FLAG_IncludeQualifiers);
 
-
+   /* Add property list filter */
    if (properties) {
       sb->ft->appendChars(sb,"<IPARAMVALUE NAME=\"PropertyList\"><VALUE.ARRAY>");
       while (*properties) {
@@ -916,22 +956,22 @@ static CMPIEnumeration * associators(
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
    
-   if ((error=con->ft->getResponse(con,cop))) {
-      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+   if ((error = con->ft->getResponse(con,cop))) {
+      CMSetStatusWithChars(rc, CMPI_RC_ERR_FAILED, error);
       return NULL;
    }
+
 //   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
-   
    ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
 
-   if (rh.errCode!=0) {
-      CMSetStatusWithChars(rc,rh.errCode,rh.description);
+   if (rh.errCode != 0) {
+      CMSetStatusWithChars(rc, rh.errCode, rh.description);
       return NULL;
    }
    
-   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL)==CMPI_instance) {
-      CMPIEnumeration *enm=newCMPIEnumeration(rh.rvArray,NULL);
-      CMSetStatus(rc,CMPI_RC_OK);
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_instance) {
+      CMPIEnumeration *enm = newCMPIEnumeration(rh.rvArray, NULL);
+      CMSetStatus(rc, CMPI_RC_OK);
       return enm;
    }   
    
@@ -941,6 +981,7 @@ static CMPIEnumeration * associators(
 
 /* --------------------------------------------------------------------------*/
 
+/* finished & working */
 static CMPIEnumeration * associatorNames(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -949,6 +990,34 @@ static CMPIEnumeration * associatorNames(
 	const char * role,
 	const char * resultRole,
 	CMPIStatus * rc)
+/*
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="AssociatorNames">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="cimv2"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="ObjectName">
+          <INSTANCENAME CLASSNAME="Linux_ComputerSystem">
+            <KEYBINDING NAME="CreationClassName">
+              <KEYVALUE VALUETYPE="string">Linux_ComputerSystem</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="Name">
+              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
+            </KEYBINDING>
+          </INSTANCENAME>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="AssocClass">
+          <CLASSNAME NAME="Linux_RunningOS"/>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+*/
 {
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
@@ -973,9 +1042,11 @@ static CMPIEnumeration * associatorNames(
    pathToXml(sb, cop);
    sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
 
+   /* Add optional parameters */
    if (assocClass!=NULL)
       sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"AssocClass\"><CLASSNAME NAME=\"", assocClass,
           "\"/></IPARAMVALUE>\n");
+
    if (resultClass!=NULL)
       sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ResultClass\"><CLASSNAME NAME=\"", resultClass,
           "\"/></IPARAMVALUE>\n");
@@ -983,6 +1054,7 @@ static CMPIEnumeration * associatorNames(
    if (role)
       sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
          "</VALUE></IPARAMVALUE>\n");
+
    if (resultRole)
       sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"ResultRole\"><VALUE>", resultRole,
          "</VALUE></IPARAMVALUE>\n");
@@ -996,18 +1068,18 @@ static CMPIEnumeration * associatorNames(
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       return NULL;
    }
+
 //   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
-   
    ResponseHdr rh=scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
 
-   if (rh.errCode!=0) {
-      CMSetStatusWithChars(rc,rh.errCode,rh.description);
+   if (rh.errCode != 0) {
+      CMSetStatusWithChars(rc, rh.errCode, rh.description);
       return NULL;
    }
    
-   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL)==CMPI_ref) {
-      CMPIEnumeration *enm=newCMPIEnumeration(rh.rvArray,NULL);
-      CMSetStatus(rc,CMPI_RC_OK);
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_ref) {
+      CMPIEnumeration *enm = newCMPIEnumeration(rh.rvArray, NULL);
+      CMSetStatus(rc, CMPI_RC_OK);
       return enm;
    }   
    
@@ -1017,6 +1089,7 @@ static CMPIEnumeration * associatorNames(
 
 /* --------------------------------------------------------------------------*/
 
+/* finished (and working?) */
 static CMPIEnumeration * references(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1049,17 +1122,20 @@ static CMPIEnumeration * references(
    pathToXml(sb, cop);
    sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
 
+   /* Add optional parameters */
    if (resultClass)
       sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"ResultClass\"><VALUE>", resultClass,
          "</VALUE></IPARAMVALUE>\n");
+
    if (role)
       sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
          "</VALUE></IPARAMVALUE>\n");
-   
+
+   /* Add optional flags */
    emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
    emitqual(sb,flags & CMPI_FLAG_IncludeQualifiers);
 
-
+   /* Add property list filter */
    if (properties) {
       sb->ft->appendChars(sb,"<IPARAMVALUE NAME=\"PropertyList\"><VALUE.ARRAY>");
       while (*properties) {
@@ -1087,8 +1163,8 @@ static CMPIEnumeration * references(
       return NULL;
    }
    
-   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL)==CMPI_instance) {
-      CMPIEnumeration *enm=newCMPIEnumeration(rh.rvArray,NULL);
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_instance) {
+      CMPIEnumeration *enm = newCMPIEnumeration(rh.rvArray,NULL);
       CMSetStatus(rc,CMPI_RC_OK);
       return enm;
    }   
@@ -1099,6 +1175,7 @@ static CMPIEnumeration * references(
 
 /* --------------------------------------------------------------------------*/
 
+/* finished (and working?) */
 static CMPIEnumeration * referenceNames(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1166,6 +1243,7 @@ static CMPIEnumeration * referenceNames(
 
 /* --------------------------------------------------------------------------*/
 
+/* unfinished */
 static CMPIData invokeMethod(
 	CMCIClient * cl,
 	CMPIObjectPath * op,
@@ -1181,85 +1259,207 @@ static CMPIData invokeMethod(
 
 /* --------------------------------------------------------------------------*/
 
+/* finished (and working?) */
 static CMPIStatus setProperty(
-	CMCIClient * cl,
-	CMPIObjectPath * op,
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
 	const char * name,
 	CMPIValue * value,
 	CMPIType type)
+/*
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="SetProperty">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="cimv2"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="PropertyName">
+          <VALUE>CurrentTimeZone</VALUE>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="NewValue">
+          <VALUE>123</VALUE>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="InstanceName">
+          <INSTANCENAME CLASSNAME="Linux_OperatingSystem">
+            <KEYBINDING NAME="CSCreationClassName">
+              <KEYVALUE VALUETYPE="string">Linux_ComputerSystem</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="CSName">
+              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="CreationClassName">
+              <KEYVALUE VALUETYPE="string">Linux_OperatingSystem</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="Name">
+              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
+            </KEYBINDING>
+          </INSTANCENAME>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+*/
 {
-   CMPIStatus rc;
-   CMSetStatusWithChars(&rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
+   ClientEnc         *cl = (ClientEnc*)mb;
+   CMCIConnection   *con = cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   char      *error;
+   ResponseHdr       rh;
+   CMPIString *cn = cop->ft->getClassName(cop,NULL);
+   CMPIStatus rc = {CMPI_RC_OK, NULL};                                                                                                                   
+   con->ft->genRequest(cl, "SetProperty", cop, 0, 0);
+                                                                                                                  
+   addXmlHeader(sb);
+   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"SetProperty\">");
+                                                                                                                  
+   addXmlNamespace(sb, getNameSpaceComponents(cop));
+
+   /* Add the property */
+   sb->ft->append3Chars(sb,
+        "<IPARAMVALUE NAME=\"PropertyName\">\n<VALUE>",
+        name, "</VALUE>\n</IPARAMVALUE>");
+
+   /* Add the new value */
+   sb->ft->append3Chars(sb,
+        "<IPARAMVALUE NAME=\"NewValue\">\n<VALUE>",
+        value2Chars(type,value), "</VALUE>\n</IPARAMVALUE>");
+
+   /* Add the objectpath */
+   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"InstanceName\">\n"
+          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
+   pathToXml(sb, cop);
+   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
+
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
+
+//  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+                                                                                                                  
+   if ((error = con->ft->getResponse(con, cop))) {
+      CMSetStatusWithChars(&rc,CMPI_RC_ERR_FAILED,error);
+      return rc;
+   }
+                                                                                                                  
+//  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+   rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+                                                                                                                  
+   if (rh.errCode != 0) {
+      CMSetStatusWithChars(&rc, rh.errCode, rh.description);
+      return rc;
+   }
+
    return rc;
 }
 
 /* --------------------------------------------------------------------------*/
 
+/* finished (and working?) */
 static CMPIData getProperty(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
 	const char * name,
 	CMPIStatus * rc)
+/*
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="GetProperty">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="cimv2"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="PropertyName">
+          <VALUE>CurrentTimeZone</VALUE>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="InstanceName">
+          <INSTANCENAME CLASSNAME="Linux_OperatingSystem">
+            <KEYBINDING NAME="CSCreationClassName">
+              <KEYVALUE VALUETYPE="string">Linux_ComputerSystem</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="CSName">
+              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="CreationClassName">
+              <KEYVALUE VALUETYPE="string">Linux_OperatingSystem</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="Name">
+              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
+            </KEYBINDING>
+          </INSTANCENAME>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+*/
 {
-    ClientEnc	     *cl = (ClientEnc*)mb;
-    CMCIConnection   *con = cl->connection;
-    UtilStringBuffer *sb=newStringBuffer(2048);
-    char	     *error;
-    ResponseHdr	     rh;
-    CMPIData	     retval;
+   ClientEnc	     *cl = (ClientEnc*)mb;
+   CMCIConnection   *con = cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   char	     *error;
+   ResponseHdr	     rh;
+   CMPIString *cn = cop->ft->getClassName(cop,NULL);
+   CMPIData	     retval;
 
-    con->ft->genRequest(cl, "GetProperty", cop, 0, 0);
+   con->ft->genRequest(cl, "GetProperty", cop, 0, 0);
 
-    addXmlHeader(sb);
-   
-    sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"GetProperty\">");
+   addXmlHeader(sb);
+   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"GetProperty\">");
 
-    addXmlNamespace(sb, getNameSpaceComponents(cop));
+   addXmlNamespace(sb, getNameSpaceComponents(cop));
 
-    sb->ft->append3Chars(sb,
-	"<IPARAMVALUE NAME=\"InstanceName\"><INSTANCE CLASSNAME=\"",
-	(char*)cop->ft->getClassName(cop, NULL), "\">\n");
+   /* Add the property */
+   sb->ft->append3Chars(sb,
+        "<IPARAMVALUE NAME=\"PropertyName\">\n<VALUE>",
+        name, "</VALUE>\n</IPARAMVALUE>");
 
-    pathToXml(sb, cop);
+   /* Add the objectpath */
+   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"InstanceName\">\n"
+          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
+   pathToXml(sb, cop);
+   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
 
-    sb->ft->appendChars(sb, "</INSTANCENAME></IPARAMVALUE>");
-
-    sb->ft->append3Chars(sb,
-	"<IPARAMVALUE NAME=\"PropertyName\">\n<VALUE> \"",
-	name, "\" </VALUE>\n</IPARAMVALUE>");
-
-    sb->ft->appendChars(sb, "</IMETHODCALL></SIMPLEREQ></MESSAGE></CIM>");
-
-    sb->ft->appendChars(sb, "</IMETHODCALL></SIMPLEREQ></MESSAGE></CIM>");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 
 //  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
-    con->ft->addPayload(con,sb);
+   con->ft->addPayload(con,sb);
   
-    if ((error = con->ft->getResponse(con, cop))) {
-        CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
-//#warning "getProperty: TODO: setup error return value in retval"
-        return retval;
-    }
+   if ((error = con->ft->getResponse(con, cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      retval.state = CMPI_notFound | CMPI_nullValue;
+      return retval;
+   }
 
 //  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
-  
-    rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+   rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
 
-    if (rh.errCode != 0) {
-        CMSetStatusWithChars(rc,rh.errCode,rh.description);
-//#warning "getProperty: TODO: setup error return value in retval"
-        return retval;
-    }
+   if (rh.errCode != 0) {
+      CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      retval.state = CMPI_notFound | CMPI_nullValue;
+      return retval;
+   }
 
-    if (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_INTEGER) {
-//#warning "getProperty: TODO - setup CMPIData object from rh.rvArray here"
-        CMSetStatus(rc, CMPI_RC_OK);
-        return retval;
-    }  
-  
-    CMSetStatusWithChars(rc, CMPI_RC_ERR_FAILED, "Unexpected return value");
-//#warning "getProperty: TODO: setup error return value in retval"
-    return retval;
+   /* TODO: check this */
+   if ((rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_INTEGER) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_ENC) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_REAL) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_SIMPLE) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_ARRAY) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_ENCA)) {
+      CMSetStatus(rc, CMPI_RC_OK);
+      return rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
+   }  
+
+   CMSetStatusWithChars(rc, CMPI_RC_ERR_FAILED, "Unexpected return value");
+   retval.state = CMPI_badValue;
+   return retval;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -1322,6 +1522,7 @@ static CMPIConstClass * getClass(
 
 /* --------------------------------------------------------------------------*/
 
+/* finished & working */
 static CMPIEnumeration* enumClassNames(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1372,6 +1573,7 @@ static CMPIEnumeration* enumClassNames(
 
 /* --------------------------------------------------------------------------*/
 
+/* finished (and working?) */
 static CMPIEnumeration * enumClasses(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
