@@ -1,0 +1,3 @@
+CVS Instructions:
+-----------------
+If you checkout from CVS run autoconfiscate.sh to prepare for building.

@@ -1,3 +1,0 @@
-CIMOMDIR=/home/Adrian/sfcc
-CIMOMINC=$(CIMOMDIR)
-CIMOMLIB=$(CIMOMDIR)/lib
