@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #ifndef _REMOTE_CMPI_NATIVE_DATA_H
@@ -192,6 +192,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, struct xtokValueReference
 #define newCMPIInstance native_new_CMPIInstance
 #define newCMPIArray native_new_CMPIArray
 #define newCMPIEnumeration native_new_CMPIEnumeration
+#define newCMPIArgs native_new_CMPIArgs
 /****************************************************************************/
 
 struct native_propertyFT propertyFT;
