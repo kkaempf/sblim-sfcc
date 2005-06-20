@@ -1,4 +1,5 @@
 #include "cmci.h"
+#include "native.h"
 
 static char * _HOSTNAME = "bestorga.ibm.com";
 
@@ -87,7 +88,7 @@ int main( int argc, char * argv[] )
    /* Setup a conncetion to the CIMOM */   
    cc = cmciConnect("localhost",NULL,NULL,NULL,NULL);
 
-   if (1) {
+   if (0) {
       /* Test enumClassNames() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing enumClassNames() ...\n");   
@@ -101,6 +102,26 @@ int main( int argc, char * argv[] )
          while (enumeration->ft->hasNext(enumeration, NULL)) {
             CMPIData data = enumeration->ft->getNext(enumeration, NULL);
             showObjectPath(data.value.ref);
+         }
+      }
+      if (enumeration) CMRelease(enumeration);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (0) {
+      /* Test enumClasses() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing enumClasses() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", NULL, NULL);
+      enumeration = cc->ft->enumClasses(cc, objectpath, 0, &status);
+                                                                                                                
+      /* Print the results */
+      printf("enumClasses() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         while (enumeration->ft->hasNext(enumeration, NULL)) {
+            CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+//            How get class data out of data.value.???;
          }
       }
       if (enumeration) CMRelease(enumeration);
@@ -124,7 +145,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (1) {
+   if (0) {
       /* Test enumInstanceNames() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing enumInstanceNames() ...\n");
@@ -164,7 +185,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (1) {
+   if (0) {
       /* Test getInstance() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing getInstance() ...\n");
@@ -179,6 +200,64 @@ int main( int argc, char * argv[] )
          printf("result:\n");
          showInstance(instance);
       }
+      if (instance) CMRelease(instance);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (1) {
+      /* Test createInstance() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing createInstance() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "CWS_Authorization", NULL);
+      instance = newCMPIInstance(objectpath, NULL);
+      CMSetProperty(instance, "Username", "bestorga", CMPI_chars);
+      CMSetProperty(instance, "Classname", "foobar", CMPI_chars);
+
+      objectpath = cc->ft->createInstance(cc, objectpath, instance, &status);
+                                                                                                                
+      /* Print the results */
+      printf("createInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result:\n");
+         showObjectPath(objectpath);
+      }
+      if (instance) CMRelease(instance);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (1) {
+      /* Test setInstance() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing setInstance() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "CWS_Authorization", NULL);
+      CMAddKey(objectpath, "Username", "bestorga", CMPI_chars);
+      CMAddKey(objectpath, "Classname", "foobar", CMPI_chars);
+      instance = newCMPIInstance(objectpath, NULL);
+      CMSetProperty(instance, "Username", "bestorga", CMPI_chars);
+      CMSetProperty(instance, "Classname", "foobar", CMPI_chars);
+      int yes = 1;
+      CMSetProperty(instance, "Query", (CMPIValue *)&yes, CMPI_boolean);
+                                                                                                                
+      status = cc->ft->setInstance(cc, objectpath, instance, 0, NULL);
+                                                                                                                
+      /* Print the results */
+      printf("setInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (instance) CMRelease(instance);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (1) {
+      /* Test deleteInstance() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing deleteInstance() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "CWS_Authorization", NULL);
+      CMAddKey(objectpath, "Username", "bestorga", CMPI_chars);
+      CMAddKey(objectpath, "Classname", "foobar", CMPI_chars);
+
+      status = cc->ft->deleteInstance(cc, objectpath);
+                                                                                                                
+      /* Print the results */
+      printf("deleteInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
       if (instance) CMRelease(instance);
       if (objectpath) CMRelease(objectpath);
    }
