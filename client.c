@@ -791,7 +791,7 @@ static CMPIEnumeration * execQuery(
 
 /* --------------------------------------------------------------------------*/
 
-/* Finished (& working?) */
+/* Finished but not working - scanCimXmlResponse fails parsing results */
 static CMPIEnumeration * enumInstances(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1089,7 +1089,7 @@ static CMPIEnumeration * associatorNames(
 
 /* --------------------------------------------------------------------------*/
 
-/* finished (and working?) */
+/* finished (and working?) test against Pegasus / bug in sfcb prevents rin working */
 static CMPIEnumeration * references(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1175,7 +1175,7 @@ static CMPIEnumeration * references(
 
 /* --------------------------------------------------------------------------*/
 
-/* finished (and working?) */
+/* finished (and working?) test against Pegasus / bug in sfcb prevents rin working */
 static CMPIEnumeration * referenceNames(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1243,23 +1243,124 @@ static CMPIEnumeration * referenceNames(
 
 /* --------------------------------------------------------------------------*/
 
-/* unfinished */
+/* almost finished (need to add output arg support) but scanCimXmlResponse segv's parsing results */
 static CMPIData invokeMethod(
-	CMCIClient * cl,
-	CMPIObjectPath * op,
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
 	const char * method,
 	CMPIArgs * in,
 	CMPIArgs * out,
 	CMPIStatus * rc)
+/*
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <METHODCALL NAME="IsAuthorized">
+        <LOCALINSTANCEPATH>
+          <LOCALNAMESPACEPATH>
+            <NAMESPACE NAME="root"/>
+            <NAMESPACE NAME="cimv2"/>
+          </LOCALNAMESPACEPATH>
+          <INSTANCENAME CLASSNAME="CWS_Authorization">
+            <KEYBINDING NAME="Username">
+              <KEYVALUE VALUETYPE="string">schuur</KEYVALUE>
+            </KEYBINDING>
+            <KEYBINDING NAME="Classname">
+              <KEYVALUE VALUETYPE="string">CIM_ComputerSystem</KEYVALUE>
+            </KEYBINDING>
+          </INSTANCENAME>
+        </LOCALINSTANCEPATH>
+        <PARAMVALUE NAME="operation">
+          <VALUE>Query</VALUE>
+        </PARAMVALUE>
+      </METHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+*/
 {
-   CMPIData rv = {CMPI_null, CMPI_notFound};
-   CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
-   return rv;
+   ClientEnc         *cl = (ClientEnc*)mb;
+   CMCIConnection   *con = cl->connection;
+   UtilStringBuffer *sb=newStringBuffer(2048);
+   char      *error;
+   ResponseHdr       rh;
+   CMPIString *cn = cop->ft->getClassName(cop,NULL);
+   CMPIData          retval;
+   int i, numinargs = 0;
+   int numoutargs = 0;
+
+   if (in) numinargs = in->ft->getArgCount(in, NULL);
+   if (out) numoutargs = out->ft->getArgCount(in, NULL);
+
+   con->ft->genRequest(cl, "InvokeMethod", cop, 0, 0);
+
+   addXmlHeader(sb);
+
+   /* Add the extrinsic method name */
+   sb->ft->append3Chars(sb,"<METHODCALL NAME=\"", method, "\">");
+
+   sb->ft->appendChars(sb,"<LOCALINSTANCEPATH>");
+
+   addXmlNamespace(sb, getNameSpaceComponents(cop));
+
+   /* Add the objectpath */
+   sb->ft->append3Chars(sb,"<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
+   pathToXml(sb, cop);
+   sb->ft->appendChars(sb,"</INSTANCENAME>\n");
+
+   sb->ft->appendChars(sb,"</LOCALINSTANCEPATH>");
+
+   /* Add the input parameters */
+   for (i=0; i<numinargs; i++) {
+      CMPIString * argname;
+      CMPIData argdata = in->ft->getArgAt(in, i, &argname, NULL);
+      sb->ft->append3Chars(sb,"<PARAMVALUE NAME=\"", argname->hdl, "\">\n");
+      sb->ft->append3Chars(sb,"<VALUE>", value2Chars(argdata.type,&(argdata.value)), "</VALUE>\n");
+      sb->ft->appendChars(sb,"</PARAMVALUE>\n");
+   }
+   
+   sb->ft->appendChars(sb,"</METHODCALL>\n");
+   addXmlFooter(sb);
+
+//  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+
+   if ((error = con->ft->getResponse(con, cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      retval.state = CMPI_notFound | CMPI_nullValue;
+      return retval;
+   }
+
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+   rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse),cop);
+   
+   if (rh.errCode != 0) {
+      CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      retval.state = CMPI_notFound | CMPI_nullValue;
+      return retval;
+   }
+
+   /* TODO: process output args */                                                                                                                  
+   /* TODO: check this */
+   if ((rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_INTEGER) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_ENC) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_REAL) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_SIMPLE) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_ARRAY) ||
+       (rh.rvArray->ft->getSimpleType(rh.rvArray, NULL) == CMPI_ENCA)) {
+      CMSetStatus(rc, CMPI_RC_OK);
+      return rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
+   }
+
+   CMSetStatusWithChars(rc, CMPI_RC_ERR_FAILED, "Unexpected return value");
+   retval.state = CMPI_badValue;
+   return retval;
 }
 
 /* --------------------------------------------------------------------------*/
 
-/* finished (and working?) */
+/* finished (and working?) - need to test against property provider */
 static CMPIStatus setProperty(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1358,7 +1459,7 @@ static CMPIStatus setProperty(
 
 /* --------------------------------------------------------------------------*/
 
-/* finished (and working?) */
+/* finished (and working?) - need to test against property provider */
 static CMPIData getProperty(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
