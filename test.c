@@ -386,7 +386,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (1) {
+   if (0) {
       /* Test invokeMethod() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing invokeMethod() ...\n");
@@ -404,6 +404,27 @@ int main( int argc, char * argv[] )
       if (!status.rc) {
          printf("result(s):\n");
          printf("PrimaryOwnerName=%s\n", (char*)(data.value.string)->hdl);
+      }
+      if (enumeration) CMRelease(enumeration);
+      if (objectpath) CMRelease(objectpath);
+   }
+
+   if (1) {
+      /* Test execQuery() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing execQuery() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      char * query = "select * from Linux_ComputerSystem where PrimaryOwnerName=\"root\"";
+      enumeration = cc->ft->execQuery(cc, objectpath, query, "WQL", &status);
+                                                                                                                
+      /* Print the results */
+      printf("enumInstanceNames() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         while (enumeration->ft->hasNext(enumeration, NULL)) {
+            CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+            showObjectPath(data.value.ref);
+         }
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
