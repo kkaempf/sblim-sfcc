@@ -61,6 +61,8 @@ static const char *headers[] = {
 };
 #define NUM_HEADERS ((sizeof(headers))/(sizeof(headers[0])))
 
+/* --------------------------------------------------------------------------*/
+
 static char *getErrorMessage(CURLcode err)
 {
     static char error[128];
@@ -72,6 +74,8 @@ static char *getErrorMessage(CURLcode err)
 #endif
 }
 
+/* --------------------------------------------------------------------------*/
+
 void list2StringBuffer(UtilStringBuffer *sb, UtilList *ul, char *sep)
 {
    void *e;
@@ -81,6 +85,8 @@ void list2StringBuffer(UtilStringBuffer *sb, UtilList *ul, char *sep)
    }
 }
 
+/* --------------------------------------------------------------------------*/
+
 static size_t writeCb(void *ptr, size_t size, size_t nmemb, void *stream)
 {
     UtilStringBuffer *sb=(UtilStringBuffer*)stream;
@@ -88,6 +94,8 @@ static size_t writeCb(void *ptr, size_t size, size_t nmemb, void *stream)
     sb->ft->appendBlock(sb, ptr, length);
     return length;
 }
+
+/* --------------------------------------------------------------------------*/
 
 static char *addPayload(CMCIConnection *con, UtilStringBuffer *pl)
 {
@@ -103,6 +111,8 @@ static char *addPayload(CMCIConnection *con, UtilStringBuffer *pl)
     if (rv) return getErrorMessage(rv);
     else return NULL;
 }
+
+/* --------------------------------------------------------------------------*/
 
 static char* genRequest(ClientEnc *cle, char *op, CMPIObjectPath *cop, int cls, int keys)
 {
@@ -178,6 +188,8 @@ static char* genRequest(ClientEnc *cle, char *op, CMPIObjectPath *cop, int cls, 
     return NULL;
 }
 
+/* --------------------------------------------------------------------------*/
+
 char *getResponse(CMCIConnection *con, CMPIObjectPath *cop)
 {
     CURLcode rv;
@@ -202,6 +214,8 @@ char *getResponse(CMCIConnection *con, CMPIObjectPath *cop)
    
     return NULL;
 }
+
+/* --------------------------------------------------------------------------*/
 
 static void initializeHeaders(CMCIConnection *con)
 {
@@ -360,6 +374,7 @@ static void addXmlPropertyListParam(UtilStringBuffer *sb, char** properties)
    }
 }
 
+/* --------------------------------------------------------------------------*/
 /* --------------------------------------------------------------------------*/
 
 /* Finished & working */
@@ -777,16 +792,86 @@ static CMPIStatus deleteInstance(
 
 /* --------------------------------------------------------------------------*/
 
-/* unfinished */
+/* finish but not working - scanCimXmlResponse fails parsing results */
 static CMPIEnumeration * execQuery(
-	CMCIClient * cl,
-	CMPIObjectPath * op,
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
 	const char * query,
 	const char * lang,
 	CMPIStatus * rc)
+/*
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="ExecQuery">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="cimv2"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="QueryLanguage">
+          <VALUE>WQL</VALUE>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="Query">
+          <VALUE>select * from Linux_ComputerSystem where PrimaryOwnerName="root"</VALUE>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+*/
 {
-    CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
-    return NULL;
+   ClientEnc        *cl  = (ClientEnc *)mb;
+   CMCIConnection   *con = cl->connection;
+   UtilStringBuffer *sb  = newStringBuffer(2048);
+   char             *error;
+   ResponseHdr      rh;
+
+   con->ft->genRequest(cl, "ExecQuery", cop, 0, 0);
+
+   addXmlHeader(sb);
+
+   sb->ft->appendChars(sb, "<IMETHODCALL NAME=\"ExecQuery\">");
+
+   addXmlNamespace(sb, getNameSpaceComponents(cop));
+
+   /* Add the query language */
+   sb->ft->append3Chars(sb,
+        "<IPARAMVALUE NAME=\"QueryLanguage\">\n<VALUE>",
+        lang, "</VALUE>\n</IPARAMVALUE>");
+
+   /* Add the query */
+   sb->ft->append3Chars(sb,
+        "<IPARAMVALUE NAME=\"Query\">\n<VALUE>",
+        query, "</VALUE>\n</IPARAMVALUE>");
+
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
+
+//  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+   con->ft->addPayload(con,sb);
+                                                                                                                  
+   if ((error = con->ft->getResponse(con, cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      return NULL;
+   }
+//  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+                                                                                                                  
+   rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse), cop);
+                                                                                                                  
+   if (rh.errCode != 0) {
+      CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      return NULL;
+   }
+                                                                                                                  
+   if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_ref) {
+      CMPIEnumeration *enm = newCMPIEnumeration(rh.rvArray,NULL);
+      CMSetStatus(rc, CMPI_RC_OK);
+      return enm;
+   }
+                                                                                                                  
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
+   return NULL;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -845,7 +930,7 @@ static CMPIEnumeration * enumInstances(
         return enm;
     }  
 
-    CMSetStatusWithChars(rc, CMPI_RC_ERROR_SYSTEM, "method not supported");
+   CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
     return NULL;
 }
 
