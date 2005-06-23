@@ -122,7 +122,6 @@ static char* genRequest(ClientEnc *cle, char *op, CMPIObjectPath *cop, int cls, 
    UtilStringBuffer *sb=newStringBuffer(1024);
    char userPwd[256];
    char method[256]="CIMMethod: ";
-   
  
    if (!con->mHandle) return "Unable to initialize curl interface.";
    
@@ -134,23 +133,23 @@ static char* genRequest(ClientEnc *cle, char *op, CMPIObjectPath *cop, int cls, 
    con->mUri->ft->reset(con->mUri);
    con->mUri->ft->append6Chars(con->mUri,cld->scheme,"://",cld->hostName,":",cld->port,"/cimom");
 
-   sb->ft->appendChars(sb,"CIMObject: ");
-    //url.ns.toStringBuffer(sb,"%2F");
+   // HACK - fix this to instead parse cop to obtain namespace components and put them in CIMObject 
+   sb->ft->appendChars(sb, "CIMObject: root%2Fcimv2");
    
-    /* Initialize curl with the url */
+   /* Initialize curl with the url */
    rv = curl_easy_setopt(con->mHandle, CURLOPT_URL, con->mUri->ft->getCharPtr(con->mUri));
 
-    /* Disable progress output */
+   /* Disable progress output */
    rv = curl_easy_setopt(con->mHandle, CURLOPT_NOPROGRESS, 1);
 
-    /* This will be a HTTP post */
+   /* This will be a HTTP post */
    rv = curl_easy_setopt(con->mHandle, CURLOPT_POST, 1);
 
-    /* Disable SSL verification */
+  /* Disable SSL verification */
    rv = curl_easy_setopt(con->mHandle, CURLOPT_SSL_VERIFYHOST, 0);
    rv = curl_easy_setopt(con->mHandle, CURLOPT_SSL_VERIFYPEER, 0);
 
-    /* Set username and password */
+   /* Set username and password */
    if (cld->user) {
       strcpy(userPwd,cld->user);
       if (cld->pwd) {
@@ -159,33 +158,32 @@ static char* genRequest(ClientEnc *cle, char *op, CMPIObjectPath *cop, int cls, 
       }  
    }
    
-    // Initialize default headers
-    con->ft->initializeHeaders(con);
+   // Initialize default headers
+   con->ft->initializeHeaders(con);
 
-    // Add CIMMethod header
-    strcat(method,op);
-    con->mHeaders = curl_slist_append(con->mHeaders, method);
+   // Add CIMMethod header
+   strcat(method,op);
+   con->mHeaders = curl_slist_append(con->mHeaders, method);
 
-    // Add CIMObject header
-    con->mHeaders = curl_slist_append(con->mHeaders, sb->ft->getCharPtr(sb));
+   // Add CIMObject header
+   con->mHeaders = curl_slist_append(con->mHeaders, sb->ft->getCharPtr(sb));
 
+   // Set all of the headers for the request
+   rv = curl_easy_setopt(con->mHandle, CURLOPT_HTTPHEADER, con->mHeaders);
 
-    // Set all of the headers for the request
-    rv = curl_easy_setopt(con->mHandle, CURLOPT_HTTPHEADER, con->mHeaders);
+   // Set up the callbacks to store the response
+   rv = curl_easy_setopt(con->mHandle, CURLOPT_WRITEFUNCTION, writeCb);
 
-    // Set up the callbacks to store the response
-    rv = curl_easy_setopt(con->mHandle, CURLOPT_WRITEFUNCTION, writeCb);
-
-    // Use CURLOPT_FILE instead of CURLOPT_WRITEDATA - more portable
-    rv = curl_easy_setopt(con->mHandle, CURLOPT_FILE, con->mResponse);
+   // Use CURLOPT_FILE instead of CURLOPT_WRITEDATA - more portable
+   rv = curl_easy_setopt(con->mHandle, CURLOPT_FILE, con->mResponse);
    
-    // Fail if we receive an error (HTTP response code >= 300)
-    rv = curl_easy_setopt(con->mHandle, CURLOPT_FAILONERROR, 1);
+   // Fail if we receive an error (HTTP response code >= 300)
+   rv = curl_easy_setopt(con->mHandle, CURLOPT_FAILONERROR, 1);
 
-    // Turn this on to enable debugging
-    rv = curl_easy_setopt(con->mHandle, CURLOPT_VERBOSE, 1);
+   // Turn this on to enable debugging
+   rv = curl_easy_setopt(con->mHandle, CURLOPT_VERBOSE, 1);
    
-    return NULL;
+   return NULL;
 }
 
 /* --------------------------------------------------------------------------*/

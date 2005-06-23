@@ -110,13 +110,13 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test enumClasses() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing enumClasses() ...\n");
       objectpath = newCMPIObjectPath("root/cimv2", NULL, NULL);
       enumeration = cc->ft->enumClasses(cc, objectpath, 0, &status);
-                                                                                                                
+
       /* Print the results */
       printf("enumClasses() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
       if (!status.rc) {
@@ -130,11 +130,11 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (1) {
+   if (0) {
       /* Test getClass() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing getClass() ...\n");
-      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      objectpath = newCMPIObjectPath("root/cimv2", "CIM_ComputerSystem", NULL);
       class = cc->ft->getClass(cc, objectpath, 0, NULL, &status);
 
       /* Print the results */
@@ -151,7 +151,7 @@ int main( int argc, char * argv[] )
       /* Test enumInstanceNames() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing enumInstanceNames() ...\n");
-      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      objectpath = newCMPIObjectPath("root/cimv2", "CIM_ComputerSystem", NULL);
       enumeration = cc->ft->enumInstanceNames(cc, objectpath, &status);
 
       /* Print the results */
@@ -171,7 +171,7 @@ int main( int argc, char * argv[] )
       /* Test enumInstances() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing enumInstances() ...\n");
-      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+      objectpath = newCMPIObjectPath("root/cimv2", "CIM_ComputerSystem", NULL);
       enumeration = cc->ft->enumInstances(cc, objectpath, 0, NULL, &status);
 
       /* Print the results */
@@ -191,8 +191,8 @@ int main( int argc, char * argv[] )
       /* Test getInstance() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing getInstance() ...\n");
-      objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
-      CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+      objectpath = newCMPIObjectPath("root/cimv2", "CIM_ComputerSystem", NULL);
+      CMAddKey(objectpath, "CreationClassName", "CIM_ComputerSystem", CMPI_chars);
       CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
       instance = cc->ft->getInstance(cc, objectpath, 0, NULL, &status);   
 
