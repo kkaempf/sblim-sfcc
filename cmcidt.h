@@ -185,6 +185,9 @@ extern "C" {
         CMPIBoolean          boolean;
         CMPIChar16           char16;
 
+#ifdef _CMPIC_H_
+        CMPIConstClass*      cls;
+#endif
         CMPIInstance*        inst;
         CMPIObjectPath*      ref;
         CMPIArgs*            args;

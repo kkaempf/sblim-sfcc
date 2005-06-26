@@ -158,7 +158,7 @@ static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
    char *ptr, wa[32];
    char msg1[] = { "Unknown attribute in list for " };
    char msg2[] = { "Bad attribute list for " };
-   char word[11];
+   char word[32];
 
    for (n = 0; (e + n)->attr; n++)
       wa[n] = 0;
@@ -209,12 +209,14 @@ static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
       return 1;
    }
 
-   ptr = (char *) alloca(strlen(tag) + strlen(msg2) + 48);
+   ptr = (char *) alloca(strlen(tag) + strlen(msg2) + 96);
    strcpy(ptr, msg2);
    strcat(ptr, tag);
    strcat(ptr, ": ");
-   strncpy(word, xb->cur, 10);
-   strcat(ptr, word);
+   strncpy(word, xb->cur, 30);
+   word[30]=0;
+   strcat(ptr, word); 
+   strcat(ptr," ");
    strcat(ptr, tag);
    Throw(xb, ptr);
    return -1;

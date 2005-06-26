@@ -228,7 +228,7 @@ typedef union YYSTYPE {
    XtokParam                     xtokParam;
 } YYSTYPE;
 /* Line 1240 of yacc.c.  */
-#line 231 "cimXmlResp.h"
+#line 231 "y.tab.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

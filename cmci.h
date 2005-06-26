@@ -22,6 +22,9 @@
 #ifndef _CMPIC_H_
 #define _CMPIC_H_
 
+struct _CMPIConstClass;
+typedef struct _CMPIConstClass CMPIConstClass;
+   
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
@@ -57,9 +60,6 @@ typedef struct _CMCIConnection CMCIConnection;
 struct _ClientEnc;
 typedef struct _ClientEnc ClientEnc;
 
-struct _CMPIConstClass;
-typedef struct _CMPIConstClass CMPIConstClass;
-   
 typedef struct _CMCIClientFT {
    
       /** Get Class using &lt;op&gt; as reference. Class structure can be

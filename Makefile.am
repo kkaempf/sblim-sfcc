@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2005/06/20 17:04:30 mihajlov Exp $
+# $Id: Makefile.am,v 1.2 2005/06/26 21:46:02 a3schuur Exp $
 
 AM_LFLAGS=-i
 AM_YFLAGS=-d
@@ -26,7 +26,7 @@ libcmpisfcc_la_SOURCES=args.c \
                    cimXmlResp.y \
                    cimXmlParser.c
 
-noinst_PROGRAMS=test
+bin_PROGRAMS=test
 
 test_SOURCES = test.c
 test_LDADD = -lcmpisfcc

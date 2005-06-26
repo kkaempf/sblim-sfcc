@@ -86,9 +86,13 @@ int main( int argc, char * argv[] )
    CMPIEnumeration * enumeration;
    CMPIConstClass * class;
    CMPIStatus status;
+   char hostName[512];
 
    /* Setup a conncetion to the CIMOM */   
    cc = cmciConnect("localhost",NULL,NULL,NULL,NULL);
+   
+   gethostname(hostName,511);
+   _HOSTNAME=strdup(hostName);
 
    if (1) {
       /* Test enumClassNames() */
@@ -123,7 +127,7 @@ int main( int argc, char * argv[] )
          printf("result(s):\n");
          while (enumeration->ft->hasNext(enumeration, NULL)) {
             CMPIData data = enumeration->ft->getNext(enumeration, NULL);
-//            How get class data out of data.value.???;
+            showClass(data.value.cls);
          }
       }
       if (enumeration) CMRelease(enumeration);
@@ -167,7 +171,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test enumInstances() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing enumInstances() ...\n");

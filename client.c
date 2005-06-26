@@ -55,7 +55,8 @@ struct _CMCIConnection {
 
 static const char *headers[] = {
     "Content-type: application/xml; charset=\"utf-8\"",
-    "Connection: Keep-Alive, TE",
+    "Accept:",
+    "Expect:",
     "CIMProtocolVersion: 1.0",
     "CIMOperation: MethodCall"
 };
@@ -193,6 +194,7 @@ char *getResponse(CMCIConnection *con, CMPIObjectPath *cop)
     CURLcode rv;
 
     rv = curl_easy_perform(con->mHandle);
+
     if (rv) {
         long responseCode = -1;
         char *error;
@@ -396,7 +398,8 @@ static CMPIEnumeration * enumInstanceNames(
    addXmlNamespace(sb, getNameSpaceComponents(cop));
    addXmlClassnameParam(sb, cop);
 
-   sb->ft->appendChars(sb, "</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
@@ -493,8 +496,8 @@ static CMPIInstance * getInstance(
           "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
    pathToXml(sb, cop);
    sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
-
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
@@ -559,10 +562,10 @@ static CMPIObjectPath * createInstance(
    }
     
    sb->ft->appendChars(sb,"</INSTANCE>\n</IPARAMVALUE>\n");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
-
-//  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
   
    if ((error = con->ft->getResponse(con, cop))) {
@@ -570,7 +573,7 @@ static CMPIObjectPath * createInstance(
       return NULL;
    }
 
-//  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
    rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
@@ -695,7 +698,7 @@ static CMPIStatus setInstance(
 </CIM>
 */
 
-//  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
 
    if ((error = con->ft->getResponse(con, cop))) {
@@ -703,7 +706,7 @@ static CMPIStatus setInstance(
       return rc;
    }
 
-//  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
    rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
       CMSetStatusWithChars(&rc, rh.errCode, rh.description);
@@ -770,7 +773,7 @@ static CMPIStatus deleteInstance(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-//  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
                                                                                                                   
    if ((error = con->ft->getResponse(con, cop))) {
@@ -778,7 +781,7 @@ static CMPIStatus deleteInstance(
       return rc;
    }
                                                                                                                   
-//  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
    rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
       CMSetStatusWithChars(&rc, rh.errCode, rh.description);
@@ -846,14 +849,14 @@ static CMPIEnumeration * execQuery(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-//  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
+//   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
                                                                                                                   
    if ((error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       return NULL;
    }
-//  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+//   fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
                                                                                                                   
    rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse), cop);
                                                                                                                   
@@ -868,7 +871,7 @@ static CMPIEnumeration * execQuery(
       CMSetStatus(rc, CMPI_RC_OK);
       return enm;
    }
-   fprintf(stderr,"rv: %x %d\n",rv,rv);                                                                                                             
+//   fprintf(stderr,"rv: %x %d\n",rv,rv);                                                                                                             
    CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
    return NULL;
 }
@@ -905,7 +908,8 @@ static CMPIEnumeration * enumInstances(
    
     addXmlPropertyListParam(sb, properties);
 
-    sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+    addXmlFooter(sb);
 
 //  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
     con->ft->addPayload(con,sb);
@@ -914,7 +918,7 @@ static CMPIEnumeration * enumInstances(
         CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
         return NULL;
     }
-//  fprintf(stderr,"%s\n",con->mResponse->ft->getCharPtr(con->mResponse));
+//  fprintf(stderr,"{{%s}}\n",con->mResponse->ft->getCharPtr(con->mResponse));
 
     rh = scanCimXmlResponse(con->mResponse->ft->getCharPtr(con->mResponse), cop);
 
@@ -1035,7 +1039,8 @@ static CMPIEnumeration * associators(
       sb->ft->appendChars(sb,"</VALUE.ARRAY></IPARAMVALUE>\n");
    }
 
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
@@ -1143,7 +1148,8 @@ static CMPIEnumeration * associatorNames(
       sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"ResultRole\"><VALUE>", resultRole,
          "</VALUE></IPARAMVALUE>\n");
    
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
    
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
@@ -1229,7 +1235,8 @@ static CMPIEnumeration * references(
       sb->ft->appendChars(sb,"</VALUE.ARRAY></IPARAMVALUE>\n");
    }
 
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
@@ -1293,11 +1300,11 @@ static CMPIEnumeration * referenceNames(
    if (resultClass!=NULL)
       sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"ResultClass\"><CLASSNAME NAME=\"", resultClass,
           "\"/></IPARAMVALUE>\n");
-   if (role)
-      sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
+   if (role) sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"Role\"><VALUE>", role,
          "</VALUE></IPARAMVALUE>\n");
    
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
    
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
@@ -1678,7 +1685,8 @@ static CMPIConstClass * getClass(
 
    addXmlClassnameParam(sb, cop);
 
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);
@@ -1698,7 +1706,7 @@ static CMPIConstClass * getClass(
   
    if (rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) == CMPI_class) {
       CMSetStatus(rc,CMPI_RC_OK);
-      return (CMPIConstClass*)(rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL).value.inst);
+      return rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL).value.cls;
    }  
   
    CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,"Unexpected return value");
@@ -1725,10 +1733,13 @@ static CMPIEnumeration* enumClassNames(
    /* Construct the CIM-XML request */
    addXmlHeader(sb);
    sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"EnumerateClassNames\">");
+   
    addXmlNamespace(sb, getNameSpaceComponents(cop));
    emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
    addXmlClassnameParam(sb, cop);
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 //   fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
 
    con->ft->addPayload(con,sb);
@@ -1776,13 +1787,16 @@ static CMPIEnumeration * enumClasses(
    /* Construct the CIM-XML request */
    addXmlHeader(sb);
    sb->ft->appendChars(sb, "<IMETHODCALL NAME=\"EnumerateClasses\">");
+   
    addXmlNamespace(sb, getNameSpaceComponents(cop));
    emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
    emitlocal(sb,flags & CMPI_FLAG_LocalOnly);
    emitqual(sb,flags & CMPI_FLAG_IncludeQualifiers);
    emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
    addXmlClassnameParam(sb, cop);
-   sb->ft->appendChars(sb,"</IMETHODCALL></SIMPLEREQ>\n</MESSAGE></CIM>");
+
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
 
 //  fprintf(stderr,"%s\n",sb->ft->getCharPtr(sb));
    con->ft->addPayload(con,sb);

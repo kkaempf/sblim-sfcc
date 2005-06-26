@@ -496,10 +496,10 @@ iReturnValue
     } 
     | XTOK_IRETVALUE instances ZTOK_IRETVALUE
     {
-    } /*
-    | XTOK_IRETVALUE valueNamedInstances ZTOK_IRETVALUE
+    } 
+    | XTOK_IRETVALUE namedInstances ZTOK_IRETVALUE
     {
-    } */
+    } 
 ;
  
 
@@ -567,6 +567,26 @@ objectsWithPath
        PARM->curInstance=NULL;
     }    
     | objectsWithPath objectWithPath 
+    {
+       PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
+       setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$2.instance.className);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
+       PARM->curInstance=NULL;
+    }    
+;
+
+
+namedInstances
+    : /* empty */
+    | namedInstance
+    {
+       PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
+       setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$1.instance.className);
+       setInstProperties(PARM->curInstance,&PARM->properties);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
+       PARM->curInstance=NULL;
+    }    
+    | namedInstances namedInstance 
     {
        PARM->curInstance=native_new_CMPIInstance(NULL,NULL);
        setInstNsAndCn(PARM->curInstance,PARM->nameSpace,$2.instance.className);
@@ -789,8 +809,8 @@ valueArray
     : value
     {
        $$.next=1;
-       $$.max=64;
-       $$.values=(char**)malloc(sizeof(char*)*64);
+       $$.max=128;
+       $$.values=(char**)malloc(sizeof(char*)*128);
        $$.values[0]=$1.value;
     }
     | valueArray value
