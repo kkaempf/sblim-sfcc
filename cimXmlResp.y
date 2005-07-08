@@ -815,6 +815,10 @@ valueArray
     }
     | valueArray value
     {
+       if ($$.next>$$.max) {
+          $$.max*=2;
+          $$.values=(char**)realloc($$.values,$$.max);
+       }
        $$.values[$$.next]=$2.value;
        $$.next++;
     }

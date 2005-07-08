@@ -698,8 +698,8 @@ static const unsigned short yyrline[] =
      581,   589,   604,   617,   631,   646,   647,   652,   656,   663,
      678,   679,   686,   700,   701,   716,   728,   729,   734,   747,
      751,   755,   762,   763,   767,   773,   778,   802,   809,   816,
-     824,   829,   844,   846,   851,   859,   870,   874,   888,   895,
-     899,   912,   920,   926,   970,   977,   986,   996,  1007,  1013
+     828,   833,   848,   850,   855,   863,   874,   878,   892,   899,
+     903,   916,   924,   930,   974,   981,   990,  1000,  1011,  1017
 };
 #endif
 
@@ -1928,13 +1928,17 @@ yyreduce:
   case 59:
 #line 817 "cimXmlResp.y"
     {
+       if (yyval.xtokValueArray.next>yyval.xtokValueArray.max) {
+          yyval.xtokValueArray.max*=2;
+          yyval.xtokValueArray.values=(char**)realloc(yyval.xtokValueArray.values,yyval.xtokValueArray.max);
+       }
        yyval.xtokValueArray.values[yyval.xtokValueArray.next]=yyvsp[0].xtokValue.value;
        yyval.xtokValueArray.next++;
     }
     break;
 
   case 60:
-#line 825 "cimXmlResp.y"
+#line 829 "cimXmlResp.y"
     {
        yyval.xtokValueReference.instancePath=yyvsp[-1].xtokInstancePath;
        yyval.xtokValueReference.type=typeValRef_InstancePath;
@@ -1942,7 +1946,7 @@ yyreduce:
     break;
 
   case 61:
-#line 830 "cimXmlResp.y"
+#line 834 "cimXmlResp.y"
     {
        yyval.xtokValueReference.instanceName=yyvsp[-1].xtokInstanceName;
        yyval.xtokValueReference.type=typeValRef_InstanceName;
@@ -1950,7 +1954,7 @@ yyreduce:
     break;
 
   case 63:
-#line 847 "cimXmlResp.y"
+#line 851 "cimXmlResp.y"
     {
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
        PARM->curPath=NULL;
@@ -1958,7 +1962,7 @@ yyreduce:
     break;
 
   case 64:
-#line 852 "cimXmlResp.y"
+#line 856 "cimXmlResp.y"
     {
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
        PARM->curPath=NULL;
@@ -1966,42 +1970,42 @@ yyreduce:
     break;
 
   case 65:
-#line 860 "cimXmlResp.y"
+#line 864 "cimXmlResp.y"
     {
         createClassPath(&PARM->curPath, NULL, yyval.className);
     }
     break;
 
   case 66:
-#line 871 "cimXmlResp.y"
+#line 875 "cimXmlResp.y"
     {
        yyval.xtokQualifier.value=yyvsp[-1].xtokValue.value;
     }
     break;
 
   case 67:
-#line 875 "cimXmlResp.y"
+#line 879 "cimXmlResp.y"
     {
 //       $$.value=$2.value;
     }
     break;
 
   case 68:
-#line 889 "cimXmlResp.y"
+#line 893 "cimXmlResp.y"
     {
        yyval.xtokLocalNameSpacePath=yyvsp[-1].xtokNameSpace.cns;
     }
     break;
 
   case 69:
-#line 896 "cimXmlResp.y"
+#line 900 "cimXmlResp.y"
     {
        yyval.xtokNameSpace.cns=strdup(yyvsp[-1].xtokNameSpace.ns);
     }
     break;
 
   case 70:
-#line 900 "cimXmlResp.y"
+#line 904 "cimXmlResp.y"
     {
        int l=strlen(yyvsp[-2].xtokNameSpace.cns)+strlen(yyvsp[-1].xtokNameSpace.ns)+2;
        yyval.xtokNameSpace.cns=(char*)malloc(l);
@@ -2013,7 +2017,7 @@ yyreduce:
     break;
 
   case 71:
-#line 913 "cimXmlResp.y"
+#line 917 "cimXmlResp.y"
     {
        yyval.xtokNameSpacePath.host=yyvsp[-2].xtokHost;
        yyval.xtokNameSpacePath.nameSpacePath=yyvsp[-1].xtokLocalNameSpacePath;
@@ -2021,13 +2025,13 @@ yyreduce:
     break;
 
   case 72:
-#line 921 "cimXmlResp.y"
+#line 925 "cimXmlResp.y"
     {
     }
     break;
 
   case 73:
-#line 927 "cimXmlResp.y"
+#line 931 "cimXmlResp.y"
     {
        yyval.xtokInstancePath.path=yyvsp[-2].xtokNameSpacePath;
        yyval.xtokInstancePath.instanceName=yyvsp[-1].xtokInstanceName;
@@ -2036,7 +2040,7 @@ yyreduce:
     break;
 
   case 74:
-#line 971 "cimXmlResp.y"
+#line 975 "cimXmlResp.y"
     {
        yyval.xtokInstanceName.className=yyvsp[-1].xtokInstanceName.className;
        yyval.xtokInstanceName.bindings.next=0;
@@ -2046,7 +2050,7 @@ yyreduce:
     break;
 
   case 75:
-#line 978 "cimXmlResp.y"
+#line 982 "cimXmlResp.y"
     {
        yyval.xtokInstanceName.className=yyvsp[-2].xtokInstanceName.className;
        yyval.xtokInstanceName.bindings=yyvsp[-1].xtokKeyBindings;
@@ -2055,7 +2059,7 @@ yyreduce:
     break;
 
   case 76:
-#line 987 "cimXmlResp.y"
+#line 991 "cimXmlResp.y"
     {
        yyval.xtokKeyBindings.next=1;
        yyval.xtokKeyBindings.max=16;
@@ -2068,7 +2072,7 @@ yyreduce:
     break;
 
   case 77:
-#line 997 "cimXmlResp.y"
+#line 1001 "cimXmlResp.y"
     {
        yyval.xtokKeyBindings.keyBindings[yyval.xtokKeyBindings.next].name=yyvsp[0].xtokKeyBinding.name;
        yyval.xtokKeyBindings.keyBindings[yyval.xtokKeyBindings.next].value=yyvsp[0].xtokKeyBinding.value;
@@ -2079,7 +2083,7 @@ yyreduce:
     break;
 
   case 78:
-#line 1008 "cimXmlResp.y"
+#line 1012 "cimXmlResp.y"
     {
        yyval.xtokKeyBinding.name=yyvsp[-3].xtokKeyBinding.name;
        yyval.xtokKeyBinding.value=yyvsp[-2].xtokKeyValue.value;
@@ -2088,7 +2092,7 @@ yyreduce:
     break;
 
   case 79:
-#line 1014 "cimXmlResp.y"
+#line 1018 "cimXmlResp.y"
     {
        yyval.xtokKeyBinding.name=yyvsp[-2].xtokKeyBinding.name;
        yyval.xtokKeyBinding.value=NULL;
@@ -2101,7 +2105,7 @@ yyreduce:
     }
 
 /* Line 999 of yacc.c.  */
-#line 2104 "cimXmlResp.c"
+#line 2108 "cimXmlResp.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2295,6 +2299,6 @@ yyreturn:
 }
 
 
-#line 1022 "cimXmlResp.y"
+#line 1026 "cimXmlResp.y"
 
 
