@@ -1,0 +1,47 @@
+.TH  3  2005-06-09 "sfcc" "SFCBroker Client Library"
+.SH NAME
+cmciConnect() \- Create a CMCIClient object and connection
+.SH SYNOPSIS
+.nf
+.B #include <cmci.h>
+.sp
+.BI CMCIClient *
+.BI cmciClient (const char* hostName, const char* hostPort, 
+.br
+.BI		const char* CimUsername, const char* CimPassword,
+.br
+.BI				CMPIStatus* rc);
+.br
+.sp
+.fi
+.SH DESCRIPTION
+Create a CMCIClient object and initialize it with the CIMOM connection 
+hostname and port, the security credentials to log into the CIMOM, and
+the internals for sending requests and receiving responses from the CIMOM.
+.PP
+Arguments are the \fIhostName\fP and \fIhostPort\fP to connect, the 
+\fICimUsername\fP and \fICimPassword credentials for authentication 
+with the CIMOM, and a pointer to an object to receive the CMPIStatus
+operation status.
+.SH "RETURN VALUE"
+When successful the \fIcmciConnect\fP function returns a pointer to a 
+dynamically allocated and initialized CMCIClient object with a successful
+operation status code set.
+When unsuccessful it returns NULL and sets \fIrc\fP object with the error
+code and corresponding error string.
+.SH "ERRORS"
+.sp
+.SH "EXAMPLES"
+.nf
+   CMCIClient *cc;
+
+   /* Setup a local conncetion to the CIMOM */   
+   cc = cmciConnect("localhost",NULL,NULL,NULL,NULL);
+.fi
+.sp
+.SH "CONFORMING TO"
+.sp
+.SH "SEE ALSO"
+Common Manageability Programming Interface (CMPI) - OpenGroup,
+.br
+CMCIClient(3), CMPIStatus(3)
