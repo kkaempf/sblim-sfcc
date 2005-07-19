@@ -89,7 +89,7 @@ int main( int argc, char * argv[] )
    char hostName[512];
 
    /* Setup a conncetion to the CIMOM */   
-   cc = cmciConnect("localhost",NULL,NULL,NULL,NULL);
+   cc = cmciConnect("localhost","http",NULL,NULL,NULL,NULL);
    
    gethostname(hostName,511);
    _HOSTNAME=strdup(hostName);

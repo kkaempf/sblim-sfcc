@@ -449,7 +449,7 @@ struct _CMCIClient {
    CMCIClientFT *ft;
 };   
 
-CMCIClient *cmciConnect(const char *hn, const char *port, 
+CMCIClient *cmciConnect(const char *hn, const char* scheme, const char *port, 
                         const char *user, const char *pwd, CMPIStatus *rc);   
    
 #ifdef __cplusplus

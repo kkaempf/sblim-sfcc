@@ -1848,7 +1848,7 @@ static CMCIClientFT clientFt = {
 
 /* --------------------------------------------------------------------------*/
 
-CMCIClient *cmciConnect(const char *hn, const char *port,
+CMCIClient *cmciConnect(const char *hn, const char *scheme, const char *port,
                         const char *user, const char *pwd, CMPIStatus *rc)
 {
    ClientEnc *cc=(ClientEnc*)calloc(1,sizeof(ClientEnc));
@@ -1857,11 +1857,16 @@ CMCIClient *cmciConnect(const char *hn, const char *port,
    cc->enc.ft=&clientFt;
                                                                                                                   
    cc->data.hostName=  hn ?   strdup(hn)   : "localhost";
-   cc->data.port=      port ? strdup(port) : "5988";
    cc->data.user=      user ? strdup(user) : NULL;
    cc->data.pwd=       pwd ?  strdup(pwd)  : NULL;
-   cc->data.scheme=    "http";
-                                                                                                                  
+   cc->data.scheme=    scheme ? strdup(scheme) : "http";
+   if (port == NULL) { 
+     if (strcmp(cc->data.scheme,"http")==0) {
+       cc->data.port="5988";
+     } else if (strcmp(cc->data.scheme,"https")==0) {
+       cc->data.port="5989";
+     }
+   }                                                                                                                  
    cc->connection=initConnection(&cc->data);
                                                                                                                   
    return (CMCIClient*)cc;
