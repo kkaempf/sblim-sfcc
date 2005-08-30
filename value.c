@@ -14,7 +14,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 */
 
 #include <stdio.h>
@@ -22,7 +22,7 @@
 #include <string.h>
 #include "cmcidt.h"
 #include "cmcift.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 #include "cimXmlParser.h"
 #include "utilStringBuffer.h"
@@ -37,38 +37,38 @@ extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str,
 
 void native_release_CMPIValue ( CMPIType type, CMPIValue * val )
 {
-	switch ( type ) {
+        if (val) switch ( type ) {
 
 	case CMPI_instance:
-		CMRelease ( val->inst );
+		if ( val->inst ) CMRelease ( val->inst );
 		break;
 
 	case CMPI_ref:
-		CMRelease ( val->ref );
+		if ( val->ref ) CMRelease ( val->ref );
 		break;
 
 	case CMPI_args:
-		CMRelease ( val->args );
+		if ( val->args ) CMRelease ( val->args );
 		break;
 
 	case CMPI_enumeration:
-		CMRelease ( val->Enum );
+		if ( val->Enum ) CMRelease ( val->Enum );
 		break;
 
 	case CMPI_string:
-		CMRelease ( val->string );
+		if ( val->string ) CMRelease ( val->string );
 		break;
 
 	case CMPI_chars:
-		tool_mm_add ( val->chars );
+		if ( val->chars ) free ( val->chars );
 		break;
 
 	case CMPI_dateTime:
-		CMRelease ( val->dateTime );
+		if ( val->dateTime ) CMRelease ( val->dateTime );
 		break;
 
 	default:
-		if ( type & CMPI_ARRAY ) {
+		if ( type & CMPI_ARRAY && val->array) {
 			CMRelease ( val->array );
 		}
 	}

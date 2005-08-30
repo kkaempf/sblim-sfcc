@@ -28,7 +28,7 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 
@@ -47,14 +47,11 @@ static CMPIStatus __ccft_release ( CMPIConstClass * ccls )
 {
 	struct native_constClass * cc = (struct native_constClass *) ccls;
 
-	if ( cc->mem_state == TOOL_MM_NO_ADD ) {
+	if ( cc ) {
 
-		cc->mem_state = TOOL_MM_ADD;
-
-		tool_mm_add ( cc );
-		tool_mm_add ( cc->classname );
-		
+		free ( cc->classname );
 		propertyFT.release ( cc->props );
+		free ( cc );
 
 		CMReturn ( CMPI_RC_OK );
 	}
@@ -67,7 +64,7 @@ static CMPIConstClass * __ccft_clone ( CMPIConstClass * ccls, CMPIStatus * rc )
 {
 	struct native_constClass * cc   = (struct native_constClass *) ccls;
 	struct native_constClass * new = (struct native_constClass *) 
-		tool_mm_alloc ( TOOL_MM_NO_ADD, sizeof ( struct native_constClass ) );
+		calloc ( 1, sizeof ( struct native_constClass ) );
 
 	new->classname     = strdup ( cc->classname );
 	new->props     = propertyFT.clone ( cc->props, rc );
@@ -136,10 +133,9 @@ CMPIConstClass * native_new_CMPIConstClass ( char  *cn, CMPIStatus * rc )
 
 	struct native_constClass * ccls =
 		(struct native_constClass *) 
-		tool_mm_alloc ( TOOL_MM_ADD, sizeof ( struct native_constClass ) );
+		calloc ( 1, sizeof ( struct native_constClass ) );
 
 	ccls->ccls = cc;
-	ccls->mem_state    = TOOL_MM_ADD;
 
 	ccls->classname = strdup (cn );
 
@@ -157,12 +153,10 @@ int addClassProperty( CMPIConstClass * ccls,
 
 
 	if ( propertyFT.setProperty ( cc->props,
-				      cc->mem_state,
 				      name, 
 				      type,
 				      value ) ) {
 		propertyFT.addProperty ( &cc->props, 
-					 cc->mem_state,
 					 name, 
 					 type, 
 					 state, 

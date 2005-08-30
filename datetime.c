@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -30,7 +30,7 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 
@@ -41,18 +41,13 @@
  */
 struct native_datetime {
 	CMPIDateTime dt;	/*!< the inheriting data structure  */
-	int mem_state;		/*!< states, whether this object is
-				  registered within the memory mangagement or
-				  represents a cloned object */
-
 	CMPIUint64 msecs;	/*!< microseconds since 01/01/1970 00:00  */
 	CMPIBoolean interval;	/*!< states if the date-time object is to be
 				  treated as an interval or as absolute time */
 };
 
 
-static struct native_datetime * __new_datetime ( int,
-						 CMPIUint64,
+static struct native_datetime * __new_datetime ( CMPIUint64,
 						 CMPIBoolean,
 						 CMPIStatus * );
 
@@ -71,10 +66,9 @@ static CMPIStatus __dtft_release ( CMPIDateTime * dt )
 {
 	struct native_datetime * ndt = (struct native_datetime *) dt;
 
-	if ( ndt->mem_state == TOOL_MM_NO_ADD ) {
+	if ( ndt ) {
 
-		ndt->mem_state = TOOL_MM_ADD;
-		tool_mm_add ( ndt );
+		free ( ndt );
 
 		CMReturn ( CMPI_RC_OK );
 	}
@@ -97,8 +91,7 @@ static CMPIStatus __dtft_release ( CMPIDateTime * dt )
 static CMPIDateTime * __dtft_clone ( CMPIDateTime * dt, CMPIStatus * rc )
 {
 	struct native_datetime * ndt   = (struct native_datetime *) dt;
-	struct native_datetime * new = __new_datetime ( TOOL_MM_NO_ADD,
-							ndt->msecs,
+	struct native_datetime * new = __new_datetime ( ndt->msecs,
 							ndt->interval,
 							rc );
 
@@ -213,8 +206,7 @@ static CMPIBoolean __dtft_isInterval ( CMPIDateTime * dt, CMPIStatus * rc )
 
   \return a fully initialized native_datetime object pointer.
  */
-static struct native_datetime * __new_datetime ( int mm_add,
-						 CMPIUint64 msecs,
+static struct native_datetime * __new_datetime (CMPIUint64 msecs,
 						 CMPIBoolean interval,
 						 CMPIStatus * rc )
 {
@@ -234,10 +226,9 @@ static struct native_datetime * __new_datetime ( int mm_add,
 
 	struct native_datetime * ndt =
 		(struct native_datetime *) 
-		tool_mm_alloc ( mm_add, sizeof ( struct native_datetime ) );
+		calloc ( 1, sizeof ( struct native_datetime ) );
 
 	ndt->dt        = dt;
-	ndt->mem_state = mm_add;
 	ndt->msecs     = msecs;
 	ndt->interval  = interval;
 
@@ -266,8 +257,7 @@ CMPIDateTime * native_new_CMPIDateTime ( CMPIStatus * rc )
 	msecs = (CMPIUint64) 1000000 * (CMPIUint64) tv.tv_sec 
 		+ (CMPIUint64) tv.tv_usec;
 
-	return (CMPIDateTime *) __new_datetime ( TOOL_MM_ADD,
-						 msecs,
+	return (CMPIDateTime *) __new_datetime (msecs,
 						 0,
 						 rc );
 }
@@ -289,8 +279,7 @@ CMPIDateTime * native_new_CMPIDateTime_fromBinary ( CMPIUint64 time,
 						    CMPIBoolean interval,
 						    CMPIStatus * rc )
 {
-	return (CMPIDateTime *) __new_datetime ( TOOL_MM_ADD,
-						 time,
+	return (CMPIDateTime *) __new_datetime ( time,
 						 interval,
 						 rc );
 }
@@ -350,8 +339,7 @@ CMPIDateTime * native_new_CMPIDateTime_fromChars ( const char * string,
 
 	free ( str );
 
-	return (CMPIDateTime *)
-		__new_datetime ( TOOL_MM_ADD, msecs, interval, rc );
+	return (CMPIDateTime *)__new_datetime ( msecs, interval, rc );
 }
 
 

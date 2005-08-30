@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2005/08/30 11:32:12 a3schuur Exp $
+# $Id: Makefile.am,v 1.4 2005/08/30 22:59:36 a3schuur Exp $
 
 AM_LFLAGS=-i
 AM_YFLAGS=-d
@@ -8,8 +8,6 @@ BUILT_SOURCES = \
 
 noinst_HEADERS = \
 	cimXmlParser.h \
-	genericlist.h \
-	tool.h \
 	utilStringBuffer.h
 
 pkginclude_HEADERS = \
@@ -43,6 +41,6 @@ libcmpisfcc_la_SOURCES = \
                    cimXmlParser.c
 libcmpisfcc_la_LIBADD = -lcurl
 
-#SUBDIRS = . TEST
+SUBDIRS = . TEST
 
 AM_CPPFLAGS = -I../../ -I$(top_builddir)/src

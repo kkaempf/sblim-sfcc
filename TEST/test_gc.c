@@ -19,8 +19,8 @@
  *  that the CIM schema 2.10 final and the test instance MOF be installed
  *  in root/iicmv1. For more information see library README.
  */
-#include <lib/cmci.h>
-#include <lib/native.h>
+#include <cmci.h>
+#include <native.h>
 #include <unistd.h>
 
 #include "show.h"

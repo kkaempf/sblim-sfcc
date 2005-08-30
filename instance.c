@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -28,7 +28,7 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 
@@ -40,13 +40,13 @@ static void __release_list ( char ** list )
 
 		char ** tmp = list;
 
-		while ( *tmp ) tool_mm_add ( *tmp++ );
-		tool_mm_add ( list );
+		while ( *tmp ) free( *tmp++ );
+		free( list );
 	}
 }
 
 
-static char ** __duplicate_list ( char ** list, int mem_state )
+static char ** __duplicate_list ( char ** list )
 {
 	char ** result = NULL;
 	
@@ -56,12 +56,11 @@ static char ** __duplicate_list ( char ** list, int mem_state )
 
 		while ( *tmp++ ) ++size;
 
-		result = tool_mm_alloc ( mem_state, size * sizeof ( char * ) );
+		result = malloc ( size * sizeof ( char * ) );
 
 		for ( tmp = result; *list; tmp++ ) {
 
 			*tmp = strdup ( *list++ );
-			if ( mem_state == TOOL_MM_ADD ) tool_mm_add ( *tmp );
 		}
 	}
 
@@ -87,22 +86,15 @@ static CMPIStatus __ift_release ( CMPIInstance * instance )
 {
 	struct native_instance * i = (struct native_instance *) instance;
 
-	if ( i->mem_state == TOOL_MM_NO_ADD ) {
-
-		i->mem_state = TOOL_MM_ADD;
-
-		tool_mm_add ( i );
-		tool_mm_add ( i->classname );
-		tool_mm_add ( i->nameSpace );
-		
-		__release_list ( i->property_list );
-		__release_list ( i->key_list );
-
-		propertyFT.release ( i->props );
-
-		CMReturn ( CMPI_RC_OK );
-	}
-
+	if (i) {
+      if (i->classname) free(i->classname);
+	   if (i->nameSpace) free(i->nameSpace);
+	   __release_list ( i->property_list );
+	   __release_list ( i->key_list );
+      free(i);
+      CMReturn ( CMPI_RC_OK );
+   }   
+ 
 	CMReturn ( CMPI_RC_ERR_FAILED );
 }
 
@@ -112,14 +104,12 @@ static CMPIInstance * __ift_clone ( CMPIInstance * instance, CMPIStatus * rc )
 	struct native_instance * i   = (struct native_instance *) instance;
 	struct native_instance * new = 
 		(struct native_instance *) 
-		tool_mm_alloc ( TOOL_MM_NO_ADD,
-				sizeof ( struct native_instance ) );
+		calloc ( 1, sizeof ( struct native_instance ) );
 
 	new->classname     = strdup ( i->classname );
 	new->nameSpace     = strdup ( i->nameSpace );
-	new->property_list = __duplicate_list ( i->property_list,
-						TOOL_MM_NO_ADD );
-	new->key_list      = __duplicate_list ( i->key_list, TOOL_MM_NO_ADD );
+	new->property_list = __duplicate_list ( i->property_list );
+	new->key_list      = __duplicate_list ( i->key_list );
 	new->props     = propertyFT.clone ( i->props, rc );
 
 	return (CMPIInstance *) new;
@@ -169,12 +159,10 @@ static CMPIStatus __ift_setProperty ( CMPIInstance * instance,
 	     __contained_list ( i->key_list, name ) ) {
 
 		if ( propertyFT.setProperty ( i->props,
-					      i->mem_state,
 					      name, 
 					      type,
 					      value ) ) {
-			propertyFT.addProperty ( &i->props, 
-						 i->mem_state,
+			propertyFT.addProperty ( &i->props,
 						 name, 
 						 type, 
 						 0, 
@@ -226,15 +214,15 @@ static CMPIStatus __ift_setPropertyFilter ( CMPIInstance * instance,
 
 	struct native_instance * i = (struct native_instance *) instance;
 
-	if ( i->filtered && i->mem_state == TOOL_MM_NO_ADD ) {
+	if ( i->filtered ) {
 
 		__release_list ( i->property_list );
 		__release_list ( i->key_list );
 	}
 
 	i->filtered = 1;
-	i->property_list = __duplicate_list ( propertyList, i->mem_state );
-	i->key_list      = __duplicate_list ( keys, i->mem_state );
+	i->property_list = __duplicate_list ( propertyList );
+	i->key_list      = __duplicate_list ( keys );
 
 	CMReturn ( CMPI_RC_OK );
 }   
@@ -262,13 +250,12 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 
 	struct native_instance * instance =
 		(struct native_instance *) 
-		tool_mm_alloc ( TOOL_MM_ADD, sizeof ( struct native_instance ) );
+		calloc ( 1, sizeof ( struct native_instance ) );
 
 	CMPIStatus tmp1, tmp2, tmp3;
 	CMPIString * str;
 
 	instance->instance     = i;
-	instance->mem_state    = TOOL_MM_ADD;
 
 	if (cop) {
 	   int j = CMGetKeyCount ( cop, &tmp1 );
@@ -287,7 +274,6 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 			CMPIString * keyName;
 			CMPIData tmp = CMGetKeyAt ( cop, j, &keyName, &tmp1 );
 			propertyFT.addProperty ( &instance->props,
-						 TOOL_MM_ADD,
 						 CMGetCharPtr ( keyName ),
 						 tmp.type,
 						 tmp.state,

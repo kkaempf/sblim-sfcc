@@ -19,27 +19,25 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 
 struct native_enum {
 	CMPIEnumeration enumeration;
-	int mem_state;
 
 	CMPICount current;
 	CMPIArray * data;
 };
 
 
-static struct native_enum * __new_enumeration ( int,
-						CMPIArray *,
+static struct native_enum * __new_enumeration ( CMPIArray *,
 						CMPIStatus * );
 
 
@@ -48,11 +46,12 @@ static struct native_enum * __new_enumeration ( int,
 static CMPIStatus __eft_release ( CMPIEnumeration * enumeration )
 {
 	struct native_enum * e = (struct native_enum *) enumeration;
+        CMPIStatus st;
 
-	if ( e->mem_state == TOOL_MM_NO_ADD ) {
-
-		tool_mm_add ( enumeration );
-		return e->data->ft->release ( e->data );
+	if ( e ) {
+		st = e->data->ft->release ( e->data );
+		free ( enumeration );
+                return st;
 	}
 
 	CMReturn ( CMPI_RC_ERR_FAILED );
@@ -73,9 +72,7 @@ static CMPIEnumeration * __eft_clone ( CMPIEnumeration * enumeration,
 	}
 
 	return 
-		(CMPIEnumeration *) __new_enumeration ( TOOL_MM_NO_ADD,
-							data,
-							rc );
+		(CMPIEnumeration *) __new_enumeration ( data, rc );
 }
 
 
@@ -104,8 +101,7 @@ static CMPIArray * __eft_toArray ( CMPIEnumeration * enumeration,
 }
 
 
-static struct native_enum * __new_enumeration ( int mm_add,
-						CMPIArray * array,
+static struct native_enum * __new_enumeration ( CMPIArray * array,
 						CMPIStatus * rc )
 {
 	static CMPIEnumerationFT eft = {
@@ -121,15 +117,11 @@ static struct native_enum * __new_enumeration ( int mm_add,
 		&eft
 	};
 
-	struct native_enum * enumeration =
-		(struct native_enum *)
-		tool_mm_alloc ( mm_add, sizeof ( struct native_enum ) );
+	struct native_enum * enumeration = (struct native_enum *)
+		calloc ( 1, sizeof ( struct native_enum ) );
 
 	enumeration->enumeration = e;
-	enumeration->mem_state   = mm_add;
-	enumeration->data =
-		( mm_add == TOOL_MM_NO_ADD )?
-		CMClone ( array, rc ): array;
+	enumeration->data = array;
 
 	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
 	return enumeration;
@@ -139,9 +131,7 @@ static struct native_enum * __new_enumeration ( int mm_add,
 CMPIEnumeration * native_new_CMPIEnumeration ( CMPIArray * array,
 					       CMPIStatus * rc )
 {
-	return (CMPIEnumeration *) __new_enumeration ( TOOL_MM_ADD,
-						       array,
-						       rc );
+	return (CMPIEnumeration *) __new_enumeration ( array, rc );
 }
 
 

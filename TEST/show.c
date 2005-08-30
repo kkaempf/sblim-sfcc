@@ -17,8 +17,8 @@
  *
  *    Test case show functions for instance, object paths
  */
-#include <lib/cmci.h>
-#include <lib/native.h>
+#include <cmci.h>
+#include <native.h>
 #include <unistd.h>
 
 #include "show.h"

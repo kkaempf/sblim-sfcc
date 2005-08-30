@@ -23,7 +23,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdlib.h>
@@ -31,7 +31,7 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 
@@ -43,15 +43,13 @@ struct native_array_item {
 
 struct native_array {
    CMPIArray array;
-   int mem_state;
-
    CMPICount size,max,dynamic;
    CMPIType type;
    struct native_array_item * data;
 };
 
 
-static struct native_array * __new_empty_array ( int, CMPICount,
+static struct native_array * __new_empty_array ( CMPICount,
     CMPIType, CMPIStatus * );
 
 
@@ -77,7 +75,7 @@ void native_array_increase_size(CMPIArray * array, CMPICount increment)
       if (a->size==0) a->max=8;
       else while ((a->size+increment)>a->max) a->max*=2;
       a->data = (struct native_array_item *)
-         tool_mm_realloc(a->data, a->max * sizeof(struct native_array_item));
+         realloc(a->data, a->max * sizeof(struct native_array_item));
       memset(&a->data[a->size], 0, sizeof(struct native_array_item) * increment);
    }
    a->size += increment;
@@ -88,18 +86,18 @@ static CMPIStatus __aft_release ( CMPIArray * array )
 {
    struct native_array * a = (struct native_array *) array;
 
-   if ( a->mem_state == TOOL_MM_NO_ADD ) {
+   if ( a ) {
 
       int i = a->size;
-
-      tool_mm_add ( a );
-      tool_mm_add ( a->data );
 
       while ( i-- ) {
          if ( ! ( a->data[i].state & CMPI_nullValue ) ) {
             native_release_CMPIValue ( a->type, &a->data[i].value );
          }
       }
+      
+      free ( a->data );
+      free ( a );
 
       CMReturn ( CMPI_RC_OK );
    }
@@ -112,8 +110,7 @@ static CMPIArray * __aft_clone ( CMPIArray * array, CMPIStatus * rc )
 {
    CMPIStatus tmp;
    struct native_array * a   = (struct native_array *) array;
-   struct native_array * new =
-      __new_empty_array ( TOOL_MM_NO_ADD, a->size, a->type, &tmp );
+   struct native_array * new = __new_empty_array ( a->size, a->type, &tmp );
 
    int i = a->size;
 
@@ -190,15 +187,14 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
 
          a->data[index].state = 0;
          if (opt) a->data[index].value = *val;
-         else a->data[index].value =  ( a->mem_state == TOOL_MM_ADD )?  *val:
-               native_clone_CMPIValue ( type, val, &rc );
+         else a->data[index].value =  native_clone_CMPIValue ( type, val, &rc );
          return rc;
       }
 
       if ( type == CMPI_null ) {
 
          if ( ! ( a->data[index].state & CMPI_nullValue ) ) {
-            __make_NULL ( a, index, index, a->mem_state == TOOL_MM_NO_ADD );
+            __make_NULL ( a, index, index, 1 );
          }
          CMReturn ( CMPI_RC_OK );
       }
@@ -213,7 +209,7 @@ static CMPIStatus __aft_setElementAt ( CMPIArray * array, CMPICount index, CMPIV
 }
 
 
-static struct native_array * __new_empty_array ( int mm_add, CMPICount size, CMPIType type,
+static struct native_array * __new_empty_array ( CMPICount size, CMPIType type,
       CMPIStatus * rc )
 {
    static CMPIArrayFT aft = {
@@ -231,10 +227,9 @@ static struct native_array * __new_empty_array ( int mm_add, CMPICount size, CMP
    };
 
    struct native_array * array = (struct native_array *)
-      tool_mm_alloc ( mm_add, sizeof ( struct native_array ) );
+      calloc ( 1, sizeof ( struct native_array ) );
 
    array->array     = a;
-   array->mem_state = mm_add;
 
    type        &= ~CMPI_ARRAY;
    array->type  = ( type == CMPI_chars )? CMPI_string: type;
@@ -250,7 +245,7 @@ static struct native_array * __new_empty_array ( int mm_add, CMPICount size, CMP
    }    
      
    array->data  = (struct native_array_item *) 
-      tool_mm_alloc ( mm_add, array->max * sizeof ( struct native_array_item ) );
+      calloc ( 1, array->max * sizeof ( struct native_array_item ) );
 
    __make_NULL ( array, 0, array->max - 1, 0 );
 
@@ -261,7 +256,7 @@ static struct native_array * __new_empty_array ( int mm_add, CMPICount size, CMP
 
 CMPIArray * native_new_CMPIArray ( CMPICount size, CMPIType type, CMPIStatus * rc )
 {
-   return (CMPIArray *) __new_empty_array ( TOOL_MM_ADD, size, type, rc );
+   return (CMPIArray *) __new_empty_array ( size, type, rc );
 }
 
 CMPIStatus simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type)

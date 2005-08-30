@@ -20,14 +20,14 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 
@@ -38,15 +38,11 @@
  */
 struct native_args {
 	CMPIArgs args;	        /*!< the inheriting data structure  */
-	int mem_state;		/*!< states, whether this object is
-				  registered within the memory mangagement or
-				  represents a cloned object */
-
 	struct native_property * data;	/*!< argument content */
 };
 
 
-static struct native_args * __new_empty_args ( int, CMPIStatus * );
+static struct native_args * __new_empty_args ( CMPIStatus * );
 
 /****************************************************************************/
 
@@ -55,11 +51,10 @@ static CMPIStatus __aft_release ( CMPIArgs * args )
 {
 	struct native_args * a = (struct native_args *) args;
 
-	if ( a->mem_state == TOOL_MM_NO_ADD ) {
+	if ( a ) {
 
-		tool_mm_add ( a );
-		a->mem_state = TOOL_MM_ADD;
 		propertyFT.release ( a->data );
+		free ( a );
 
 		CMReturn ( CMPI_RC_OK );
 	}
@@ -71,7 +66,7 @@ static CMPIStatus __aft_release ( CMPIArgs * args )
 static CMPIArgs * __aft_clone ( CMPIArgs * args, CMPIStatus * rc )
 {
 	struct native_args * a   = (struct native_args *) args;
-	struct native_args * new = __new_empty_args ( TOOL_MM_NO_ADD, rc );
+	struct native_args * new = __new_empty_args ( rc );
 
 	if ( rc->rc == CMPI_RC_OK ) {
 		new->data = propertyFT.clone ( a->data, rc );
@@ -89,7 +84,6 @@ static CMPIStatus __aft_addArg ( CMPIArgs * args,
 	struct native_args * a = (struct native_args *) args;
 
 	CMReturn ( ( propertyFT.addProperty ( &a->data,
-					      a->mem_state,
 					      name,
 					      type,
 					      0,
@@ -128,7 +122,7 @@ static unsigned int __aft_getArgCount ( CMPIArgs * args, CMPIStatus * rc )
 }
 
 
-static struct native_args * __new_empty_args ( int mm_add, CMPIStatus * rc )
+static struct native_args * __new_empty_args ( CMPIStatus * rc )
 {
 	static CMPIArgsFT aft = {
 		NATIVE_FT_VERSION,
@@ -144,13 +138,11 @@ static struct native_args * __new_empty_args ( int mm_add, CMPIStatus * rc )
 		&aft
 	};
 
-	struct native_args * args =
-		(struct native_args *) 
-		tool_mm_alloc ( mm_add, sizeof ( struct native_args ) );
+	struct native_args * args = (struct native_args *) 
+		calloc ( 1, sizeof ( struct native_args ) );
 
 	args->args      = a;
-	args->mem_state = mm_add;
-        args->data = 0;
+	args->data = 0;
 
 	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
 	return args;
@@ -159,7 +151,7 @@ static struct native_args * __new_empty_args ( int mm_add, CMPIStatus * rc )
 
 CMPIArgs * native_new_CMPIArgs ( CMPIStatus * rc )
 {
-	return (CMPIArgs *) __new_empty_args ( TOOL_MM_ADD, rc );
+	return (CMPIArgs *) __new_empty_args ( rc );
 }
 
 /*****************************************************************************/

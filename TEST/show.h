@@ -1,5 +1,5 @@
-#include <lib/cmci.h>
-#include <lib/native.h>
+#include <cmci.h>
+#include <native.h>
 #include <unistd.h>
 
 extern char *value2Chars(CMPIType type, CMPIValue * value);

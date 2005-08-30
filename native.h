@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #ifndef _REMOTE_CMPI_NATIVE_DATA_H
@@ -43,7 +43,6 @@ struct native_qualifier;
 
 struct native_constClass {
 	CMPIConstClass ccls;
-	int mem_state;
 
 	char * classname;
 
@@ -53,7 +52,6 @@ struct native_constClass {
 
 struct native_instance {
 	CMPIInstance instance;
-	int mem_state;
 
 	char * classname;
 	char * nameSpace;
@@ -77,7 +75,6 @@ struct native_propertyFT {
 	
 	//! Adds a new native_property to a list.
 	int (* addProperty) ( struct native_property **,
-			      int, 
 			      const char *,
 			      CMPIType, 
 			      CMPIValueState, 
@@ -85,7 +82,6 @@ struct native_propertyFT {
 
 	//! Resets the values of an existing native_property, if existant.
 	int (* setProperty) ( struct native_property *, 
-			      int,
 			      const char *, 
 			      CMPIType,
 			      CMPIValue * );
@@ -123,7 +119,6 @@ struct native_qualifierFT {
 	
 	//! Adds a new native_qualifier to a list.
 	int (* addQualifier) ( struct native_qualifier **,
-			      int, 
 			      const char *,
 			      CMPIType, 
 			      CMPIValueState, 
@@ -131,7 +126,6 @@ struct native_qualifierFT {
 
 	//! Resets the values of an existing native_qualifier, if existant.
 	int (* setQualifier) ( struct native_qualifier *, 
-			      int,
 			      const char *, 
 			      CMPIType,
 			      CMPIValue * );

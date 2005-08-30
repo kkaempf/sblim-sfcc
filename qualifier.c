@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -27,7 +27,7 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 //! Storage container for commonly needed data within native CMPI data types.
@@ -73,7 +73,6 @@ static CMPIData __convert2CMPIData ( struct native_qualifier * qual,
  * returns non-zero if already existant
  */
 static int __addQualifier ( struct native_qualifier ** qual,
-			   int mm_add, 
 			   const char * name,
 			   CMPIType type,  
 			   CMPIValueState state, 
@@ -82,14 +81,10 @@ static int __addQualifier ( struct native_qualifier ** qual,
 	CMPIValue v;
 
 	if ( *qual == NULL ) {
-		struct native_qualifier * tmp = *qual =
-			(struct native_qualifier *) 
-			tool_mm_alloc ( mm_add,
+		struct native_qualifier * tmp = *qual = (struct native_qualifier *) calloc ( 1,
 					sizeof ( struct native_qualifier ) );
   
 		tmp->name = strdup ( name );
-
-		if ( mm_add == TOOL_MM_ADD ) tool_mm_add ( tmp->name );
 
 		if ( type == CMPI_chars ) {
 
@@ -103,25 +98,18 @@ static int __addQualifier ( struct native_qualifier ** qual,
 
 		if ( type != CMPI_null ) {
 			tmp->state = state;
+		
+			CMPIStatus rc;
+			tmp->value = native_clone_CMPIValue ( type,
+							      value,
+							      &rc );
 
-			if ( mm_add == TOOL_MM_ADD ) {
-
-				tmp->value = *value;
-			} else {
-			
-				CMPIStatus rc;
-				tmp->value = native_clone_CMPIValue ( type,
-								      value,
-								      &rc );
-				// what if clone() fails???
-			}
 		} else tmp->state = CMPI_nullValue;
 
 		return 0;
 	}
 	return ( strcmp ( (*qual)->name, name ) == 0 ||
 		 __addQualifier ( &( (*qual)->next ), 
-				 mm_add, 
 				 name, 
 				 type, 
 				 state, 
@@ -133,7 +121,6 @@ static int __addQualifier ( struct native_qualifier ** qual,
  * returns -1 if non-existant
  */
 static int __setQualifier ( struct native_qualifier * qual, 
-			   int mm_add,
 			   const char * name, 
 			   CMPIType type,
 			   CMPIValue * value )
@@ -161,18 +148,13 @@ static int __setQualifier ( struct native_qualifier * qual,
 		qual->type  = type;
 
 		if ( type != CMPI_null ) {
-			qual->value =
-				( mm_add == TOOL_MM_ADD )?
-				*value:
-				native_clone_CMPIValue ( type, value, &rc );
-
-			// what if clone() fails ???
+			qual->value =	native_clone_CMPIValue ( type, value, &rc );
 
 		} else qual->state = CMPI_nullValue;
 
 		return 0;
 	}
-	return __setQualifier ( qual->next, mm_add, name, type, value);
+	return __setQualifier ( qual->next, name, type, value);
 }
 
 
@@ -249,9 +231,9 @@ static CMPICount __getQualifierCount ( struct native_qualifier * qual,
 static void __release ( struct native_qualifier * qual )
 {
 	for ( ; qual; qual = qual->next ) {
-		tool_mm_add ( qual );
-		tool_mm_add ( qual->name );
+		free ( qual->name );
 		native_release_CMPIValue ( qual->type, &qual->value );
+		free ( qual );
 	}
 }
 
@@ -268,9 +250,7 @@ static struct native_qualifier * __clone ( struct native_qualifier * qual,
 		return NULL;
 	}
 
-	result = 
-		(struct native_qualifier * ) 
-		tool_mm_alloc ( TOOL_MM_NO_ADD,
+	result = (struct native_qualifier * ) calloc ( 1,
 				sizeof ( struct native_qualifier ) );
 
 	result->name  = strdup ( qual->name );

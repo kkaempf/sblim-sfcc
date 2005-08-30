@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 */
 
 #include <stdio.h>
@@ -27,7 +27,7 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 //! Storage container for commonly needed data within native CMPI data types.
@@ -73,7 +73,6 @@ static CMPIData __convert2CMPIData ( struct native_property * prop,
  * returns non-zero if already existant
  */
 static int __addProperty ( struct native_property ** prop,
-			   int mm_add, 
 			   const char * name,
 			   CMPIType type,  
 			   CMPIValueState state, 
@@ -82,15 +81,11 @@ static int __addProperty ( struct native_property ** prop,
 	CMPIValue v;
 
 	if ( *prop == NULL ) {
-		struct native_property * tmp = *prop =
-			(struct native_property *) 
-			tool_mm_alloc ( mm_add,
+		struct native_property * tmp = *prop = (struct native_property *) calloc ( 1,
 					sizeof ( struct native_property ) );
   
 		tmp->qualifiers = NULL;
 		tmp->name = strdup ( name );
-
-		if ( mm_add == TOOL_MM_ADD ) tool_mm_add ( tmp->name );
 
 		if ( type == CMPI_chars ) {
 			type = CMPI_string;
@@ -103,15 +98,10 @@ static int __addProperty ( struct native_property ** prop,
 		if ( type != CMPI_null && state != CMPI_nullValue) {
 			tmp->state = state;
 
-			if ( mm_add == TOOL_MM_ADD ) {
 
-				tmp->value = *value;
-			} 
-         else {
-				CMPIStatus rc;
-				tmp->value = native_clone_CMPIValue ( type, value, &rc );
-				// what if clone() fails???
-			}
+			CMPIStatus rc;
+			tmp->value = native_clone_CMPIValue ( type, value, &rc );
+			// what if clone() fails???
 		} 
       else {
          tmp->state = CMPI_nullValue;
@@ -122,7 +112,6 @@ static int __addProperty ( struct native_property ** prop,
 	}
 	return ( strcmp ( (*prop)->name, name ) == 0 ||
 		 __addProperty ( &( (*prop)->next ), 
-				 mm_add, 
 				 name, 
 				 type, 
 				 state, 
@@ -134,7 +123,6 @@ static int __addProperty ( struct native_property ** prop,
  * returns -1 if non-existant
  */
 static int __setProperty ( struct native_property * prop, 
-			   int mm_add,
 			   const char * name, 
 			   CMPIType type,
 			   CMPIValue * value )
@@ -162,18 +150,13 @@ static int __setProperty ( struct native_property * prop,
 		prop->type  = type;
 
 		if ( type != CMPI_null ) {
-			prop->value =
-				( mm_add == TOOL_MM_ADD )?
-				*value:
-				native_clone_CMPIValue ( type, value, &rc );
-
-			// what if clone() fails ???
+			prop->value = native_clone_CMPIValue ( type, value, &rc );
 
 		} else prop->state = CMPI_nullValue;
 
 		return 0;
 	}
-	return __setProperty ( prop->next, mm_add, name, type, value);
+	return __setProperty ( prop->next, name, type, value);
 }
 
 
@@ -264,9 +247,9 @@ static CMPICount __getPropertyCount ( struct native_property * prop,
 static void __release ( struct native_property * prop )
 {
 	for ( ; prop; prop = prop->next ) {
-		tool_mm_add ( prop );
-		tool_mm_add ( prop->name );
+		free ( prop->name );
 		native_release_CMPIValue ( prop->type, &prop->value );
+		free ( prop );
 	}
 }
 
@@ -283,9 +266,7 @@ static struct native_property * __clone ( struct native_property * prop,
 		return NULL;
 	}
 
-	result = 
-		(struct native_property * ) 
-		tool_mm_alloc ( TOOL_MM_NO_ADD,
+	result = (struct native_property * ) calloc ( 1,
 				sizeof ( struct native_property ) );
 
 	result->name  = strdup ( prop->name );

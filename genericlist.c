@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "genericlist.h"
-#include "tool.h"
+//#include "tool.h"
 //#include "mlog.h"
 #include "cmci.h"
 
@@ -759,8 +759,11 @@ UtilList *newList()
    
    ul.ft = UtilListFT;
    initialize_list((Generic_list *) & ul.hdl);
-   tUl=(UtilList*)(memAddEncObj(MEM_NOT_TRACKED, &ul, sizeof(ul),&state));
-   tUl->mem_state=state;
+//   tUl=(UtilList*)calloc(memAddEncObj(MEM_NOT_TRACKED, &ul, sizeof(ul),&state));
+//   tUl->mem_state=state;
+   tUl=memcpy(malloc(sizeof(ul)),&ul,sizeof(ul));
+   
+//#define memAddEncObj(type, ul, size, state) *state=0,memcpy(malloc(size),ul,size)
 
    return tUl;
 }

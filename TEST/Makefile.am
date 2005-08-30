@@ -1,9 +1,9 @@
-AM_CPPFLAGS = -I../../ $(AUTOUNIT_CPP_CFLAGS) -I$(top_builddir)/src -I$(top_srcdir)/src
+AM_CPPFLAGS = -I../ $(AUTOUNIT_CPP_CFLAGS) -I$(top_builddir)/src -I$(top_srcdir)/src
 
-if HAVE_AUTOUNIT_CPP
+#if HAVE_AUTOUNIT_CPP
 
 AM_LDFLAGS = \
-	-L$(top_builddir)/src/lib -lcmpisfcc  \
+	-L$(top_builddir)/.libs -lcmpisfcc  \
 	$(AUTOUNIT_CPP_LIBS)
 
 OUR_UNIT_TESTS = \
@@ -13,12 +13,12 @@ check_PROGRAMS = $(OUR_UNIT_TESTS)
 TESTS = $(OUR_UNIT_TESTS)
 
 OUR_LDADD = \
-	$(top_builddir)/src/lib/libcmpisfcc.la 
+	$(top_builddir)/.lib/libcmpisfcc.la 
 
 test_native_SOURCES = test_objectpath.cpp
 test_native_LDADD = $(OUR_LDADD)
 
-endif
+#endif
 
 noinst_PROGRAMS	= test \
                   test_an \

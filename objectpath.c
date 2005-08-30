@@ -20,7 +20,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -29,7 +29,7 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 #include "utilStringBuffer.h"
 
@@ -45,16 +45,13 @@ extern char *value2Chars(CMPIType type, CMPIValue * value);
 
 struct native_cop {
 	CMPIObjectPath cop;
-	int mem_state;
-
 	char * nameSpace;
 	char * classname;
 	struct native_property * keys;
 };
 
 
-static struct native_cop * __new_empty_cop ( int, 
-					     const char *,
+static struct native_cop * __new_empty_cop ( const char *,
 					     const char *,
 					     CMPIStatus * );
 
@@ -65,15 +62,12 @@ static CMPIStatus __oft_release ( CMPIObjectPath * cop )
 {
 	struct native_cop * o = (struct native_cop *) cop;
 
-	if ( o->mem_state == TOOL_MM_NO_ADD ) {
+	if ( o ) {
 
-		o->mem_state = TOOL_MM_ADD;
-
-		tool_mm_add ( o );
-		tool_mm_add ( o->classname );
-		tool_mm_add ( o->nameSpace );
-
+		if (o->classname) free ( o->classname );
+		if (o->nameSpace) free ( o->nameSpace );
 		propertyFT.release ( o->keys );
+		free ( o );
 
 		CMReturn ( CMPI_RC_OK );
 	}
@@ -86,8 +80,7 @@ static CMPIObjectPath * __oft_clone ( CMPIObjectPath * cop, CMPIStatus * rc )
 {
 	CMPIStatus tmp;
 	struct native_cop * o   = (struct native_cop *) cop;
-	struct native_cop * new = __new_empty_cop ( TOOL_MM_NO_ADD,
-						    o->nameSpace,
+	struct native_cop * new = __new_empty_cop ( o->nameSpace,
 						    o->classname,
 						    &tmp );
 
@@ -108,10 +101,8 @@ static CMPIStatus __oft_setNameSpace ( CMPIObjectPath * cop,
 
 	char * ns = ( nameSpace )? strdup ( nameSpace ): NULL;
   
-	if ( o->mem_state == TOOL_MM_NO_ADD ) {
+	if ( o ) {
 		free ( o->nameSpace );
-	} else {
-		tool_mm_add ( ns );
 	}
 
 	o->nameSpace = ns;
@@ -149,11 +140,9 @@ static CMPIStatus __oft_setClassName ( CMPIObjectPath * cop,
 
 	char * cn = ( classname )? strdup ( classname ): NULL;
   
-	if ( o->mem_state == TOOL_MM_NO_ADD ) {
+	if ( o ) {
 		free ( o->classname );
-	} else {
-		tool_mm_add ( cn );
-	}
+	} 
 
 	o->classname = cn;
 	CMReturn ( CMPI_RC_OK );
@@ -177,7 +166,6 @@ static CMPIStatus __oft_addKey ( CMPIObjectPath * cop,
 	struct native_cop * o = (struct native_cop *) cop;
 
 	CMReturn ( ( propertyFT.addProperty ( &o->keys,
-					      o->mem_state,
 					      name,
 					      type,
 					      CMPI_keyValue,
@@ -225,8 +213,7 @@ static CMPIStatus __oft_setNameSpaceFromObjectPath ( CMPIObjectPath * cop,
 
 static CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
 
-static struct native_cop * __new_empty_cop ( int mm_add,
-					     const char * nameSpace,
+static struct native_cop * __new_empty_cop ( const char * nameSpace,
 					     const char * classname,
 					     CMPIStatus * rc )
 {
@@ -260,17 +247,11 @@ static struct native_cop * __new_empty_cop ( int mm_add,
 
 	struct native_cop * cop =
 		(struct native_cop *) 
-		tool_mm_alloc ( mm_add, sizeof ( struct native_cop ) );
+		calloc ( 1, sizeof ( struct native_cop ) );
 
 	cop->cop       = o;
-	cop->mem_state = mm_add;
 	cop->classname = ( classname )? strdup ( classname ): NULL;
 	cop->nameSpace = ( nameSpace )? strdup ( nameSpace ): NULL;
-
-	if ( mm_add == TOOL_MM_ADD ) {
-		tool_mm_add ( cop->classname );
-		tool_mm_add ( cop->nameSpace );
-	}
 
 	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
 	return cop;
@@ -281,8 +262,7 @@ CMPIObjectPath * newCMPIObjectPath ( const char * nameSpace,
 					     const char * classname,
 					     CMPIStatus * rc )
 {
-	return (CMPIObjectPath *) __new_empty_cop ( TOOL_MM_ADD,
-						    nameSpace,
+	return (CMPIObjectPath *) __new_empty_cop ( nameSpace,
 						    classname,
 						    rc );
 }

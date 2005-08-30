@@ -17,9 +17,9 @@
  *  General test for library APIs, original from sfcc project. To pass 
  *  all tests requires additional support to be added to your CIMOM.
  */
-#include <lib/cmci.h>
-#include <lib/native.h>
-#include <unistd.h>
+#include <cmci.h>
+#include <native.h>
+#include <unistd.h> 
 
 static char * _HOSTNAME = "bestorga.ibm.com";
 

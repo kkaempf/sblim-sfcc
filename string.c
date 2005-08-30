@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 
   \todo Once CMGetCharPtr() macro uses the appropriate function call instead
   of casting the internal hdl, store "CMPIString" type in there.
@@ -29,16 +29,15 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-#include "tool.h"
+//#include "tool.h"
 #include "native.h"
 
 struct native_string {
 	CMPIString string;
-	int mem_state;
 };
 
 
-static struct native_string * __new_string ( int, const char *, CMPIStatus * );
+static struct native_string * __new_string ( const char *, CMPIStatus * );
 
 
 /*****************************************************************************/
@@ -47,10 +46,10 @@ static CMPIStatus __sft_release ( CMPIString * string )
 {
 	struct native_string * s = (struct native_string *) string;
 
-	if ( s->mem_state == TOOL_MM_NO_ADD ) {
+	if ( s ) {
 
-		tool_mm_add ( s );
-		tool_mm_add ( s->string.hdl );
+		free ( s->string.hdl );
+		free ( s );
 
 		CMReturn ( CMPI_RC_OK );
 	}
@@ -61,10 +60,7 @@ static CMPIStatus __sft_release ( CMPIString * string )
 
 static CMPIString * __sft_clone ( CMPIString * string, CMPIStatus * rc )
 {
-	return (CMPIString * )
-		__new_string ( TOOL_MM_NO_ADD,
-			       string->ft->getCharPtr ( string, rc ),
-			       rc );
+	return (CMPIString * ) __new_string ( string->ft->getCharPtr ( string, rc ), rc );
 }
 
 
@@ -74,8 +70,7 @@ static char * __sft_getCharPtr ( CMPIString * string, CMPIStatus * rc )
 }
 
 
-static struct native_string * __new_string ( int mm_add,
-					     const char * ptr,
+static struct native_string * __new_string ( const char * ptr,
 					     CMPIStatus * rc )
 {
 	static CMPIStringFT sft = {
@@ -87,15 +82,10 @@ static struct native_string * __new_string ( int mm_add,
 
 	struct native_string * string =
 		(struct native_string *)
-		tool_mm_alloc ( mm_add, sizeof ( struct native_string ) );
+		calloc ( 1, sizeof ( struct native_string ) );
 
 	string->string.hdl = ( ptr )? strdup ( ptr ): NULL;
 	string->string.ft  = &sft;
-	string->mem_state  = mm_add;
-
-	if ( mm_add == TOOL_MM_ADD ) {
-		tool_mm_add ( string->string.hdl );
-	}
 
 	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
 	return string;
@@ -104,7 +94,7 @@ static struct native_string * __new_string ( int mm_add,
 
 CMPIString * native_new_CMPIString ( const char * ptr, CMPIStatus * rc )
 {
-	return (CMPIString *) __new_string ( TOOL_MM_ADD, ptr, rc );
+	return (CMPIString *) __new_string ( ptr, rc );
 }
 
 

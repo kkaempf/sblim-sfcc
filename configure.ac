@@ -39,5 +39,5 @@ AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([gettimeofday localtime_r memset strcasecmp strdup strncasecmp strstr tzset])
 
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile TEST/Makefile])
 AC_OUTPUT
