@@ -1,0 +1,113 @@
+AM_CPPFLAGS = -I../../ $(AUTOUNIT_CPP_CFLAGS) -I$(top_builddir)/src -I$(top_srcdir)/src
+
+if HAVE_AUTOUNIT_CPP
+
+AM_LDFLAGS = \
+	-L$(top_builddir)/src/lib -lcmpisfcc  \
+	$(AUTOUNIT_CPP_LIBS)
+
+OUR_UNIT_TESTS = \
+	test_native
+
+check_PROGRAMS = $(OUR_UNIT_TESTS)
+TESTS = $(OUR_UNIT_TESTS)
+
+OUR_LDADD = \
+	$(top_builddir)/src/lib/libcmpisfcc.la 
+
+test_native_SOURCES = test_objectpath.cpp
+test_native_LDADD = $(OUR_LDADD)
+
+endif
+
+noinst_PROGRAMS	= test \
+                  test_an \
+                  test_as \
+                  test_ci \
+                  test_di \
+                  test_ec \
+                  test_ecn \
+                  test_ei \
+                  test_ein \
+                  test_gc \
+                  test_gi \
+                  test_gp \
+                  test_im \
+                  test_rf \
+                  test_rfn \
+                  test_si \
+                  test_sp \
+                  test_xq
+
+test_SOURCES = test.c
+test_LDADD = ../libcmpisfcc.la
+
+test_an_SOURCES = test_an.c \
+                   show.c
+test_an_LDADD = ../libcmpisfcc.la
+
+test_as_SOURCES = test_as.c \
+                   show.c
+test_as_LDADD = ../libcmpisfcc.la
+
+test_ci_SOURCES = test_ci.c \
+                   show.c
+test_ci_LDADD = ../libcmpisfcc.la
+
+test_di_SOURCES = test_di.c \
+                   show.c
+test_di_LDADD = ../libcmpisfcc.la
+
+test_ec_SOURCES = test_ec.c \
+                   show.c
+test_ec_LDADD = ../libcmpisfcc.la
+
+test_ecn_SOURCES = test_ecn.c \
+                   show.c
+test_ecn_LDADD = ../libcmpisfcc.la
+
+test_ei_SOURCES = test_ei.c \
+                   show.c
+test_ei_LDADD = ../libcmpisfcc.la
+
+test_ein_SOURCES = test_ein.c \
+                   show.c
+test_ein_LDADD = ../libcmpisfcc.la
+
+test_gc_SOURCES = test_gc.c \
+                  show.c
+test_gc_LDADD = ../libcmpisfcc.la
+
+test_gi_SOURCES = test_gi.c \
+                  show.c
+test_gi_LDADD = ../libcmpisfcc.la
+
+test_gp_SOURCES = test_gp.c \
+                  show.c
+test_gp_LDADD = ../libcmpisfcc.la
+
+test_im_SOURCES = test_im.c \
+                  show.c
+test_im_LDADD = ../libcmpisfcc.la
+
+test_rf_SOURCES = test_rf.c \
+                  show.c
+test_rf_LDADD = ../libcmpisfcc.la
+
+test_rfn_SOURCES = test_rfn.c \
+                  show.c
+test_rfn_LDADD = ../libcmpisfcc.la
+
+test_si_SOURCES = test_si.c \
+                  show.c
+test_si_LDADD = ../libcmpisfcc.la
+
+test_sp_SOURCES = test_sp.c \
+                  show.c
+test_sp_LDADD = ../libcmpisfcc.la
+
+test_xq_SOURCES = test_xq.c \
+                  show.c
+test_xq_LDADD = ../libcmpisfcc.la
+
+
