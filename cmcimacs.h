@@ -236,7 +236,7 @@ inline static   void CMSetStatusWithChars(CMPIStatus* st, CMPIrc rcp,
 #endif
 
 #ifdef CMPI_INLINE
-      /** Generates an ObjectPath out of the namespace, classname and
+      /** Generates an ObjectPath out of the nameSpace, classname and
 	  key propeties of this Instance.
 	 @param inst Instance this pointer.
 	 @param rc Output: Service return status (suppressed when NULL).
@@ -297,9 +297,9 @@ inline static   void CMSetStatusWithChars(CMPIStatus* st, CMPIrc rcp,
 #endif
 
 #ifdef CMPI_INLINE
-       /** Set/replace the namespace component.
+       /** Set/replace the nameSpace component.
 	 @param op ObjectPath this pointer.
-	 @param ns The namespace string
+	 @param ns The nameSpace string
 	 @return Service return status.
       */
    inline static   CMPIStatus CMSetNameSpace
@@ -310,10 +310,10 @@ inline static   void CMSetStatusWithChars(CMPIStatus* st, CMPIrc rcp,
 #endif
 
 #ifdef CMPI_INLINE
-       /** Get the namespace component.
+       /** Get the nameSpace component.
 	 @param op ObjectPath this pointer.
 	 @param rc Output: Service return status (suppressed when NULL).
-	 @return The namespace component.
+	 @return The nameSpace component.
       */
    inline static   CMPIString* CMGetNameSpace
               (CMPIObjectPath* op, CMPIStatus* rc)
@@ -410,7 +410,7 @@ inline static   void CMSetStatusWithChars(CMPIStatus* st, CMPIrc rcp,
 #endif
 
 #ifdef CMPI_INLINE
-      /** Set/replace namespace and classname components from &lt;src&gt;.
+      /** Set/replace nameSpace and classname components from &lt;src&gt;.
 	 @param op ObjectPath this pointer.
 	 @param src Source input.
 	 @return Service return status.
@@ -424,7 +424,7 @@ inline static   void CMSetStatusWithChars(CMPIStatus* st, CMPIrc rcp,
 #endif
 
 #ifdef CMPI_INLINE
-      /** Set/replace hostname, namespace and classname components from &lt;src&gt;.
+      /** Set/replace hostname, nameSpace and classname components from &lt;src&gt;.
 	 @param op ObjectPath this pointer.
 	 @param src Source input.
 	 @return Service return status.
@@ -440,7 +440,7 @@ inline static   void CMSetStatusWithChars(CMPIStatus* st, CMPIrc rcp,
 
 #if defined(CMPI_VER_86)
 #ifdef CMPI_INLINE
-      /** Set/replace hostname, namespace and classname components from &lt;src&gt;.
+      /** Set/replace hostname, nameSpace and classname components from &lt;src&gt;.
 	 @param op ObjectPath this pointer.
 	 @param src Source input.
 	 @return Service return status.

@@ -123,7 +123,7 @@ extern "C" {
               (CMPIInstance* inst, const char *name,
                CMPIValue* value, CMPIType type);
 
-      /** Generates an ObjectPath out of the namespace, classname and
+      /** Generates an ObjectPath out of the nameSpace, classname and
 	  key propeties of this Instance.
 	 @param inst Instance this pointer.
 	 @param rc Output: Service return status (suppressed when NULL).
@@ -203,18 +203,18 @@ extern "C" {
      CMPIObjectPath* (*clone)
               (CMPIObjectPath* op, CMPIStatus* rc);
 
-       /** Set/replace the namespace component.
+       /** Set/replace the nameSpace component.
 	 @param op ObjectPath this pointer.
-	 @param ns The namespace string
+	 @param ns The nameSpace string
 	 @return Service return status.
       */
      CMPIStatus (*setNameSpace)
               (CMPIObjectPath* op, const char *ns);
 
-       /** Get the namespace component.
+       /** Get the nameSpace component.
 	 @param op ObjectPath this pointer.
 	 @param rc Output: Service return status (suppressed when NULL).
-	 @return The namespace component.
+	 @return The nameSpace component.
       */
      CMPIString* (*getNameSpace)
               (CMPIObjectPath* op, CMPIStatus* rc);
@@ -290,7 +290,7 @@ extern "C" {
      unsigned int (*getKeyCount)
               (CMPIObjectPath* op, CMPIStatus* rc);
 
-      /** Set/replace namespace and classname components from &lt;src&gt;.
+      /** Set/replace nameSpace and classname components from &lt;src&gt;.
 	 @param op ObjectPath this pointer.
 	 @param src Source input.
 	 @return Service return status.
@@ -298,7 +298,7 @@ extern "C" {
      CMPIStatus (*setNameSpaceFromObjectPath)
               (CMPIObjectPath* op, CMPIObjectPath* src);
 
-      /** Set/replace hostname, namespace and classname components from &lt;src&gt;.
+      /** Set/replace hostname, nameSpace and classname components from &lt;src&gt;.
 	 @param op ObjectPath this pointer.
 	 @param src Source input.
 	 @return Service return status.

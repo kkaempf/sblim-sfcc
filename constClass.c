@@ -34,6 +34,11 @@
 
 /****************************************************************************/
 
+extern CMPIConstClass * native_new_CMPIConstClass ( char  *cn,
+						    CMPIStatus * rc );
+extern int addClassProperty( CMPIConstClass * ccls, char * name,
+			     CMPIValue * value, CMPIType type,
+					  CMPIValueState state);
 
 /****************************************************************************/
 

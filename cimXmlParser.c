@@ -3,6 +3,7 @@
  * cimXmlParser.c
  *
  * (C) Copyright IBM Corp. 2005
+ * (C) Copyright Intel Corp. 2005
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -27,6 +28,10 @@
 #include "cimXmlParser.h"
 #include "cimXmlResp.h"
 
+
+
+int yylex(YYSTYPE * lvalp, ParserControl * parm);
+int yyerror(char *s);
 
 static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
                    const char *tag, int etag);
@@ -130,7 +135,7 @@ static int getWord(XmlBuffer * xb, const char *w, int xCase)
 
 static int tagEquals(XmlBuffer * xb, const char *t)
 {
-   char *start;
+   char *start = NULL;
    int sz = 0;
    if (*xb->cur == 0) {
       xb->cur++;
@@ -457,6 +462,22 @@ static int procLocalInstancePath(YYSTYPE * lvalp, ParserControl * parm)
           (parm->xmb, elm, attr, "LOCALINSTANCEPATH",
            ZTOK_LOCALINSTANCEPATH)) {
          return XTOK_LOCALINSTANCEPATH;
+      }
+   }
+   return 0;
+}
+
+static int procObjectPath(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+      {NULL}
+   };
+   XmlAttr attr[1];
+   if (tagEquals(parm->xmb, "OBJECTPATH")) {
+      if (attrsOk(parm->xmb, elm, attr, "OBJECTPATH",
+           ZTOK_OBJECTPATH)) {
+         lvalp->xtokValue.value = getContent(parm->xmb);
+         return XTOK_OBJECTPATH;
       }
    }
    return 0;
@@ -1016,7 +1037,7 @@ static int procParamRef(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.refClass = attr[1].attr;
          lvalp->xtokParam.type = CMPI_ref;
-         return XTOK_PARAM;
+         return XTOK_PARAMREF;
       }
    }
    return 0;
@@ -1085,11 +1106,13 @@ static Tags tags[] = {
    {"PARAMETER", procParam, ZTOK_PARAM},
    {"METHOD", procMethod, ZTOK_METHOD},
    {"CLASS", procClass, ZTOK_CLASS}, 
+   {"OBJECTPATH", procObjectPath, ZTOK_OBJECTPATH}
 };
+#define TAGS_NITEMS	(int)(sizeof(tags)/sizeof(Tags))
 
 int yylex(YYSTYPE * lvalp, ParserControl * parm)
 {
-   int i, m, rc;
+   int i, rc;
    char *next;
 
    for (;;) {
@@ -1104,7 +1127,7 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
       }
 
       if (*next == '/') {
-         for (i = 0, m = sizeof(tags); i < m; i++) {
+         for (i = 0; i < TAGS_NITEMS; i++) {
             if (nextEquals(next + 1, tags[i].tag) == 1) {
                skipTag(parm->xmb);
                return tags[i].etag;
@@ -1117,9 +1140,9 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
             parm->xmb->cur = strstr(parm->xmb->cur, "-->") + 3;
             continue;
          }
-         for (i = 0, m = sizeof(tags); i < m; i++) {
+         for (i = 0; i < TAGS_NITEMS; i++) {
             if (nextEquals(next, tags[i].tag) == 1) {
-   //printf("+++ %d\n",i);
+//	       printf("+++ %d\n",i);
                rc=tags[i].process(lvalp, parm);
                return rc;
             }

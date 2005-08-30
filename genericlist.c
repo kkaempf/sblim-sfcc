@@ -38,6 +38,11 @@
 #include "genericlist.h"
 #include "tool.h"
 //#include "mlog.h"
+#include "cmci.h"
+
+
+UtilList *newList(void);
+
 
 #ifdef THINK_C
 #define malloc NewPtr

@@ -10,6 +10,7 @@
   types rather than interacting with the entities in a full-grown CIMOM.
 
   (C) Copyright IBM Corp. 2003
+  (C) Copyright Intel Corp. 2003
  
   THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE 
   ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
@@ -19,7 +20,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -81,7 +82,7 @@ static CMPIArgs * __aft_clone ( CMPIArgs * args, CMPIStatus * rc )
 
 
 static CMPIStatus __aft_addArg ( CMPIArgs * args,
-				 char * name,
+				 const char * name,
 				 CMPIValue * value,
 				 CMPIType type )
 {
@@ -99,7 +100,7 @@ static CMPIStatus __aft_addArg ( CMPIArgs * args,
 
 
 static CMPIData __aft_getArg ( CMPIArgs * args,
-			       char * name,
+			       const char * name,
 			       CMPIStatus * rc )
 {
 	struct native_args * a = (struct native_args *) args;
@@ -149,6 +150,7 @@ static struct native_args * __new_empty_args ( int mm_add, CMPIStatus * rc )
 
 	args->args      = a;
 	args->mem_state = mm_add;
+        args->data = 0;
 
 	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
 	return args;

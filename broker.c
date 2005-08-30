@@ -16,7 +16,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include "cmpidt.h"
@@ -37,12 +37,12 @@ static CMPIInstance * __beft_newInstance ( CMPIBroker * broker,
 
 
 static CMPIObjectPath * __beft_newObjectPath ( CMPIBroker * broker,
-					       char * namespace,
+					       char * nameSpace,
 					       char * classname,
 					       CMPIStatus * rc )
 {
 	TRACE_NORMAL(("Creating new native CMPIObjectPath."));
-	return native_new_CMPIObjectPath ( namespace, classname, rc );
+	return native_new_CMPIObjectPath ( nameSpace, classname, rc );
 }
 
 

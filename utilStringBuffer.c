@@ -93,7 +93,7 @@ static void sbft_appendBlock(UtilStringBuffer * sb, void *data, unsigned int siz
    ((char*)sb->hdl)[sb->len]=0;
 }
 
-void sbft_append6Chars(UtilStringBuffer * sb, const char *chars1, const char *chars2, 
+static void sbft_append6Chars(UtilStringBuffer * sb, const char *chars1, const char *chars2, 
    const char *chars3, const char *chars4, const char *chars5, const char *chars6)
 {
    sbft_appendChars(sb,chars1);  
@@ -104,7 +104,7 @@ void sbft_append6Chars(UtilStringBuffer * sb, const char *chars1, const char *ch
    sbft_appendChars(sb,chars6);  
 }
          
-void sbft_append5Chars(UtilStringBuffer * sb, const char *chars1, const char *chars2, 
+static void sbft_append5Chars(UtilStringBuffer * sb, const char *chars1, const char *chars2, 
    const char *chars3, const char *chars4, const char *chars5)
 {
    sbft_appendChars(sb,chars1);  
@@ -114,7 +114,7 @@ void sbft_append5Chars(UtilStringBuffer * sb, const char *chars1, const char *ch
    sbft_appendChars(sb,chars5);  
 }
          
-void sbft_append3Chars(UtilStringBuffer * sb, const char *chars1, const char *chars2, const char *chars3)
+static void sbft_append3Chars(UtilStringBuffer * sb, const char *chars1, const char *chars2, const char *chars3)
 {
    sbft_appendChars(sb,chars1);  
    sbft_appendChars(sb,chars2);  

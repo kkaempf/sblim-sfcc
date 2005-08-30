@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -43,7 +43,6 @@ struct native_property {
 	struct native_qualifier *qualifiers;	//!< Qualifiers.
 	struct native_property * next;	        //!< Pointer to next property.
 };
-
 
 /****************************************************************************/
 

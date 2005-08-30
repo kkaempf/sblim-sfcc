@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -93,7 +93,7 @@ static CMPIStatus __ift_release ( CMPIInstance * instance )
 
 		tool_mm_add ( i );
 		tool_mm_add ( i->classname );
-		tool_mm_add ( i->namespace );
+		tool_mm_add ( i->nameSpace );
 		
 		__release_list ( i->property_list );
 		__release_list ( i->key_list );
@@ -116,7 +116,7 @@ static CMPIInstance * __ift_clone ( CMPIInstance * instance, CMPIStatus * rc )
 				sizeof ( struct native_instance ) );
 
 	new->classname     = strdup ( i->classname );
-	new->namespace     = strdup ( i->namespace );
+	new->nameSpace     = strdup ( i->nameSpace );
 	new->property_list = __duplicate_list ( i->property_list,
 						TOOL_MM_NO_ADD );
 	new->key_list      = __duplicate_list ( i->key_list, TOOL_MM_NO_ADD );
@@ -127,7 +127,7 @@ static CMPIInstance * __ift_clone ( CMPIInstance * instance, CMPIStatus * rc )
 
 
 static CMPIData __ift_getProperty ( CMPIInstance * instance,
-				    char * name,
+				    const char * name,
 				    CMPIStatus * rc )
 {
 	struct native_instance * i = (struct native_instance *) instance;
@@ -157,7 +157,7 @@ static unsigned int __ift_getPropertyCount ( CMPIInstance * instance,
 
 
 static CMPIStatus __ift_setProperty ( CMPIInstance * instance,
-				      char * name,
+				      const char * name,
 				      CMPIValue * value,
 				      CMPIType type )
 {
@@ -192,7 +192,7 @@ static CMPIObjectPath * __ift_getObjectPath ( CMPIInstance * instance,
 	int j;
 	struct native_instance * i = (struct native_instance *) instance;   
 
-	CMPIObjectPath * cop   = newCMPIObjectPath ( i->namespace,
+	CMPIObjectPath * cop   = newCMPIObjectPath ( i->nameSpace,
 							     i->classname,
 							     rc );
 
@@ -275,7 +275,7 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
            str = CMGetClassName ( cop, &tmp2 );
 	   instance->classname = CMGetCharPtr ( str );
 	   str = CMGetNameSpace ( cop, &tmp3 );
-	   instance->namespace = CMGetCharPtr ( str );
+	   instance->nameSpace = CMGetCharPtr ( str );
 
 	   if ( tmp1.rc != CMPI_RC_OK ||
 	        tmp2.rc != CMPI_RC_OK ||
@@ -306,7 +306,7 @@ void setInstNsAndCn(CMPIInstance *ci, char *ns, char *cn)
 {
 	struct native_instance * i = (struct native_instance *) ci;
    if (cn) i->classname=strdup(cn);
-   if (ns) i->namespace=strdup(ns);
+   if (ns) i->nameSpace=strdup(ns);
 }
 
 /****************************************************************************/

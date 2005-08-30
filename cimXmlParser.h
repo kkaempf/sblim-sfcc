@@ -3,6 +3,7 @@
  * cimXmlParser.h
  *
  * (C) Copyright IBM Corp. 2005
+ * (C) Copyright Intel Corp. 2005
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -31,6 +32,10 @@
 #include "cmcift.h"
 #include "cmcimacs.h"
 #include "native.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum typeValRef {
    typeValRef_InstanceName,
@@ -203,6 +208,10 @@ typedef struct xtokObjectWithPath {
    XtokInstance instance;
 } XtokObjectWithPath;
 
+typedef struct xtokObjectPath {
+   XtokInstancePath path;
+} XtokObjectPath;
+
 typedef struct xtokPropertyList {
    XtokValueArray list;
 } XtokPropertyList;
@@ -311,5 +320,8 @@ typedef struct parser_control {
 extern ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop);
 extern void freeCimXmlResponse(ResponseHdr * hdr);
 
+#ifdef __cplusplus
+ }
+#endif
 
 #endif

@@ -10,6 +10,7 @@
   types rather than interacting with the entities in a full-grown CIMOM.
 
   (C) Copyright IBM Corp. 2003
+  (C) Copyright Intel Corp. 2005
  
   THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE 
   ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
@@ -19,7 +20,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -33,13 +34,20 @@
 #include "utilStringBuffer.h"
 
 
+extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str,
+								 int uri);
+void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop);
+UtilList *getNameSpaceComponents(CMPIObjectPath * cop);
+
 extern char *keytype2Chars(CMPIType type);
+extern char *value2Chars(CMPIType type, CMPIValue * value);
+
 
 struct native_cop {
 	CMPIObjectPath cop;
 	int mem_state;
 
-	char * namespace;
+	char * nameSpace;
 	char * classname;
 	struct native_property * keys;
 };
@@ -63,7 +71,7 @@ static CMPIStatus __oft_release ( CMPIObjectPath * cop )
 
 		tool_mm_add ( o );
 		tool_mm_add ( o->classname );
-		tool_mm_add ( o->namespace );
+		tool_mm_add ( o->nameSpace );
 
 		propertyFT.release ( o->keys );
 
@@ -79,7 +87,7 @@ static CMPIObjectPath * __oft_clone ( CMPIObjectPath * cop, CMPIStatus * rc )
 	CMPIStatus tmp;
 	struct native_cop * o   = (struct native_cop *) cop;
 	struct native_cop * new = __new_empty_cop ( TOOL_MM_NO_ADD,
-						    o->namespace,
+						    o->nameSpace,
 						    o->classname,
 						    &tmp );
 
@@ -94,19 +102,19 @@ static CMPIObjectPath * __oft_clone ( CMPIObjectPath * cop, CMPIStatus * rc )
 
 
 static CMPIStatus __oft_setNameSpace ( CMPIObjectPath * cop,
-				       const char * namespace )
+				       const char * nameSpace )
 {
 	struct native_cop * o = (struct native_cop *) cop;
 
-	char * ns = ( namespace )? strdup ( namespace ): NULL;
+	char * ns = ( nameSpace )? strdup ( nameSpace ): NULL;
   
 	if ( o->mem_state == TOOL_MM_NO_ADD ) {
-		free ( o->namespace );
+		free ( o->nameSpace );
 	} else {
 		tool_mm_add ( ns );
 	}
 
-	o->namespace = ns;
+	o->nameSpace = ns;
 	CMReturn ( CMPI_RC_OK );
 }
 
@@ -116,7 +124,7 @@ static CMPIString * __oft_getNameSpace ( CMPIObjectPath * cop,
 {
 	struct native_cop * o = (struct native_cop *) cop;
 
-	return native_new_CMPIString ( o->namespace, rc );
+	return native_new_CMPIString ( o->nameSpace, rc );
 }
 
 
@@ -212,13 +220,13 @@ static CMPIStatus __oft_setNameSpaceFromObjectPath ( CMPIObjectPath * cop,
 						     CMPIObjectPath * src )
 {
 	struct native_cop * s = (struct native_cop *) src;
-	return __oft_setNameSpace ( cop, s->namespace );
+	return __oft_setNameSpace ( cop, s->nameSpace );
 }
 
 static CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
 
 static struct native_cop * __new_empty_cop ( int mm_add,
-					     const char * namespace,
+					     const char * nameSpace,
 					     const char * classname,
 					     CMPIStatus * rc )
 {
@@ -257,11 +265,11 @@ static struct native_cop * __new_empty_cop ( int mm_add,
 	cop->cop       = o;
 	cop->mem_state = mm_add;
 	cop->classname = ( classname )? strdup ( classname ): NULL;
-	cop->namespace = ( namespace )? strdup ( namespace ): NULL;
+	cop->nameSpace = ( nameSpace )? strdup ( nameSpace ): NULL;
 
 	if ( mm_add == TOOL_MM_ADD ) {
 		tool_mm_add ( cop->classname );
-		tool_mm_add ( cop->namespace );
+		tool_mm_add ( cop->nameSpace );
 	}
 
 	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
@@ -269,18 +277,101 @@ static struct native_cop * __new_empty_cop ( int mm_add,
 }
 
 
-CMPIObjectPath * newCMPIObjectPath ( const char * namespace, 
+CMPIObjectPath * newCMPIObjectPath ( const char * nameSpace, 
 					     const char * classname,
 					     CMPIStatus * rc )
 {
 	return (CMPIObjectPath *) __new_empty_cop ( TOOL_MM_ADD,
-						    namespace,
+						    nameSpace,
 						    classname,
 						    rc );
 }
 
-extern char *value2Chars(CMPIType type, CMPIValue * value);
+void sameReleaseCMPIString( CMPIString *str )
+{
+    // If we are not freeing a NULL pointer ...
+    if( str )
+    {
+        // Free dynamically allocated memory.
+        CMRelease( str );
+    }
+}
 
+int sameCompareCMPIString( CMPIString *str1, CMPIString *str2 )
+{
+    int result=1;
+
+    if( !str1 || !str2 ||
+        ( strcmp( CMGetCharsPtr( str1, NULL ),
+                  CMGetCharsPtr( str2, NULL ) ) != 0 ) )
+    {
+        result=0;
+    }
+
+    /* Free up dynamically allocated memory if needed. */
+    sameReleaseCMPIString( str1 );
+    sameReleaseCMPIString( str2 );
+
+    return result;
+}
+
+int sameCMPIObjectPath (const CMPIObjectPath *cop1, const CMPIObjectPath *cop2)
+{
+   CMPIString *keyname;
+   CMPIData   data1, data2;
+   CMPIStatus status;
+   struct native_cop *ncop1 = (struct native_cop *)cop1;
+   struct native_cop *ncop2 = (struct native_cop *)cop2;
+   unsigned int i, m;
+
+   /* Check if name spaces are the same */
+   if (strcmp(ncop1->nameSpace, ncop2->nameSpace) != 0)
+      return 0;
+
+   /* Check if classnames are the same */
+   if (strcmp(ncop1->classname, ncop2->classname) != 0)
+      return 0;
+
+   /* Check if the key count is the same */
+   m = propertyFT.getPropertyCount(ncop1->keys, NULL);
+   if (m != propertyFT.getPropertyCount(ncop2->keys, NULL)) 
+      return 0;
+
+   /* Check on each key */
+   for (i = 0; i < m; i++) {
+      data1 = propertyFT.getDataPropertyAt(ncop1->keys, i, &keyname, &status );
+
+      /* check if key exists in both */
+      if (status.rc != CMPI_RC_OK)
+      {
+        // Free up dynamically allocated memory
+        sameReleaseCMPIString( keyname );
+        return 0;
+      }
+
+      // This in effect verifies the keynames are the same. We are searching
+      // for the keyname of cop1 in cop2.  
+      data2 = propertyFT.getDataProperty(ncop2->keys,
+					 CMGetCharsPtr( keyname, NULL ),
+					 &status );
+
+      // Free up dynamically allocated memory
+      sameReleaseCMPIString( keyname );
+
+      /* check if key exists in both */
+      if (status.rc != CMPI_RC_OK)
+	  return 0;
+
+      /* Check if the values are the same */
+      if( data1.type  != data2.type       ||
+          data1.state != data2.state      ||
+          strcmp(value2Chars(data1.type, &data1.value),
+                 value2Chars(data2.type, &data2.value)) != 0)
+	  return 0;
+   }
+
+   return 1;
+}
 
 char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str, int uri)
 {
@@ -298,6 +389,10 @@ char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str, int uri)
    if (uri) colon="%3A";
 
    ns = cop->ft->getNameSpace(cop, rc);
+
+   /** It appears that dynamically allocated memoty is not being freed. The data cn
+       points to needs to be freed. \todo FIXME. This needs to be verified in other
+       places in the code also. This is just a for instance. */
    cn = cop->ft->getClassName(cop, rc);
    
    if (ns && ns->hdl && *(char*)ns->hdl) {
@@ -346,7 +441,7 @@ static CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc)
 const char *getNameSpaceChars(CMPIObjectPath * cop)
 {
 	struct native_cop * o = (struct native_cop *) cop;
-   return o->namespace;
+   return o->nameSpace;
 }
 
 UtilList *getNameSpaceComponents(CMPIObjectPath * cop)

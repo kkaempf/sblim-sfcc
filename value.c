@@ -14,7 +14,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -25,6 +25,15 @@
 #include "tool.h"
 #include "native.h"
 #include "cimXmlParser.h"
+#include "utilStringBuffer.h"
+
+ 
+char *keytype2Chars(CMPIType type);
+CMPIType guessType(char *val);
+char *value2Chars(CMPIType type, CMPIValue * value);
+extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str,
+								 int uri);
+
 
 void native_release_CMPIValue ( CMPIType type, CMPIValue * val )
 {
@@ -118,9 +127,7 @@ CMPIValue native_clone_CMPIValue ( CMPIType type,
 	return v;
 }
 
-extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str, int uri);
-
-char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
+static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
 {
    char str[256], *p;
    unsigned int size;
@@ -306,6 +313,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
 
 CMPIType guessType(char *val)
 {
+   /* TODO: Currently doesn't guess right for real values (3.175e+00) */
    if (((*val=='-' || *val=='+') && strlen(val)>1) || isdigit(*val)) {
       char *c;
       for (c=val+1; ; c++) {
@@ -316,8 +324,8 @@ CMPIType guessType(char *val)
          if (!isdigit(*c)) break;
       }
    }
-   else if (strcasecmp(val,"true")) return CMPI_boolean;
-   else if (strcasecmp(val,"false")) return CMPI_boolean;
+   else if (strcasecmp(val,"true") == 0 || strcasecmp(val,"false") == 0)
+     return CMPI_boolean;
    return CMPI_string;
 }
 

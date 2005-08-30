@@ -47,7 +47,7 @@ extern "C" {
    */
 #define native_new_CMPIObjectPath   newCMPIObjectPath
 
-CMPIObjectPath * newCMPIObjectPath ( const char * namespace, 
+CMPIObjectPath * newCMPIObjectPath ( const char * my_nameSpace, 
 					     const char * classname,
 					     CMPIStatus * rc );
 
@@ -65,7 +65,7 @@ typedef struct _CMCIClientFT {
       /** Get Class using &lt;op&gt; as reference. Class structure can be
          controled using the flags parameter.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace and classname components.
+	 @param op ObjectPath containing nameSpace and classname components.
 	 @param flags Any combination of the following flags are supported: 
 	    CMPI_FLAG_LocalOnly, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
 	 @param properties If not NULL, the members of the array define one or more Property
@@ -79,10 +79,10 @@ typedef struct _CMCIClientFT {
                  CMPIObjectPath* op, CMPIFlags flags, char** properties, CMPIStatus* rc);
 
 
-       /** Enumerate Class Names (and subclass names) in the namespace defined by &lt;op&gt;. Inheritance scope can be controled using the
+       /** Enumerate Class Names (and subclass names) in the nameSpace defined by &lt;op&gt;. Inheritance scope can be controled using the
 	        flags parameter.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace component.
+	 @param op ObjectPath containing nameSpace component.
 	 @param flags The following flag is supported: CMPI_FLAG_DeepInheritance.
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return Enumeration of ObjectPathes.
@@ -92,10 +92,10 @@ typedef struct _CMCIClientFT {
                 (CMCIClient* cl,
                  CMPIObjectPath* op, CMPIFlags flags, CMPIStatus* rc);
 
-     /** Enumerate Classes (and subclasses) in the namespace  defined by &lt;op&gt;.
+     /** Enumerate Classes (and subclasses) in the nameSpace  defined by &lt;op&gt;.
          Class structure and inheritance scope can be controled using the &lt;flags&gt; parameter.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace and classname components.
+	 @param op ObjectPath containing nameSpace and classname components.
 	 @param flags Any combination of the following flags are supported: CMPI_FLAG_LocalOnly, 
 	     CMPI_FLAG_DeepInheritance, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
 	 @param rc Output: Service return status (suppressed when NULL).
@@ -109,7 +109,7 @@ typedef struct _CMCIClientFT {
       /** Get Instance using &lt;op&gt; as reference. Instance structure can be
          controled using the &lt;flags&gt; parameter.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace, classname and key components.
+	 @param op ObjectPath containing nameSpace, classname and key components.
 	 @param flags Any combination of the following flags are supported: 
 	    CMPI_FLAG_LocalOnly, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
 	 @param properties If not NULL, the members of the array define one or more Property
@@ -124,7 +124,7 @@ typedef struct _CMCIClientFT {
 
       /** Create Instance from &lt;inst&gt; using &lt;op&gt; as reference.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace, classname and key components.
+	 @param op ObjectPath containing nameSpace, classname and key components.
 	 @param inst Complete instance.
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return The assigned instance reference.
@@ -135,7 +135,7 @@ typedef struct _CMCIClientFT {
 
       /** Replace an existing Instance from &lt;inst&gt; using &lt;op&gt; as reference.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace, classname and key components.
+	 @param op ObjectPath containing nameSpace, classname and key components.
 	 @param inst Complete instance.
 	 @param flags The following flag is supported: CMPI_FLAG_IncludeQualifiers.
 	 @param properties If not NULL, the members of the array define one or more Property
@@ -148,7 +148,7 @@ typedef struct _CMCIClientFT {
 
       /** Delete an existing Instance using &lt;op&gt; as reference.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace, classname and key components.
+	 @param op ObjectPath containing nameSpace, classname and key components.
 	 @return Service return status.
      */
      CMPIStatus (*deleteInstance)
@@ -158,7 +158,7 @@ typedef struct _CMCIClientFT {
       /** Query the enumeration of instances of the class (and subclasses) defined
          by &lt;op&gt; using &lt;query&gt; expression.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace and classname components.
+	 @param op ObjectPath containing nameSpace and classname components.
 	 @param query Query expression
 	 @param lang Query Language
 	 @param rc Output: Service return status (suppressed when NULL).
@@ -170,7 +170,7 @@ typedef struct _CMCIClientFT {
 
        /** Enumerate Instance Names of the class (and subclasses) defined by &lt;op&gt;.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace and classname components.
+	 @param op ObjectPath containing nameSpace and classname components.
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return Enumeration of ObjectPathes.
      */
@@ -182,7 +182,7 @@ typedef struct _CMCIClientFT {
          Instance structure and inheritance scope can be controled using the
 	      &lt;flags&gt; parameter.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace and classname components.
+	 @param op ObjectPath containing nameSpace and classname components.
 	 @param flags Any combination of the following flags are supported: CMPI_FLAG_LocalOnly, 
 	     CMPI_FLAG_DeepInheritance, CMPI_FLAG_IncludeQualifiers and CMPI_FLAG_IncludeClassOrigin.
 	 @param properties If not NULL, the members of the array define one or more Property
@@ -197,7 +197,7 @@ typedef struct _CMCIClientFT {
 
       /** Enumerate instances associated with the Instance defined by the &lt;op&gt;.
 	 @param cl Client this pointer.
-	 @param op Source ObjectPath containing namespace, classname and key components.
+	 @param op Source ObjectPath containing nameSpace, classname and key components.
 	 @param assocClass If not NULL, MUST be a valid Association Class name.
 	    It acts as a filter on the returned set of Objects by mandating that
 	    each returned Object MUST be associated to the source Object via an
@@ -234,7 +234,7 @@ typedef struct _CMCIClientFT {
 
       /** Enumerate ObjectPaths associated with the Instance defined by &lt;op&gt;.
 	 @param cl Client this pointer.
-	 @param op Source ObjectPath containing namespace, classname and key components.
+	 @param op Source ObjectPath containing nameSpace, classname and key components.
 	 @param assocClass If not NULL, MUST be a valid Association Class name.
 	    It acts as a filter on the returned set of Objects by mandating that
 	    each returned Object MUST be associated to the source Object via an
@@ -266,7 +266,7 @@ typedef struct _CMCIClientFT {
        /** Enumerates the association instances that refer to the instance defined by
            &lt;op&gt;.
 	 @param cl Client this pointer.
-	 @param op Source ObjectPath containing namespace, classname and key components.
+	 @param op Source ObjectPath containing nameSpace, classname and key components.
 	 @param resultClass If not NULL, MUST be a valid Class name.
 	    It acts as a filter on the returned set of Objects by mandating that
 	    each returned Object MUST be either an Instance of this Class (or one
@@ -293,7 +293,7 @@ typedef struct _CMCIClientFT {
        /** Enumerates the association ObjectPaths that refer to the instance defined by
            &lt;op&gt;.
 	 @param cl Client this pointer.
-	 @param op Source ObjectPath containing namespace, classname and key components.
+	 @param op Source ObjectPath containing nameSpace, classname and key components.
 	 @param resultClass If not NULL, MUST be a valid Class name.
 	    It acts as a filter on the returned set of Objects by mandating that
 	    each returned Object MUST be either an Instance of this Class (or one
@@ -315,7 +315,7 @@ typedef struct _CMCIClientFT {
        /** Invoke a named, extrinsic method of an Instance
          defined by the &lt;op&gt; parameter.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace, classname and key components.
+	 @param op ObjectPath containing nameSpace, classname and key components.
 	 @param method Method name
 	 @param in Input parameters.
 	 @param out Output parameters.
@@ -329,7 +329,7 @@ typedef struct _CMCIClientFT {
 
        /** Set the named property value of an Instance defined by the &lt;op&gt; parameter.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace, classname and key components.
+	 @param op ObjectPath containing nameSpace, classname and key components.
 	 @param name Property name
 	 @param value Value.
 	 @param type Value type.
@@ -342,7 +342,7 @@ typedef struct _CMCIClientFT {
 
        /** Get the named property value of an Instance defined by the &lt;op&gt; parameter.
 	 @param cl Client this pointer.
-	 @param op ObjectPath containing namespace, classname and key components.
+	 @param op ObjectPath containing nameSpace, classname and key components.
 	 @param name Property name
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return Property value.
@@ -449,8 +449,10 @@ struct _CMCIClient {
    CMCIClientFT *ft;
 };   
 
-CMCIClient *cmciConnect(const char *hn, const char* scheme, const char *port, 
+CMCIClient *cmciConnect(const char *hn, const char *scheme, const char *port, 
                         const char *user, const char *pwd, CMPIStatus *rc);   
+   
+int sameCMPIObjectPath ( const CMPIObjectPath *cop1, const CMPIObjectPath *cop2);
    
 #ifdef __cplusplus
  };
