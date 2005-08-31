@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdio.h>
@@ -246,9 +246,11 @@ static CMPICount __getPropertyCount ( struct native_property * prop,
 
 static void __release ( struct native_property * prop )
 {
-	for ( ; prop; prop = prop->next ) {
+	struct native_property * next;
+	for ( ; prop; prop = next ) {
 		free ( prop->name );
 		native_release_CMPIValue ( prop->type, &prop->value );
+                next=prop->next;
 		free ( prop );
 	}
 }

@@ -589,7 +589,7 @@ static CMPIObjectPath * createInstance(
    char             *error;
    ResponseHdr	     rh;
    int i, numproperties = inst->ft->getPropertyCount(inst, NULL);
-   CMPIString * propertyname;
+   CMPIString * propertyname,*cn;
    CMPIData propertydata;
   
    con->ft->genRequest(cl, "CreateInstance", cop, 0, 0);
@@ -601,9 +601,11 @@ static CMPIObjectPath * createInstance(
 
    addXmlNamespace(sb, cop);
 
+   cn=cop->ft->getClassName(cop,NULL);
    sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"NewInstance\">\n"
 			    "<INSTANCE CLASSNAME=\"",
-			    (char *)cop->ft->getClassName(cop,NULL), "\">\n");
+			    (char *)cn->hdl, "\">\n");
+   CMRelease(cn);
 
    /* Add all the instance properties */
    for (i=0; i<numproperties; i++) {
@@ -821,6 +823,7 @@ static CMPIStatus deleteInstance(
    UtilStringBuffer *sb=newStringBuffer(2048);
    char *error;
    ResponseHdr rh;
+   CMPIString *cn;
    CMPIStatus rc = {CMPI_RC_OK, NULL};
    con->ft->genRequest(cl,"DeleteInstance",cop,0,0);
 
@@ -830,9 +833,12 @@ static CMPIStatus deleteInstance(
    addXmlNamespace(sb, cop);
                                                                                                                   
    /* Add instance stuff */
+   cn=cop->ft->getClassName(cop,NULL);
    sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"InstanceName\">\n"
 			    "<INSTANCENAME CLASSNAME=\"", 
-			    (char*)cop->ft->getClassName(cop,NULL),"\">\n");
+			    (char*)cn->hdl,"\">\n");
+   CMRelease(cn);
+   
    pathToXml(sb, cop);
    sb->ft->appendChars(sb,"</INSTANCENAME>\n");
 

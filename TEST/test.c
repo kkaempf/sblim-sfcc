@@ -284,8 +284,8 @@ int main( int argc, char * argv[] )
                                                                                                                 
       /* Print the results */
       printf("deleteInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-      if (instance) CMRelease(instance);
-      if (objectpath) CMRelease(objectpath);
+//      if (!CMIsNullObject(instance)) CMRelease(instance);
+      if (!CMIsNullObject(objectpath)) CMRelease(objectpath);
    }
 
    if (1) {
