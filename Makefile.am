@@ -1,4 +1,8 @@
-# $Id: Makefile.am,v 1.4 2005/08/30 22:59:36 a3schuur Exp $
+# $Id: Makefile.am,v 1.5 2005/09/21 13:16:51 mihajlov Exp $
+
+LT_CURRENT=0
+LT_REVISION=0
+LT_AGE=0
 
 AM_LFLAGS=-i
 AM_YFLAGS=-d
@@ -8,6 +12,7 @@ BUILT_SOURCES = \
 
 noinst_HEADERS = \
 	cimXmlParser.h \
+	genericlist.h \
 	utilStringBuffer.h
 
 pkginclude_HEADERS = \
@@ -39,8 +44,12 @@ libcmpisfcc_la_SOURCES = \
                    genericlist.c \
                    cimXmlResp.y \
                    cimXmlParser.c
+
 libcmpisfcc_la_LIBADD = -lcurl
+libcmpisfcc_la_LDFLAGS = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
 SUBDIRS = . TEST
 
 AM_CPPFLAGS = -I../../ -I$(top_builddir)/src
+
+#@INC_AMINCLUDE@

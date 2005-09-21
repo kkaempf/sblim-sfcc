@@ -49,7 +49,7 @@ status error code and corresponding error string in \fIrc\fP.
    CMPIStatus status;
 
    /* Setup a conncetion to the CIMOM */   
-   cc = cmciConnect("localhost",NULL,NULL,NULL,NULL);
+   cc = cmciConnect("localhost", NULL, NULL, NULL, NULL, NULL);
 
    objectpath = newCMPIObjectPath("root/cimv2", NULL, NULL);
    enumeration = cc->ft->enumInstances(cc, objectpath, 0, NULL, &status);

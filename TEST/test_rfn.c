@@ -25,28 +25,33 @@
 
 #include "show.h"
 
-static char * _HOSTNAME = "bestorga.ibm.com";
-
 int main( int argc, char * argv[] )
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
     CMPIEnumeration * enumeration;
     CMPIStatus status;
-    char hostName[512];
+    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */   
-    cc = cmciConnect("localhost", NULL, "5988", "clp", NULL, NULL);
-   
-    gethostname(hostName,511);
-    _HOSTNAME=strdup(hostName);
+    /* Setup a conncetion to the CIMOM */
+    cim_host = getenv("CIM_HOST");
+    if (cim_host == NULL)
+	cim_host = "localhost";
+    cim_host_userid = getenv("CIM_HOST_USERID");
+    if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+    cim_host_passwd = getenv("CIM_HOST_PASSWD");
+    if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+    cc = cmciConnect(cim_host, NULL, "5988",
+			       cim_host_userid, cim_host_passwd, NULL);
 
     /* Test referenceNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing referenceNames() ...\n");
-    objectpath = newCMPIObjectPath("root/cimv2", "CIM_ComputerSystem", NULL);
-    CMAddKey(objectpath, "CreationClassName", "CIM_ComputerSystem", CMPI_chars);
-    CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
+    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_Slot", NULL);
+    CMAddKey(objectpath, "CreationClassName", "IICM_Slot", CMPI_chars);
+    CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000007", CMPI_chars);
     enumeration = cc->ft->referenceNames(cc, objectpath, NULL, NULL, &status);
 
     /* Print the results */

@@ -1,5 +1,5 @@
 /*
- * test_an.c
+ * test_si.c
  *
  * (C) Copyright IBM Corp. 2005
  * (C) Copyright Intel Corp. 2005
@@ -33,14 +33,21 @@ int main( int argc, char * argv[] )
     CMPIObjectPath * objectpath;
     CMPIInstance * instance;
     CMPIStatus status;
-    char hostName[512];
+    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */   
-    cc = cmciConnect("localhost", NULL, "5988", "clp", NULL, NULL);
+    /* Setup a conncetion to the CIMOM */
+    cim_host = getenv("CIM_HOST");
+    if (cim_host == NULL)
+	cim_host = "localhost";
+    cim_host_userid = getenv("CIM_HOST_USERID");
+    if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+    cim_host_passwd = getenv("CIM_HOST_PASSWD");
+    if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+    cc = cmciConnect(cim_host, NULL, "5988",
+			       cim_host_userid, cim_host_passwd, NULL);
    
-    gethostname(hostName,511);
-    _HOSTNAME=strdup(hostName);
-
     /* Test setInstance() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing setInstance() ...\n");

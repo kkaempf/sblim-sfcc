@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 */
 
 #include <stdio.h>
@@ -28,8 +28,11 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
+
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 
 /****************************************************************************/
@@ -40,8 +43,8 @@ static void __release_list ( char ** list )
 
 		char ** tmp = list;
 
-		while ( *tmp ) free( *tmp++ );
-		free( list );
+		while ( *tmp ) free ( *tmp++ );
+		free ( list );
 	}
 }
 
@@ -58,10 +61,8 @@ static char ** __duplicate_list ( char ** list )
 
 		result = malloc ( size * sizeof ( char * ) );
 
-		for ( tmp = result; *list; tmp++ ) {
-
+		for ( tmp = result; *list; tmp++ )
 			*tmp = strdup ( *list++ );
-		}
 	}
 
 	return result;
@@ -87,13 +88,13 @@ static CMPIStatus __ift_release ( CMPIInstance * instance )
 	struct native_instance * i = (struct native_instance *) instance;
 
 	if (i) {
-      if (i->classname) free(i->classname);
-	   if (i->nameSpace) free(i->nameSpace);
-	   __release_list ( i->property_list );
-	   __release_list ( i->key_list );
-      free(i);
-      CMReturn ( CMPI_RC_OK );
-   }   
+	    if (i->classname) free(i->classname);
+	    if (i->nameSpace) free(i->nameSpace);
+	    __release_list ( i->property_list );
+	    __release_list ( i->key_list );
+            free(i);
+            CMReturn ( CMPI_RC_OK );
+	}   
  
 	CMReturn ( CMPI_RC_ERR_FAILED );
 }
@@ -102,9 +103,8 @@ static CMPIStatus __ift_release ( CMPIInstance * instance )
 static CMPIInstance * __ift_clone ( CMPIInstance * instance, CMPIStatus * rc )
 {
 	struct native_instance * i   = (struct native_instance *) instance;
-	struct native_instance * new = 
-		(struct native_instance *) 
-		calloc ( 1, sizeof ( struct native_instance ) );
+	struct native_instance * new = (struct native_instance *) 
+			       calloc ( 1, sizeof ( struct native_instance ) );
 
 	new->classname     = strdup ( i->classname );
 	new->nameSpace     = strdup ( i->nameSpace );
@@ -162,7 +162,7 @@ static CMPIStatus __ift_setProperty ( CMPIInstance * instance,
 					      name, 
 					      type,
 					      value ) ) {
-			propertyFT.addProperty ( &i->props,
+			propertyFT.addProperty ( &i->props, 
 						 name, 
 						 type, 
 						 0, 
@@ -181,8 +181,8 @@ static CMPIObjectPath * __ift_getObjectPath ( CMPIInstance * instance,
 	struct native_instance * i = (struct native_instance *) instance;   
 
 	CMPIObjectPath * cop   = newCMPIObjectPath ( i->nameSpace,
-							     i->classname,
-							     rc );
+						     i->classname,
+						     rc );
 
 	if ( rc && rc->rc != CMPI_RC_OK )
 		return NULL;

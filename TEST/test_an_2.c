@@ -1,5 +1,5 @@
 /*
- * test_as.c
+ * test_an.c
  *
  * (C) Copyright IBM Corp. 2005
  * (C) Copyright Intel Corp. 2005
@@ -15,7 +15,7 @@
  *
  * Description:
  *
- *  Test for associators() library API. Note that this test case
+ *  Test for associatorNames() library API. Note that this test case
  *  requires that the CIM schema 2.10 final and the test instance MOF
  *  be installed in root/iicmv1. For more information see library README.
  */
@@ -46,25 +46,29 @@ int main( int argc, char * argv[] )
     cc = cmciConnect(cim_host, NULL, "5988",
 			       cim_host_userid, cim_host_passwd, NULL);
    
-    /* Test associators() */
+    /* Test associatorNames() */
     printf("\n----------------------------------------------------------\n");
-    printf("Testing associators() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
+    printf("Testing associatorNames() ...\n");
 
-    CMAddKey(objectpath, "CreationClassName", "CIM_Slot", CMPI_chars);
-    CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000004", CMPI_chars);
-
-    enumeration = cc->ft->associators(cc, objectpath, 
-                          "CIM_PackageInSlot", NULL, NULL, NULL, 0, NULL, &status);
+    objectpath = newCMPIObjectPath( "root/iicmv1", "IICM_LogRecord", NULL);
+    enumeration = cc->ft->associatorNames( cc, 
+        objectpath,                     // The parent object?
+        "IICM_LogManagesRecord",        // assocClass
+        "IICM_RecordLog",               // resultClass
+        NULL,                           // role
+        NULL,                           // resultRole
+        &status);                       // return code
 
     /* Print the results */
-    printf("associators() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-    if (!status.rc) {
+    printf( "associatorNames() rc=%d, msg=%s\n", 
+            status.rc, (status.msg)? (char *)status.msg->hdl : NULL);      
+    if (!status.rc) 
+    {
         printf("result(s):\n");
         while (enumeration->ft->hasNext(enumeration, NULL)) 
         {
             CMPIData data = enumeration->ft->getNext(enumeration, NULL);
-            showInstance(data.value.inst);
+            showObjectPath(data.value.ref);
         }
     }
 

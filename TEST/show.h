@@ -6,6 +6,4 @@ extern char *value2Chars(CMPIType type, CMPIValue * value);
 
 void showObjectPath( CMPIObjectPath * objectpath );
 void showInstance( CMPIInstance *instance );
-void showClass( CMPIConstClass * class );
-
-
+void showClass( CMPIConstClass * in_class );

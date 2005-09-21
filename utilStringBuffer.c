@@ -29,6 +29,10 @@
 #include <ctype.h>
 #include <string.h>
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
+
 static void sbft_release(UtilStringBuffer * sb)
 {
    if (sb->hdl)

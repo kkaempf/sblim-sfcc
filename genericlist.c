@@ -35,14 +35,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 #include "genericlist.h"
-//#include "tool.h"
-//#include "mlog.h"
 #include "cmci.h"
-
-
 UtilList *newList(void);
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 #ifdef THINK_C
 #define malloc NewPtr
@@ -50,6 +50,8 @@ UtilList *newList(void);
 
 #define NEW(x) ((x *) emalloc(sizeof(x)))
 
+
+UtilList *newList(void);
 
 static void initialize_list(Generic_list * list);
 static void initialize_sorted_list(Generic_list * list,
@@ -755,7 +757,6 @@ Util_List_FT *UtilListFT = &UtilList_ft;
 UtilList *newList()
 {
    UtilList ul,*tUl;
-   int state;
    
    ul.ft = UtilListFT;
    initialize_list((Generic_list *) & ul.hdl);

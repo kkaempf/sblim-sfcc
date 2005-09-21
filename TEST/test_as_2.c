@@ -45,17 +45,17 @@ int main( int argc, char * argv[] )
 	cim_host_passwd = "password";
     cc = cmciConnect(cim_host, NULL, "5988",
 			       cim_host_userid, cim_host_passwd, NULL);
-   
+
     /* Test associators() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing associators() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
+    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_MAPAdminDomain", NULL);
 
-    CMAddKey(objectpath, "CreationClassName", "CIM_Slot", CMPI_chars);
-    CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000004", CMPI_chars);
+    CMAddKey(objectpath, "CreationClassName", "IICM_MAPAdminDomain", CMPI_chars);
+    CMAddKey(objectpath, "Name", "admin1", CMPI_chars);
 
     enumeration = cc->ft->associators(cc, objectpath, 
-                          "CIM_PackageInSlot", NULL, NULL, NULL, 0, NULL, &status);
+                          "IICM_SystemComponent", NULL, NULL, NULL, 0, NULL, &status);
 
     /* Print the results */
     printf("associators() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);

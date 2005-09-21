@@ -20,7 +20,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 */
 
 #include <stdio.h>
@@ -29,10 +29,12 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
 #include "utilStringBuffer.h"
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str,
 								 int uri);
@@ -63,13 +65,13 @@ static CMPIStatus __oft_release ( CMPIObjectPath * cop )
 	struct native_cop * o = (struct native_cop *) cop;
 
 	if ( o ) {
-
+ 
 		if (o->classname) free ( o->classname );
 		if (o->nameSpace) free ( o->nameSpace );
-		propertyFT.release ( o->keys );
+ 		propertyFT.release ( o->keys );
 		free ( o );
-
-		CMReturn ( CMPI_RC_OK );
+ 
+ 		CMReturn ( CMPI_RC_OK );
 	}
 
 	CMReturn ( CMPI_RC_ERR_FAILED );
@@ -142,7 +144,7 @@ static CMPIStatus __oft_setClassName ( CMPIObjectPath * cop,
   
 	if ( o ) {
 		free ( o->classname );
-	} 
+	}
 
 	o->classname = cn;
 	CMReturn ( CMPI_RC_OK );
@@ -217,7 +219,7 @@ static struct native_cop * __new_empty_cop ( const char * nameSpace,
 					     const char * classname,
 					     CMPIStatus * rc )
 {
-	static CMPIObjectPathFT oft = { 
+	static CMPIObjectPathFT const oft = { 
 		NATIVE_FT_VERSION,
 		__oft_release,
 		__oft_clone,
@@ -240,14 +242,13 @@ static struct native_cop * __new_empty_cop ( const char * nameSpace,
 		__oft_toString
 	};
         
-	static CMPIObjectPath o = {
+	static CMPIObjectPath const o = {
 		"CMPIObjectPath",
 		&oft
 	};
 
 	struct native_cop * cop =
-		(struct native_cop *) 
-		calloc ( 1, sizeof ( struct native_cop ) );
+	      (struct native_cop *) calloc ( 1, sizeof ( struct native_cop ) );
 
 	cop->cop       = o;
 	cop->classname = ( classname )? strdup ( classname ): NULL;
@@ -363,20 +364,16 @@ char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str, int uri)
    CMPIData data;
    unsigned int i, m, s;
    char *v;
-   char *colon=":";
+   char *colon = (uri) ? "%3A" : ":";
    
    *str = 0;
-   if (uri) colon="%3A";
 
    ns = cop->ft->getNameSpace(cop, rc);
-
-   /** It appears that dynamically allocated memoty is not being freed. The data cn
-       points to needs to be freed. \todo FIXME. This needs to be verified in other
-       places in the code also. This is just a for instance. */
    cn = cop->ft->getClassName(cop, rc);
    
    if (ns && ns->hdl && *(char*)ns->hdl) {
-      if (uri==0) strcpy(str,(char*)ns->hdl);
+      if (!uri)
+	  strcpy(str,(char*)ns->hdl);
       else {
          char *cns=(char*)ns->hdl;
          for (s=i=0, m=strlen(cns); i<m; i++,s++) {
@@ -385,7 +382,8 @@ char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str, int uri)
                str[s++]='2';
                str[s]='F';
             }
-            else str[s]=cns[i];    
+            else
+	       str[s]=cns[i];    
          } 
          str[s]=0;   
       }
@@ -398,12 +396,17 @@ char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str, int uri)
    
    for (i = 0, m = cop->ft->getKeyCount(cop, rc); i < m; i++) {
       data = cop->ft->getKeyAt(cop, i, &name, rc);
-      if (i) strcat(str, ",");
-      else strcat(str, ".");
+      strcat(str, i ? "," : ".");
       strcat(str, (char *) name->hdl);
-      strcat(str, "=");
+      strcat(str, (uri) ? "%3D" : "=");
       v = value2Chars(data.type, &data.value);
-      strcat(str, v);
+      if (data.type & (CMPI_INTEGER | CMPI_REAL))
+         strcat(str, v);
+      else {
+	 strcat(str, "\"");
+         strcat(str, v);
+	 strcat(str, "\"");
+      }
       free(v);
       CMRelease(name);
    };

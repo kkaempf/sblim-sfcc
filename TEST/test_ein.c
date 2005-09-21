@@ -29,17 +29,27 @@ int main( int argc, char * argv[] )
 {
     CMCIClient		* cc;
     CMPIObjectPath	* objectpath;
-    CMPIConstClass	* class;
     CMPIEnumeration	* enumeration;
     CMPIStatus		status;
+    char		*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */   
-    cc = cmciConnect("localhost", NULL, "5988", "root", "password", NULL);
-   
+    /* Setup a conncetion to the CIMOM */
+    cim_host = getenv("CIM_HOST");
+    if (cim_host == NULL)
+	cim_host = "localhost";
+    cim_host_userid = getenv("CIM_HOST_USERID");
+    if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+    cim_host_passwd = getenv("CIM_HOST_PASSWD");
+    if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+    cc = cmciConnect(cim_host, NULL, "5988",
+			       cim_host_userid, cim_host_passwd, NULL);
+
     /* Test enumInstanceNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumInstanceNames() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_PhysicalPackage", NULL);
+    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_PhysicalPackage", NULL);
 
     enumeration = cc->ft->enumInstanceNames(cc, objectpath, &status);
 

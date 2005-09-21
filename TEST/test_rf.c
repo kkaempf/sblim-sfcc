@@ -25,31 +25,36 @@
 
 #include "show.h"
 
-static char * _HOSTNAME = "bestorga.ibm.com";
-
 int main( int argc, char * argv[] )
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
     CMPIEnumeration * enumeration;
     CMPIStatus status;
-    char hostName[512];
+    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */   
-    cc = cmciConnect("localhost", NULL, "5988", "clp", NULL, NULL);
-   
-    gethostname(hostName,511);
-    _HOSTNAME=strdup(hostName);
+    /* Setup a conncetion to the CIMOM */
+    cim_host = getenv("CIM_HOST");
+    if (cim_host == NULL)
+	cim_host = "localhost";
+    cim_host_userid = getenv("CIM_HOST_USERID");
+    if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+    cim_host_passwd = getenv("CIM_HOST_PASSWD");
+    if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+    cc = cmciConnect(cim_host, NULL, "5988",
+			       cim_host_userid, cim_host_passwd, NULL);
 
     /* Test references() */
     printf("\n----------------------------------------------------------\n");
     printf("--> Testing references() ...\n");
 
-    objectpath = newCMPIObjectPath("root/cimv2", "CIM_ComputerSystem", NULL);
+    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_MAPAdminDomain", NULL);
 
     printf( "--> Adding keys to object path\n" );
-    CMAddKey(objectpath, "CreationClassName", "CIM_ComputerSystem", CMPI_chars);
-    CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
+    CMAddKey(objectpath, "CreationClassName", "IICM_MAPAdminDomain", CMPI_chars);
+    CMAddKey(objectpath, "Name", "admin1", CMPI_chars);
 
     printf( "--> Enumerating Instances\n" );
     enumeration = cc->ft->references(cc, objectpath, NULL, NULL, 0, NULL, &status);

@@ -1,3 +1,16 @@
 CVS Instructions:
 -----------------
 If you checkout from CVS run autoconfiscate.sh to prepare for building.
+
+To build:
+	# make
+	# make install
+
+	These make the test cases under TEST as well.
+
+	# make CFLAGS='-DDEBUG'
+
+	Builds a version of the library with debug output enabled.
+
+	Note that to pass the tests the test instance MOF and CIM schema
+	2.10 will need to be installed in root/iicmv1.

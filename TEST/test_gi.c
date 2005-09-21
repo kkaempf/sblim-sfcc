@@ -30,18 +30,28 @@ int main( int argc, char * argv[] )
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
     CMPIInstance * instance;
-    CMPIConstClass * class;
     CMPIStatus status;
+    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */   
-    cc = cmciConnect("localhost", NULL, "5988", "root", "password", NULL);
-   
+    /* Setup a conncetion to the CIMOM */
+    cim_host = getenv("CIM_HOST");
+    if (cim_host == NULL)
+	cim_host = "localhost";
+    cim_host_userid = getenv("CIM_HOST_USERID");
+    if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+    cim_host_passwd = getenv("CIM_HOST_PASSWD");
+    if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+    cc = cmciConnect(cim_host, NULL, "5988",
+			       cim_host_userid, cim_host_passwd, NULL);
+
     /* Test getInstance() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing getInstance() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
-    CMAddKey(objectpath, "CreationClassName", "CIM_Slot", CMPI_chars);
-    CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000007", CMPI_chars);
+    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_MAPAdminDomain", NULL);
+    CMAddKey(objectpath, "CreationClassName", "IICM_MAPAdminDomain", CMPI_chars);
+    CMAddKey(objectpath, "Name", "admin1", CMPI_chars);
     instance = cc->ft->getInstance(cc, objectpath, 0, NULL, &status);
 
     /* Print the results */

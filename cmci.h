@@ -451,7 +451,7 @@ struct _CMCIClient {
 
 CMCIClient *cmciConnect(const char *hn, const char *scheme, const char *port, 
                         const char *user, const char *pwd, CMPIStatus *rc);   
-   
+
 int sameCMPIObjectPath ( const CMPIObjectPath *cop1, const CMPIObjectPath *cop2);
    
 #ifdef __cplusplus

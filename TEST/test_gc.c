@@ -31,13 +31,25 @@ int main( int argc, char * argv[] )
     CMPIObjectPath * objectpath;
     CMPIConstClass * class;
     CMPIStatus status;
+    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    cc = cmciConnect("localhost", NULL, "5988", "root", "password", NULL);
-   
+    /* Setup a conncetion to the CIMOM */
+    cim_host = getenv("CIM_HOST");
+    if (cim_host == NULL)
+	cim_host = "localhost";
+    cim_host_userid = getenv("CIM_HOST_USERID");
+    if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+    cim_host_passwd = getenv("CIM_HOST_PASSWD");
+    if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+    cc = cmciConnect(cim_host, NULL, "5988",
+			       cim_host_userid, cim_host_passwd, NULL);
+
     /* Test getClass() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing getClass() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_AdminDomain", NULL);
+    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_AdminDomain", NULL);
     class = cc->ft->getClass(cc, objectpath, 0, NULL, &status);
 
     /* Print the results */

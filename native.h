@@ -10,16 +10,16 @@
   to create these objects as defined by the CMPIBrokerEncFT.
 
   (C) Copyright IBM Corp. 2003
- 
-  THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE 
-  ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
+
+  THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+  ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
   CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
- 
+
   You can obtain a current copy of the Common Public License from
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 */
 
 #ifndef _REMOTE_CMPI_NATIVE_DATA_H
@@ -72,27 +72,27 @@ struct native_instance {
   \sa propertyFT in native.h
 */
 struct native_propertyFT {
-	
+
 	//! Adds a new native_property to a list.
 	int (* addProperty) ( struct native_property **,
 			      const char *,
-			      CMPIType, 
-			      CMPIValueState, 
+			      CMPIType,
+			      CMPIValueState,
 			      CMPIValue * );
 
 	//! Resets the values of an existing native_property, if existant.
-	int (* setProperty) ( struct native_property *, 
-			      const char *, 
+	int (* setProperty) ( struct native_property *,
+			      const char *,
 			      CMPIType,
 			      CMPIValue * );
 
 	//! Looks up a specifix native_property in CMPIData format.
-	CMPIData (* getDataProperty) ( struct native_property *, 
+	CMPIData (* getDataProperty) ( struct native_property *,
 				       const char *,
 				       CMPIStatus * );
 
 	//! Extract an indexed native_property in CMPIData format.
-	CMPIData (* getDataPropertyAt) ( struct native_property *, 
+	CMPIData (* getDataPropertyAt) ( struct native_property *,
 					 unsigned int,
 					 CMPIString **,
 					 CMPIStatus * );
@@ -102,7 +102,7 @@ struct native_propertyFT {
 					 CMPIStatus * );
 
 	//! Looks up a specifix native_property and return qualifier chain.
-	struct native_qualifier *(*__getDataPropertyQualifiers ) ( struct native_property *, 
+	struct native_qualifier *(*__getDataPropertyQualifiers ) ( struct native_property *,
 				       const char *,
 				       CMPIStatus * );
 
@@ -116,27 +116,27 @@ struct native_propertyFT {
 
 
 struct native_qualifierFT {
-	
+
 	//! Adds a new native_qualifier to a list.
 	int (* addQualifier) ( struct native_qualifier **,
 			      const char *,
-			      CMPIType, 
-			      CMPIValueState, 
+			      CMPIType,
+			      CMPIValueState,
 			      CMPIValue * );
 
 	//! Resets the values of an existing native_qualifier, if existant.
-	int (* setQualifier) ( struct native_qualifier *, 
-			      const char *, 
+	int (* setQualifier) ( struct native_qualifier *,
+			      const char *,
 			      CMPIType,
 			      CMPIValue * );
 
 	//! Looks up a specifix native_qualifier in CMPIData format.
-	CMPIData (* getDataQualifier) ( struct native_qualifier *, 
+	CMPIData (* getDataQualifier) ( struct native_qualifier *,
 				       const char *,
 				       CMPIStatus * );
 
 	//! Extract an indexed native_qualifier in CMPIData format.
-	CMPIData (* getDataQualifierAt) ( struct native_qualifier *, 
+	CMPIData (* getDataQualifierAt) ( struct native_qualifier *,
 					 unsigned int,
 					 CMPIString **,
 					 CMPIStatus * );
@@ -176,7 +176,7 @@ CMPIDateTime * native_new_CMPIDateTime_fromBinary ( CMPIUint64,
 						    CMPIStatus * );
 CMPIDateTime * native_new_CMPIDateTime_fromChars ( const char *,
 						   CMPIStatus * );
-                     
+
 struct xtokValueReference;
 CMPIValue str2CMPIValue(CMPIType type, char *val, struct xtokValueReference *ref);
 void setInstNsAndCn(CMPIInstance *ci, char *ns, char *cn);
@@ -193,7 +193,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, struct xtokValueReference
 #define newCMPIArgs native_new_CMPIArgs
 /****************************************************************************/
 
-extern struct native_propertyFT propertyFT;
+extern struct native_propertyFT const propertyFT;
 
 #ifdef __cplusplus
  }

@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 
   \todo Once CMGetCharPtr() macro uses the appropriate function call instead
   of casting the internal hdl, store "CMPIString" type in there.
@@ -29,13 +29,15 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
+
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 struct native_string {
 	CMPIString string;
 };
-
 
 static struct native_string * __new_string ( const char *, CMPIStatus * );
 
@@ -60,7 +62,8 @@ static CMPIStatus __sft_release ( CMPIString * string )
 
 static CMPIString * __sft_clone ( CMPIString * string, CMPIStatus * rc )
 {
-	return (CMPIString * ) __new_string ( string->ft->getCharPtr ( string, rc ), rc );
+	return (CMPIString * )
+		__new_string ( string->ft->getCharPtr ( string, rc ), rc );
 }
 
 
@@ -70,10 +73,10 @@ static char * __sft_getCharPtr ( CMPIString * string, CMPIStatus * rc )
 }
 
 
-static struct native_string * __new_string ( const char * ptr,
+static struct native_string * __new_string ( const char * ptr, 
 					     CMPIStatus * rc )
 {
-	static CMPIStringFT sft = {
+	static CMPIStringFT const sft = {
 		NATIVE_FT_VERSION,
 		__sft_release,
 		__sft_clone,

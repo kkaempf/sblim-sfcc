@@ -19,7 +19,7 @@
  */
 #include <cmci.h>
 #include <native.h>
-#include <unistd.h> 
+#include <unistd.h>
 
 static char * _HOSTNAME = "bestorga.ibm.com";
 
@@ -284,8 +284,8 @@ int main( int argc, char * argv[] )
                                                                                                                 
       /* Print the results */
       printf("deleteInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-//      if (!CMIsNullObject(instance)) CMRelease(instance);
-      if (!CMIsNullObject(objectpath)) CMRelease(objectpath);
+      if (instance) CMRelease(instance);
+      if (objectpath) CMRelease(objectpath);
    }
 
    if (1) {

@@ -5,31 +5,33 @@
   This is the native CMPIArgs implementation as used for remote
   providers. It reflects the well-defined interface of a regular
   CMPIArgs object, however, it works independently from the management broker.
-  
+
   It is part of a native broker implementation that simulates CMPI data
   types rather than interacting with the entities in a full-grown CIMOM.
 
   (C) Copyright IBM Corp. 2003
   (C) Copyright Intel Corp. 2003
- 
-  THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE 
-  ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
+
+  THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+  ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
   CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
- 
+
   You can obtain a current copy of the Common Public License from
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 */
 
 #include <stdio.h>
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 //! Native extension of the CMPIArgs data type.
 /*!
@@ -88,7 +90,7 @@ static CMPIStatus __aft_addArg ( CMPIArgs * args,
 					      type,
 					      0,
 					      value ) )?
-		   CMPI_RC_ERR_ALREADY_EXISTS: 
+		   CMPI_RC_ERR_ALREADY_EXISTS:
 		   CMPI_RC_OK );
 }
 
@@ -103,7 +105,7 @@ static CMPIData __aft_getArg ( CMPIArgs * args,
 }
 
 
-static CMPIData __aft_getArgAt ( CMPIArgs * args, 
+static CMPIData __aft_getArgAt ( CMPIArgs * args,
 				 unsigned int index,
 				 CMPIString ** name,
 				 CMPIStatus * rc )
@@ -117,14 +119,14 @@ static CMPIData __aft_getArgAt ( CMPIArgs * args,
 static unsigned int __aft_getArgCount ( CMPIArgs * args, CMPIStatus * rc )
 {
 	struct native_args * a = (struct native_args *) args;
-  
+
 	return propertyFT.getPropertyCount ( a->data, rc );
 }
 
 
 static struct native_args * __new_empty_args ( CMPIStatus * rc )
 {
-	static CMPIArgsFT aft = {
+	static const CMPIArgsFT aft = {
 		NATIVE_FT_VERSION,
 		__aft_release,
 		__aft_clone,
@@ -138,11 +140,11 @@ static struct native_args * __new_empty_args ( CMPIStatus * rc )
 		&aft
 	};
 
-	struct native_args * args = (struct native_args *) 
+	struct native_args * args = (struct native_args *)
 		calloc ( 1, sizeof ( struct native_args ) );
 
 	args->args      = a;
-	args->data = 0;
+        args->data = 0;
 
 	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
 	return args;

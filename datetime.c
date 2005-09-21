@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -30,9 +30,11 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 //! Native extension of the CMPIDateTime data type.
 /*!
@@ -206,11 +208,11 @@ static CMPIBoolean __dtft_isInterval ( CMPIDateTime * dt, CMPIStatus * rc )
 
   \return a fully initialized native_datetime object pointer.
  */
-static struct native_datetime * __new_datetime (CMPIUint64 msecs,
+static struct native_datetime * __new_datetime ( CMPIUint64 msecs,
 						 CMPIBoolean interval,
 						 CMPIStatus * rc )
 {
-	static CMPIDateTimeFT dtft = {
+	static const CMPIDateTimeFT dtft = {
 		NATIVE_FT_VERSION,
 		__dtft_release,
 		__dtft_clone,
@@ -219,7 +221,7 @@ static struct native_datetime * __new_datetime (CMPIUint64 msecs,
 		__dtft_isInterval
 	};
 
-	static CMPIDateTime dt = {
+	static const CMPIDateTime dt = {
 		"CMPIDateTime",
 		&dtft
 	};
@@ -257,9 +259,7 @@ CMPIDateTime * native_new_CMPIDateTime ( CMPIStatus * rc )
 	msecs = (CMPIUint64) 1000000 * (CMPIUint64) tv.tv_sec 
 		+ (CMPIUint64) tv.tv_usec;
 
-	return (CMPIDateTime *) __new_datetime (msecs,
-						 0,
-						 rc );
+	return (CMPIDateTime *) __new_datetime ( msecs, 0, rc );
 }
 
 
@@ -279,9 +279,7 @@ CMPIDateTime * native_new_CMPIDateTime_fromBinary ( CMPIUint64 time,
 						    CMPIBoolean interval,
 						    CMPIStatus * rc )
 {
-	return (CMPIDateTime *) __new_datetime ( time,
-						 interval,
-						 rc );
+	return (CMPIDateTime *) __new_datetime ( time, interval, rc );
 }
 
 
@@ -339,7 +337,7 @@ CMPIDateTime * native_new_CMPIDateTime_fromChars ( const char * string,
 
 	free ( str );
 
-	return (CMPIDateTime *)__new_datetime ( msecs, interval, rc );
+	return (CMPIDateTime *) __new_datetime ( msecs, interval, rc );
 }
 
 

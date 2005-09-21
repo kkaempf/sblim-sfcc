@@ -23,7 +23,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdlib.h>
@@ -31,9 +31,11 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 struct native_array_item {
   CMPIValueState state;
@@ -43,7 +45,7 @@ struct native_array_item {
 
 struct native_array {
    CMPIArray array;
-   CMPICount size,max,dynamic;
+   CMPICount size, max, dynamic;
    CMPIType type;
    struct native_array_item * data;
 };
@@ -95,7 +97,7 @@ static CMPIStatus __aft_release ( CMPIArray * array )
             native_release_CMPIValue ( a->type, &a->data[i].value );
          }
       }
-      
+
       free ( a->data );
       free ( a );
 
@@ -149,7 +151,6 @@ static CMPIType __aft_getSimpleType ( CMPIArray * array, CMPIStatus * rc )
 static CMPIData __aft_getElementAt ( CMPIArray * array, CMPICount index, CMPIStatus * rc )
 {
    struct native_array * a = (struct native_array *) array;
-
    CMPIData result = { a->type, CMPI_badValue };
 
    if ( index < a->size ) {
@@ -167,7 +168,7 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
 {
    struct native_array * a = (struct native_array *) array;
 
-   if ( a->dynamic && index==a->size ) {
+   if ( a->dynamic && index == a->size ) {
       native_array_increase_size(array, 1); 
    }
       
@@ -186,8 +187,8 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
          CMPIStatus rc = {CMPI_RC_OK, NULL};
 
          a->data[index].state = 0;
-         if (opt) a->data[index].value = *val;
-         else a->data[index].value =  native_clone_CMPIValue ( type, val, &rc );
+	 a->data[index].value = (opt) ? 
+			 *val : native_clone_CMPIValue ( type, val, &rc );
          return rc;
       }
 
@@ -212,7 +213,7 @@ static CMPIStatus __aft_setElementAt ( CMPIArray * array, CMPICount index, CMPIV
 static struct native_array * __new_empty_array ( CMPICount size, CMPIType type,
       CMPIStatus * rc )
 {
-   static CMPIArrayFT aft = {
+   static const CMPIArrayFT aft = {
       NATIVE_FT_VERSION,
       __aft_release,
       __aft_clone,
@@ -221,7 +222,7 @@ static struct native_array * __new_empty_array ( CMPICount size, CMPIType type,
       __aft_getElementAt,
       __aft_setElementAt
    };
-   static CMPIArray a = {
+   static const CMPIArray a = {
       "CMPIArray",
       &aft
    };
@@ -235,13 +236,13 @@ static struct native_array * __new_empty_array ( CMPICount size, CMPIType type,
    array->type  = ( type == CMPI_chars )? CMPI_string: type;
    array->size  = size;
  
-   if (array->size==0) {
-      array->max=8;
-      array->dynamic=1;
+   if (array->size == 0) {
+      array->max = 8;
+      array->dynamic = 1;
    }
    else {
-      array->max=array->size;
-      array->dynamic=0;
+      array->max = array->size;
+      array->dynamic = 0;
    }    
      
    array->data  = (struct native_array_item *) 
@@ -263,8 +264,8 @@ CMPIStatus simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type)
 {
    struct native_array * a = (struct native_array *) array;
    if (a->dynamic) {
-      if (a->size==0) a->type=type;
-      setElementAt(array,a->size,val,type,1);
+      if (a->size == 0) a->type = type;
+      setElementAt(array, a->size, val, type,1);
    }   
    CMReturn ( CMPI_RC_ERR_FAILED );
 } 

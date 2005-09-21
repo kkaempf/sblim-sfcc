@@ -14,7 +14,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdio.h>
@@ -22,11 +22,13 @@
 #include <string.h>
 #include "cmcidt.h"
 #include "cmcift.h"
-//#include "tool.h"
 #include "native.h"
 #include "cimXmlParser.h"
 #include "utilStringBuffer.h"
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
  
 char *keytype2Chars(CMPIType type);
 CMPIType guessType(char *val);
@@ -37,41 +39,50 @@ extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str,
 
 void native_release_CMPIValue ( CMPIType type, CMPIValue * val )
 {
-        if (val) switch ( type ) {
-
-	case CMPI_instance:
-		if ( val->inst ) CMRelease ( val->inst );
-		break;
-
-	case CMPI_ref:
-		if ( val->ref ) CMRelease ( val->ref );
-		break;
-
-	case CMPI_args:
-		if ( val->args ) CMRelease ( val->args );
-		break;
-
-	case CMPI_enumeration:
-		if ( val->Enum ) CMRelease ( val->Enum );
-		break;
-
-	case CMPI_string:
-		if ( val->string ) CMRelease ( val->string );
-		break;
-
-	case CMPI_chars:
-		if ( val->chars ) free ( val->chars );
-		break;
-
-	case CMPI_dateTime:
-		if ( val->dateTime ) CMRelease ( val->dateTime );
-		break;
-
-	default:
-		if ( type & CMPI_ARRAY && val->array) {
-			CMRelease ( val->array );
+	if ( val )
+		switch ( type ) {
+	
+		case CMPI_instance:
+			if (val->inst)
+			    CMRelease ( val->inst );
+			break;
+	
+		case CMPI_ref:
+			if (val->ref)
+			    CMRelease ( val->ref );
+			break;
+	
+		case CMPI_args:
+			if (val->args)
+			    CMRelease ( val->args );
+			break;
+	
+		case CMPI_enumeration:
+			if (val->Enum)
+			    CMRelease ( val->Enum );
+			break;
+	
+		case CMPI_string:
+			if (val->string)
+			    CMRelease ( val->string );
+			break;
+	
+		case CMPI_chars:
+			if (val->chars)
+			    free ( val->chars );
+			break;
+	
+		case CMPI_dateTime:
+			if (val->dateTime)
+			    CMRelease ( val->dateTime );
+			break;
+	
+		default:
+			if ( type & CMPI_ARRAY ) {
+				if (val->array)
+				    CMRelease ( val->array );
+			}
 		}
-	}
 }
 
 
@@ -129,7 +140,7 @@ CMPIValue native_clone_CMPIValue ( CMPIType type,
 
 static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
 {
-   char str[256], *p;
+   char str[2048], *p;
    unsigned int size;
    CMPIString *cStr;
 
@@ -142,12 +153,8 @@ static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
       case CMPI_instance:
          break;
 
-      case CMPI_ref: {
-            char r[2048];
-            p = pathToChars(value->ref, NULL, r, uri);
-            return p;
-         }
-         break;
+      case CMPI_ref:
+         return strdup(pathToChars(value->ref, NULL, str, uri));
 
       case CMPI_args:
          break;
@@ -160,16 +167,13 @@ static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
       case CMPI_booleanString:
       case CMPI_dateTimeString:
       case CMPI_classNameString:
-         size = strlen((char *) value->string->hdl);
-         p = malloc(size + 8);
-         sprintf(p, "%s", (char *) value->string->hdl);
-         return p;
+	 return strdup(value->string->hdl);
 
       case CMPI_dateTime:
          cStr=CMGetStringFormat(value->dateTime,NULL);
-         return strdup((char *) cStr->hdl);
+         p = strdup((char *) cStr->hdl);
          CMRelease(cStr);
-         break;
+	 return p;
       }
 
    }
@@ -248,10 +252,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
       if (strcasecmp(type, "string") == 0);
       else if (strcasecmp(type, "boolean") == 0) {
          *typ = CMPI_boolean;
-         if (strcasecmp(type, "true") == 0)
-            val->boolean = 1;
-         else
-            val->boolean = 0;
+         val->boolean = (strcasecmp(type, "true") == 0) ? 1 : 0;
          return val;
       }
       else if (strcasecmp(type, "numeric") == 0) {
@@ -260,8 +261,8 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
             sscanf(value, "%lld", &val->uint64);
          }
          else {
-            sscanf(value, "%llu", &val->sint64);
             *typ = CMPI_uint64;
+            sscanf(value, "%llu", &val->sint64);
          }
          return val;
       }

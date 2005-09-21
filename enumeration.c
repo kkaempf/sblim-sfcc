@@ -19,15 +19,17 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 struct native_enum {
 	CMPIEnumeration enumeration;
@@ -46,12 +48,12 @@ static struct native_enum * __new_enumeration ( CMPIArray *,
 static CMPIStatus __eft_release ( CMPIEnumeration * enumeration )
 {
 	struct native_enum * e = (struct native_enum *) enumeration;
-        CMPIStatus st;
+	CMPIStatus st;
 
-	if ( e ) {
-		st = e->data->ft->release ( e->data );
+	if (e) {
+		st = CMRelease(e->data);
 		free ( enumeration );
-                return st;
+		return st;
 	}
 
 	CMReturn ( CMPI_RC_ERR_FAILED );
@@ -104,7 +106,7 @@ static CMPIArray * __eft_toArray ( CMPIEnumeration * enumeration,
 static struct native_enum * __new_enumeration ( CMPIArray * array,
 						CMPIStatus * rc )
 {
-	static CMPIEnumerationFT eft = {
+	static const CMPIEnumerationFT eft = {
 		NATIVE_FT_VERSION,
 		__eft_release,
 		__eft_clone,
@@ -112,7 +114,7 @@ static struct native_enum * __new_enumeration ( CMPIArray * array,
 		__eft_hasNext,
 		__eft_toArray
 	};
-	static CMPIEnumeration e = {
+	static const CMPIEnumeration e = {
 		"CMPIEnumeration",
 		&eft
 	};
@@ -121,7 +123,7 @@ static struct native_enum * __new_enumeration ( CMPIArray * array,
 		calloc ( 1, sizeof ( struct native_enum ) );
 
 	enumeration->enumeration = e;
-	enumeration->data = array;
+	enumeration->data = array; 	/* CMClone ( array, rc ) ? */
 
 	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
 	return enumeration;

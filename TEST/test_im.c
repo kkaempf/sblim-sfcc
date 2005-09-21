@@ -32,16 +32,27 @@ int main( int argc, char * argv[] )
     CMPIStatus		status;
     CMPIArgs		* argsin; 
     CMPIValue		value;
+    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */   
-    cc = cmciConnect("localhost", NULL, "5988", "root", "password", NULL);
-   
+    /* Setup a conncetion to the CIMOM */
+    cim_host = getenv("CIM_HOST");
+    if (cim_host == NULL)
+	cim_host = "localhost";
+    cim_host_userid = getenv("CIM_HOST_USERID");
+    if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+    cim_host_passwd = getenv("CIM_HOST_PASSWD");
+    if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+    cc = cmciConnect(cim_host, NULL, "5988",
+			       cim_host_userid, cim_host_passwd, NULL);
+
     printf("\n----------------------------------------------------------\n");
     printf("Testing invokeMethod() ...\n");
 
     objectpath = newCMPIObjectPath("root/cimv2", "CWS_Authorization", NULL);
     CMAddKey(objectpath, "Username", "bestorga", CMPI_chars);
-    CMAddKey(objectpath, "Classname", "CIM_OperatingSystem", CMPI_chars);
+    CMAddKey(objectpath, "Classname", "IICM_OperatingSystem", CMPI_chars);
 
     argsin = newCMPIArgs(NULL);
     value.string = newCMPIString("Query", NULL);

@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -27,8 +27,11 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
+
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 //! Storage container for commonly needed data within native CMPI data types.
 /*!
@@ -81,8 +84,9 @@ static int __addQualifier ( struct native_qualifier ** qual,
 	CMPIValue v;
 
 	if ( *qual == NULL ) {
-		struct native_qualifier * tmp = *qual = (struct native_qualifier *) calloc ( 1,
-					sizeof ( struct native_qualifier ) );
+		struct native_qualifier * tmp = *qual =
+			(struct native_qualifier *) 
+			calloc ( 1, sizeof ( struct native_qualifier ) );
   
 		tmp->name = strdup ( name );
 
@@ -97,23 +101,18 @@ static int __addQualifier ( struct native_qualifier ** qual,
 		tmp->type  = type;
 
 		if ( type != CMPI_null ) {
-			tmp->state = state;
-		
 			CMPIStatus rc;
-			tmp->value = native_clone_CMPIValue ( type,
-							      value,
-							      &rc );
 
-		} else tmp->state = CMPI_nullValue;
+			tmp->state = state;
+			tmp->value = native_clone_CMPIValue ( type, value, &rc );
+		} else
+			tmp->state = CMPI_nullValue;
 
 		return 0;
 	}
 	return ( strcmp ( (*qual)->name, name ) == 0 ||
-		 __addQualifier ( &( (*qual)->next ), 
-				 name, 
-				 type, 
-				 state, 
-				 value ) );
+		 __addQualifier ( &( (*qual)->next ), name, type,
+						      state, value ) );
 }
 
 
@@ -126,9 +125,8 @@ static int __setQualifier ( struct native_qualifier * qual,
 			   CMPIValue * value )
 {
 	CMPIValue v;
-	if ( qual == NULL ) {
+	if ( qual == NULL )
 		return -1;
-	}
 
 	if ( strcmp ( qual->name, name ) == 0 ) {
 
@@ -148,9 +146,10 @@ static int __setQualifier ( struct native_qualifier * qual,
 		qual->type  = type;
 
 		if ( type != CMPI_null ) {
-			qual->value =	native_clone_CMPIValue ( type, value, &rc );
+			qual->value = native_clone_CMPIValue ( type, value, &rc );
 
-		} else qual->state = CMPI_nullValue;
+		} else
+			qual->state = CMPI_nullValue;
 
 		return 0;
 	}
@@ -250,8 +249,8 @@ static struct native_qualifier * __clone ( struct native_qualifier * qual,
 		return NULL;
 	}
 
-	result = (struct native_qualifier * ) calloc ( 1,
-				sizeof ( struct native_qualifier ) );
+	result = (struct native_qualifier * ) 
+		 calloc ( 1, sizeof ( struct native_qualifier ) );
 
 	result->name  = strdup ( qual->name );
 	result->type  = qual->type;

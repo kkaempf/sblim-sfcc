@@ -53,7 +53,7 @@ error code and and corresponding error string.
    CMPIStatus status;
 
    /* Setup a conncetion to the CIMOM */   
-   cc = cmciConnect("localhost",NULL,NULL,NULL,NULL);
+   cc = cmciConnect("localhost", NULL, NULL, NULL, NULL, NULL);
 
    objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
    class = cc->ft->getClass(cc, objectpath, 0, NULL, &status);

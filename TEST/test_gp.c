@@ -31,15 +31,26 @@ int main( int argc, char * argv[] )
     CMPIObjectPath * objectpath;
     CMPIStatus status;
     CMPIData   data;
+    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */   
-    cc = cmciConnect("localhost", NULL, "5988", "root", "password", NULL);
-   
+    /* Setup a conncetion to the CIMOM */
+    cim_host = getenv("CIM_HOST");
+    if (cim_host == NULL)
+	cim_host = "localhost";
+    cim_host_userid = getenv("CIM_HOST_USERID");
+    if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+    cim_host_passwd = getenv("CIM_HOST_PASSWD");
+    if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+    cc = cmciConnect(cim_host, NULL, "5988",
+			       cim_host_userid, cim_host_passwd, NULL);
+
     /* Test getProperty() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing getProperty() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_PhysicalPackage", NULL);
-    CMAddKey(objectpath, "CreationClassName", "CIM_PhysicalPackage", CMPI_chars);
+    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_PhysicalPackage", NULL);
+    CMAddKey(objectpath, "CreationClassName", "IICM_PhysicalPackage", CMPI_chars);
     CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000001", CMPI_chars);
 
     data = cc->ft->getProperty(cc, objectpath, "ElementName", &status);

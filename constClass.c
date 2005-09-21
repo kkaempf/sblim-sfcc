@@ -28,9 +28,11 @@
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
-//#include "tool.h"
 #include "native.h"
 
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
 
 /****************************************************************************/
 

@@ -1,9 +1,9 @@
-AM_CPPFLAGS = -I../ $(AUTOUNIT_CPP_CFLAGS) -I$(top_builddir)/src -I$(top_srcdir)/src
+AM_CPPFLAGS = -I../../ $(AUTOUNIT_CPP_CFLAGS) -I$(top_builddir)/src -I$(top_srcdir)/src
 
-#if HAVE_AUTOUNIT_CPP
+if HAVE_AUTOUNIT_CPP
 
 AM_LDFLAGS = \
-	-L$(top_builddir)/.libs -lcmpisfcc  \
+	-L$(top_builddir)/src/lib -lcmpisfcc  \
 	$(AUTOUNIT_CPP_LIBS)
 
 OUR_UNIT_TESTS = \
@@ -13,16 +13,20 @@ check_PROGRAMS = $(OUR_UNIT_TESTS)
 TESTS = $(OUR_UNIT_TESTS)
 
 OUR_LDADD = \
-	$(top_builddir)/.lib/libcmpisfcc.la 
+	$(top_builddir)/src/lib/libcmpisfcc.la
 
 test_native_SOURCES = test_objectpath.cpp
 test_native_LDADD = $(OUR_LDADD)
 
-#endif
+endif
+
+noinst_HEADERS = show.h
 
 noinst_PROGRAMS	= test \
                   test_an \
+                  test_an_2 \
                   test_as \
+                  test_as_2 \
                   test_ci \
                   test_di \
                   test_ec \
@@ -37,18 +41,29 @@ noinst_PROGRAMS	= test \
                   test_rfn \
                   test_si \
                   test_sp \
-                  test_xq
+                  test_xq \
+		  test_cpp
 
 test_SOURCES = test.c
 test_LDADD = ../libcmpisfcc.la
+
+test_cpp_SOURCES = test_cpp.cpp
 
 test_an_SOURCES = test_an.c \
                    show.c
 test_an_LDADD = ../libcmpisfcc.la
 
+test_an_2_SOURCES = test_an_2.c \
+                   show.c
+test_an_2_LDADD = ../libcmpisfcc.la
+
 test_as_SOURCES = test_as.c \
                    show.c
 test_as_LDADD = ../libcmpisfcc.la
+
+test_as_2_SOURCES = test_as_2.c \
+                   show.c
+test_as_2_LDADD = ../libcmpisfcc.la
 
 test_ci_SOURCES = test_ci.c \
                    show.c
@@ -111,3 +126,5 @@ test_xq_SOURCES = test_xq.c \
 test_xq_LDADD = ../libcmpisfcc.la
 
 
+
+#@INC_AMINCLUDE@

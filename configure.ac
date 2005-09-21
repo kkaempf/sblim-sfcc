@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(sblim-sfcc, 0.5, sblim-devel@lists.sourceforge.net)
+AC_INIT(sblim-sfcc, 0.6, sblim-devel@lists.sourceforge.net)
 AC_CONFIG_SRCDIR([args.c])
 AC_CONFIG_HEADER([config.h])
 
@@ -38,6 +38,8 @@ AC_FUNC_REALLOC
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([gettimeofday localtime_r memset strcasecmp strdup strncasecmp strstr tzset])
 
+# AUTOUNIT
+AM_CONDITIONAL(HAVE_AUTOUNIT_CPP,[test 0 = 1 ])
 
 AC_CONFIG_FILES([Makefile TEST/Makefile])
 AC_OUTPUT

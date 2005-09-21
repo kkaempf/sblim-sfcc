@@ -133,13 +133,20 @@ typedef struct xtokLocalClassPath {
    int type;
 } XtokLocalClassPath;
 
+typedef struct xtokClassPath {
+   XtokNameSpacePath name;
+   char *className;
+   int  type;
+} XtokClassPath;
+
 typedef struct xtokValueReference {
    union {
       XtokInstancePath instancePath;
       XtokLocalInstancePath localInstancePath;
       XtokInstanceName instanceName;
-   };   
+   };
    TypeValRef type;
+   CMPIObjectPath *op;
 } XtokValueReference;
 
 typedef struct xtokKeyBinding {
@@ -166,8 +173,8 @@ typedef struct xtokPropertyData {
    union {
       char *value;
       XtokValueReference ref;
-      XtokValueArray array;  
-   };   
+      XtokValueArray array;
+   };
    XtokQualifiers qualifiers;
    int null;
 } XtokPropertyData;
@@ -187,13 +194,17 @@ typedef struct xtokProperties {
    XtokProperty *last, *first;  // must be free'd
 } XtokProperties;
 
+typedef struct xtokReturnValue {
+   CMPIType type;
+} XtokReturnValue;
+
 typedef struct xtokInstance {
    char *className;
    XtokProperties properties;
    XtokQualifiers qualifiers;
 } XtokInstance;
 
-typedef struct xtokInstanceData { 
+typedef struct xtokInstanceData {
    XtokProperties properties;
    XtokQualifiers qualifiers;
 } XtokInstanceData;
@@ -306,7 +317,7 @@ typedef struct responseHdr {
 typedef struct parser_control {
    XmlBuffer *xmb;
    ResponseHdr respHdr;
-   char *nameSpace;
+   char *da_nameSpace;
    CMPIInstance *curInstance;
    CMPIObjectPath *curPath;
    CMPIConstClass *curClass;

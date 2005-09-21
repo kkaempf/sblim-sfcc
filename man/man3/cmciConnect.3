@@ -6,11 +6,11 @@ cmciConnect() \- Create a CMCIClient object and connection
 .B #include <cmci.h>
 .sp
 .BI CMCIClient *
-.BI cmciClient (const char* hostName, const char* hostPort, 
+.BI cmciConnect (const char* hostName, const char* scheme, 
 .br
-.BI		const char* CimUsername, const char* CimPassword,
+.BI              const char* hostPort, const char* CimUsername,
 .br
-.BI				CMPIStatus* rc);
+.BI              const char* CimPassword, CMPIStatus* rc);
 .br
 .sp
 .fi
@@ -36,7 +36,7 @@ code and corresponding error string.
    CMCIClient *cc;
 
    /* Setup a local conncetion to the CIMOM */   
-   cc = cmciConnect("localhost",NULL,NULL,NULL,NULL);
+   cc = cmciConnect("localhost", NULL, NULL, NULL, NULL, NULL);
 .fi
 .sp
 .SH "CONFORMING TO"
