@@ -702,20 +702,24 @@ objectsWithPath
     : /* empty */
     | objectWithPath
     {
-       PARM->curInstance = native_new_CMPIInstance(NULL,NULL);
-       setInstNsAndCn(PARM->curInstance,PARM->da_nameSpace,$1.instance.className);
+       createPath(&(PARM->curPath),&($1.path.instanceName));
+       CMSetNameSpace(PARM->curPath,PARM->da_nameSpace);
+       PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
+       PARM->curPath = NULL;
        PARM->Qs = PARM->Ps = 0;
     }
     | objectsWithPath objectWithPath
     {
-       PARM->curInstance = native_new_CMPIInstance(NULL,NULL);
-       setInstNsAndCn(PARM->curInstance,PARM->da_nameSpace,$2.instance.className);
+       createPath(&(PARM->curPath),&($2.path.instanceName));
+       CMSetNameSpace(PARM->curPath,PARM->da_nameSpace);
+       PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
+       PARM->curPath = NULL;
        PARM->Qs = PARM->Ps = 0;
     }
 ;
