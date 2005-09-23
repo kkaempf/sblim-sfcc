@@ -85,7 +85,7 @@ void showInstance( CMPIInstance *instance )
 	     for (j = 0; j < n; ++j) {
 		CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
 		valuestr = value2Chars(eletyp, &ele.value);
-	        printf("\t%s[%d] = %s\n", (char *)propertyname->hdl,
+	        printf("\t%s[%d]=%s\n", (char *)propertyname->hdl, 
 					          j, valuestr);
 		free (valuestr);
 	     }
