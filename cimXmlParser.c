@@ -1324,6 +1324,10 @@ void* parser_calloc(ParserHeap *ph, size_t num, size_t sz)
 
 void* parser_realloc(ParserHeap *ph, void *p, size_t sz)
 {
+   int i;
+   for (i=ph->numBlocks - 1; i >= 0; i--) 
+      if(ph->blocks[i]==p) ph->blocks[i]=NULL;
+
   int idx = parser_heap_grow(ph);
   if (idx >= 0) {
     return (ph->blocks[idx]=realloc(p,sz));
