@@ -1286,7 +1286,8 @@ static int parser_heap_grow(ParserHeap *ph)
 {
   if (ph) {
     if (ph->numBlocks >= ph->capacity) {
-      ph->blocks = realloc(ph->blocks,ph->capacity+PARSER_HEAP_INCREMENT);
+      ph->blocks = realloc(ph->blocks,
+			   sizeof(void*)*(ph->capacity+PARSER_HEAP_INCREMENT));
       if (ph->blocks) {
 	ph->capacity += PARSER_HEAP_INCREMENT;
       } else {
