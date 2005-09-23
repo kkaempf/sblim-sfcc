@@ -1252,9 +1252,91 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
    control.respHdr.rvArray=newCMPIArray(0,0,NULL);
    control.da_nameSpace=(char*)getNameSpaceChars(cop);
 
+   control.heap = parser_heap_init();
+
    control.respHdr.rc = yyparse(&control);
+
+   parser_heap_term(control.heap);
 
    releaseXmlBuffer(xmb);
 
    return control.respHdr;
 }
+
+#define PARSER_HEAP_INCREMENT 100
+
+ParserHeap* parser_heap_init()
+{
+  return calloc(1,sizeof(ParserHeap));
+}
+
+void parser_heap_term(ParserHeap* ph)
+{
+  int i;
+  if (ph) {
+    for (i=ph->numBlocks - 1; i >= 0; i--) {
+      free(ph->blocks[i]);
+    }
+    free(ph->blocks);
+    free(ph);
+  }
+}
+
+static int parser_heap_grow(ParserHeap *ph)
+{
+  if (ph) {
+    if (ph->numBlocks >= ph->capacity) {
+      ph->blocks = realloc(ph->blocks,ph->capacity+PARSER_HEAP_INCREMENT);
+      if (ph->blocks) {
+	ph->capacity += PARSER_HEAP_INCREMENT;
+      } else {
+	return -1;
+      }
+    }
+    ph->numBlocks += 1; 
+    return ph->numBlocks - 1;
+  } else {
+    return -1;
+  }
+}
+
+void* parser_malloc(ParserHeap *ph, size_t sz)
+{
+  int idx = parser_heap_grow(ph);
+  if (idx >= 0) {
+    return (ph->blocks[idx]=malloc(sz));
+  } else {
+    return NULL;
+  }
+}
+
+void* parser_calloc(ParserHeap *ph, size_t num, size_t sz)
+{
+  int idx = parser_heap_grow(ph);
+  if (idx >= 0) {
+    return (ph->blocks[idx]=calloc(num,sz));
+  } else {
+    return NULL;
+  }
+}
+
+void* parser_realloc(ParserHeap *ph, void *p, size_t sz)
+{
+  int idx = parser_heap_grow(ph);
+  if (idx >= 0) {
+    return (ph->blocks[idx]=realloc(p,sz));
+  } else {
+    return NULL;
+  }
+}
+
+void* parser_strdup(ParserHeap *ph, const char *s)
+{
+  int idx = parser_heap_grow(ph);
+  if (idx >= 0) {
+    return (ph->blocks[idx]=strdup(s));
+  } else {
+    return NULL;
+  }
+}
+

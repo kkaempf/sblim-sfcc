@@ -314,6 +314,12 @@ typedef struct responseHdr {
 } ResponseHdr;
 
 
+typedef struct parser_heap {
+  size_t  capacity;
+  size_t  numBlocks;
+  void  **blocks;
+} ParserHeap;
+ 
 typedef struct parser_control {
    XmlBuffer *xmb;
    ResponseHdr respHdr;
@@ -326,7 +332,15 @@ typedef struct parser_control {
    XtokMethods     methods;
    XtokParamValues paramValues;
    int Qs,Ps,Ms,MPs,MQs,MPQs;
+   ParserHeap *heap;
 } ParserControl;
+
+ParserHeap* parser_heap_init();
+void parser_heap_term(ParserHeap* ph);
+void* parser_malloc(ParserHeap *ph, size_t sz);
+void* parser_calloc(ParserHeap *ph, size_t num, size_t sz);
+void* parser_realloc(ParserHeap *ph, void *p, size_t sz);
+void* parser_strdup(ParserHeap *ph, const char *s);
 
 extern ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop);
 extern void freeCimXmlResponse(ResponseHdr * hdr);

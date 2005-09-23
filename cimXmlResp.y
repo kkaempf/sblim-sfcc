@@ -50,6 +50,11 @@
 
 #define PARM ((ParserControl*)parm)
 
+#define PARSER_MALLOC(s) parser_malloc(PARM->heap,(s))
+#define PARSER_CALLOC(n,s) parser_calloc(PARM->heap,(n),(n))
+#define PARSER_REALLOC(p,s) parser_realloc(PARM->heap,(p),(s))
+#define PARSER_STRDUP(s) parser_strdup(PARM->heap,(s))
+
 extern int yyerror(char*);
 extern int yylex (void *lvalp, ParserControl *parm);
 int isBoolean(CMPIData data);
@@ -116,12 +121,12 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
 	    val.array = arr;
             CMSetProperty(ci, p->name, &val, p->valueType | CMPI_ARRAY);
 	    CMRelease(arr);			/* cloned in property */
-	    free (p->val.array.values);
+	    //	    free (p->val.array.values);
 	 }
 	 break;
       }
       np = p->next;
-      free(p);
+      //      free(p);
       p = np;
    }
 
@@ -163,27 +168,27 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
 #else
 	 state = CMPI_nullValue;
 #endif
-         addClassProperty(cls,p->name,&op,CMPI_ref,state);
+         addClassProperty(cls,p->name,(CMPIValue*)&op,CMPI_ref,state);
 	 break;
       case typeProperty_Array:
 	 op = NULL;
 	 state = CMPI_nullValue;
-	 addClassProperty(cls, p->name, op,
+	 addClassProperty(cls, p->name, (CMPIValue*)op,
 			       p->valueType | CMPI_ARRAY, state);
          break;
       }
       np = p->next;
-      free(p);
+      //      free(p);
       p = np;
    }
    if (ps)
       ps->first = ps->last = NULL;
 }
 
-static void addProperty(XtokProperties *ps, XtokProperty *p)
+static void addProperty(ParserControl *parm, XtokProperties *ps, XtokProperty *p)
 {
    XtokProperty *np;
-   np = (XtokProperty*)malloc(sizeof(XtokProperty));
+   np = (XtokProperty*)PARSER_MALLOC(sizeof(XtokProperty));
    memcpy(np, p, sizeof(XtokProperty));
    np->next = NULL;
    if (ps->last)
@@ -194,11 +199,11 @@ static void addProperty(XtokProperties *ps, XtokProperty *p)
 }
 
 /*  TODO: Reactivate when setParamValue is implemented
-static void addParamValue(XtokParamValues *vs, XtokParamValue *v)
+static void addParamValue(ParserControl *parm, XtokParamValues *vs, XtokParamValue *v)
 {
 #if 0
    XtokParamValue *nv;
-   nv = (XtokParamValue*)malloc(sizeof(XtokParamValue));
+   nv = (XtokParamValue*)PARSER_MALLOC(sizeof(XtokParamValue));
    memcpy(nv, v, sizeof(XtokParamValue));
    nv->next = NULL;
    if (vs->last)
@@ -210,11 +215,11 @@ static void addParamValue(XtokParamValues *vs, XtokParamValue *v)
 }
  */
 
-static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
+static void addQualifier(ParserControl *parm, XtokQualifiers *qs, XtokQualifier *q)
 {
 #if 0	/* TODO: Reactivate when setQualifier is implemented */
    XtokQualifier *nq;
-   nq = (XtokQualifier*)malloc(sizeof(XtokQualifier));
+   nq = (XtokQualifier*)PARSER_MALLOC(sizeof(XtokQualifier));
    memcpy(nq, q, sizeof(XtokQualifier));
    nq->next = NULL;
    if (qs->last)
@@ -225,11 +230,11 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
 #endif
 }
 
-static void addMethod(XtokMethods *ms, XtokMethod *m)
+static void addMethod(ParserControl *parm, XtokMethods *ms, XtokMethod *m)
 {
 #if 0	/* TODO: Reactivate when setMethod is implemented */
    XtokMethod *nm;
-   nm = (XtokMethod*)malloc(sizeof(XtokMethod));
+   nm = (XtokMethod*)PARSER_MALLOC(sizeof(XtokMethod));
    memcpy(nm, m, sizeof(XtokMethod));
    nm->next = NULL;
    if (ms->last)
@@ -240,11 +245,11 @@ static void addMethod(XtokMethods *ms, XtokMethod *m)
 #endif
 }
 
-static void addParam(XtokParams *ps, XtokParam *p)
+static void addParam(ParserControl *parm, XtokParams *ps, XtokParam *p)
 {
 #if 0	/* TODO: Reactivate when setParam is implemented */
    XtokParam *np;
-   np = (XtokParam*)malloc(sizeof(XtokParam));
+   np = (XtokParam*)PARSER_MALLOC(sizeof(XtokParam));
    memcpy(np, p, sizeof(XtokParam));
    np->next = NULL;
    if (ps->last)
@@ -255,7 +260,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
 #endif
 }
 
-static void setError(void *parm, XtokErrorResp *e)
+static void setError(ParserControl *parm, XtokErrorResp *e)
 {
    int err = atoi(e->code);
 #if DEBUG
@@ -264,7 +269,7 @@ static void setError(void *parm, XtokErrorResp *e)
        fprintf(stderr,"error:: %s %s\n",e->code,e->description);
 #endif
    PARM->respHdr.errCode = err;
-   PARM->respHdr.description = strdup(e->description);
+   PARM->respHdr.description = PARSER_STRDUP(e->description);
 }
 
 %}
@@ -773,15 +778,15 @@ classData
     | classData qualifier
     {
        PARM->Qs++;
-       addQualifier(&(PARM->qualifiers),&$2);
+       addQualifier(PARM,&(PARM->qualifiers),&$2);
     }
     | classData property     {
        PARM->Ps++;
-       addProperty(&(PARM->properties),&$2);
+       addProperty(PARM,&(PARM->properties),&$2);
     }
     | classData method     {
         PARM->Ms++;
-        addMethod(&(PARM->methods),&$2);
+        addMethod(PARM,&(PARM->methods),&$2);
     }
 ;
 
@@ -807,7 +812,7 @@ methodData
        if (PARM->MQs == 0)
           memset(&$$.qualifiers,0,sizeof($$.qualifiers));
        PARM->MQs++;
-       addQualifier(&($$.qualifiers),&$2);
+       addQualifier(PARM,&($$.qualifiers),&$2);
     }
     | methodData XTOK_PARAM parameter ZTOK_PARAM
     {
@@ -817,7 +822,7 @@ methodData
        if (PARM->MPQs)
           $2.qualifiers = $3.qualifiers;
        else memset(&$2.qualifiers,0,sizeof($2.qualifiers));
-       addParam(&($$.params),&$2);
+       addParam(PARM,&($$.params),&$2);
        PARM->MPQs = 0;
     }
     | methodData XTOK_PARAMREF parameter ZTOK_PARAMREF
@@ -828,7 +833,7 @@ methodData
        if (PARM->MPQs)
           $2.qualifiers = $3.qualifiers;
        else memset(&$2.qualifiers,0,sizeof($2.qualifiers));
-       addParam(&($$.params),&$2);
+       addParam(PARM,&($$.params),&$2);
        PARM->MPQs = 0;
     }
 ;
@@ -840,7 +845,7 @@ parameter
        if (PARM->MPQs == 0)
           memset(&$$.qualifiers,0,sizeof($$.qualifiers));
        PARM->MPQs++;
-       addQualifier(&($$.qualifiers),&$2);
+       addQualifier(PARM,&($$.qualifiers),&$2);
     }
 ;
 
@@ -866,12 +871,12 @@ instanceData
     | instanceData qualifier
     {
        PARM->Qs++;
-       addQualifier(&(PARM->qualifiers),&$2);
+       addQualifier(PARM,&(PARM->qualifiers),&$2);
     }
     | instanceData property
     {
        PARM->Ps++;
-       addProperty(&(PARM->properties),&$2);
+       addProperty(PARM,&(PARM->properties),&$2);
     }
 ;
 
@@ -903,7 +908,7 @@ propertyData
     : /* empty */ {$$.null = 1;}
     | propertyData qualifier
     {
-       addQualifier(&(PARM->qualifiers),&$2);
+       addQualifier(PARM,&(PARM->qualifiers),&$2);
     }
     | propertyData value
     {
@@ -959,14 +964,14 @@ valueArray
     {
        $$.next = 1;
        $$.max  = 16;
-       $$.values = (char**)malloc(sizeof(char*) * $$.max);
+       $$.values = (char**)PARSER_MALLOC(sizeof(char*) * $$.max);
        $$.values[0] = $1.value;
     }
     | valueArray value
     {
        if ($$.next == $$.max) {
           $$.max *= 2;
-          $$.values = (char**)realloc($$.values, sizeof(char*) * $$.max);
+          $$.values = (char**)PARSER_REALLOC($$.values, sizeof(char*) * $$.max);
        }
        $$.values[$$.next] = $2.value;
        $$.next++;
@@ -1044,16 +1049,16 @@ localNameSpacePath
 nameSpaces
     : XTOK_NAMESPACE ZTOK_NAMESPACE
     {
-       $$.cns = strdup($1.ns);
+       $$.cns = PARSER_STRDUP($1.ns);
     }
     | nameSpaces XTOK_NAMESPACE ZTOK_NAMESPACE
     {
        int l = strlen($1.cns)+strlen($2.ns)+2;
-       $$.cns = (char*)malloc(l);
+       $$.cns = (char*)PARSER_MALLOC(l);
        strcpy($$.cns,$1.cns);
        strcat($$.cns,"/");
        strcat($$.cns,$2.ns);
-       free($1.cns);
+       //       free($1.cns);
     }
 ;
 
@@ -1206,7 +1211,7 @@ keyBindings
     {
        $$.next = 1;
        $$.max  = 8;
-       $$.keyBindings = (XtokKeyBinding*)malloc(sizeof(XtokKeyBinding) * $$.max);
+       $$.keyBindings = (XtokKeyBinding*)PARSER_MALLOC(sizeof(XtokKeyBinding) * $$.max);
        $$.keyBindings[0].name = $1.name;
        $$.keyBindings[0].value = $1.value;
        $$.keyBindings[0].type = $1.type;
@@ -1216,7 +1221,7 @@ keyBindings
     {
        if ($$.next == $$.max) {
           $$.max *= 2;
-          $$.keyBindings = (XtokKeyBinding*)realloc($$.keyBindings,
+          $$.keyBindings = (XtokKeyBinding*)PARSER_REALLOC($$.keyBindings,
 				           sizeof(XtokKeyBinding) * $$.max);
        }
        $$.keyBindings[$$.next].name = $2.name;
