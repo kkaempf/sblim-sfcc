@@ -98,12 +98,12 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
       case typeProperty_Value:
 	 if (p->val.value != NULL) {
 	     val = str2CMPIValue(p->valueType, p->val.value, NULL);
-	     ci->ft->setProperty(ci, p->name, &val, p->valueType);
+	     CMSetProperty(ci, p->name, &val, p->valueType);
 	 }
          break;
       case typeProperty_Reference:
          op=p->val.ref.op;
-         ci->ft->setProperty(ci, p->name, &op, CMPI_ref);
+         CMSetProperty(ci, p->name, &op, CMPI_ref);
          break;
       case typeProperty_Array:
 	 if (p->val.array.next > 0) {
@@ -113,9 +113,10 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
 		val = str2CMPIValue(p->valueType, p->val.array.values[i], NULL);
 		CMSetArrayElementAt(arr, i, &val, p->valueType);
 	    }
-	    free (p->val.array.values);
 	    val.array = arr;
-            ci->ft->setProperty(ci, p->name, &val, p->valueType | CMPI_ARRAY);
+            CMSetProperty(ci, p->name, &val, p->valueType | CMPI_ARRAY);
+	    CMRelease(arr);			/* cloned in property */
+	    free (p->val.array.values);
 	 }
 	 break;
       }
@@ -136,27 +137,39 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
    CMPIObjectPath *op;
 
    while (p) {
-      op=NULL;
       switch (p->propType) {
       case typeProperty_Value:
+#if 0
          if (p->val.null)
 	    state = CMPI_nullValue;
          else {
             state = 0;
             val = str2CMPIValue(p->valueType, p->val.value, NULL);
          }
-         addClassProperty(cls,p->name,&val,p->valueType,state);
+#else
+	 state = CMPI_nullValue;
+#endif
+         addClassProperty(cls, p->name, NULL, p->valueType, state);
          break;
       case typeProperty_Reference:
-         if (p->val.null) state=CMPI_nullValue;
+         op = NULL;
+#if 0
+         if (p->val.null)
+	    state = CMPI_nullValue;
          else {
             state = 0;
             op=p->val.ref.op;
          }
+#else
+	 state = CMPI_nullValue;
+#endif
          addClassProperty(cls,p->name,&op,CMPI_ref,state);
 	 break;
       case typeProperty_Array:
-	 /* TODO: Implement array property sets */
+	 op = NULL;
+	 state = CMPI_nullValue;
+	 addClassProperty(cls, p->name, op,
+			       p->valueType | CMPI_ARRAY, state);
          break;
       }
       np = p->next;
@@ -729,20 +742,22 @@ namedInstances
     : /* empty */
     | namedInstance
     {
-       PARM->curInstance = native_new_CMPIInstance(NULL,NULL);
-       setInstNsAndCn(PARM->curInstance,PARM->da_nameSpace,$1.instance.className);
+       createPath(&(PARM->curPath),&($1.path));
+       PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
+       PARM->curPath = NULL;
        PARM->Qs = PARM->Ps = 0;
     }
     | namedInstances namedInstance
     {
-       PARM->curInstance = native_new_CMPIInstance(NULL,NULL);
-       setInstNsAndCn(PARM->curInstance,PARM->da_nameSpace,$2.instance.className);
+       createPath(&(PARM->curPath),&($2.path));
+       PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
+       PARM->curPath = NULL;
        PARM->Qs = PARM->Ps = 0;
     }
 ;
@@ -1244,7 +1259,7 @@ keyBindings
     {
        if ($$.next == $$.max) {
           $$.max *= 2;
-          $$.keyBindings = (char**)realloc($$.keyBindings,
+          $$.keyBindings = (XtokKeyBinding*)realloc($$.keyBindings,
 				           sizeof(XtokKeyBinding) * $$.max);
        }
        $$.keyBindings[$$.next].name = $2.name;

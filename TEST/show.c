@@ -70,17 +70,35 @@ void showInstance( CMPIInstance *instance )
       }
    }
    else
-      printf("keys are NULL !\n");
+      printf("No keys!\n");
    if (numproperties) {
       printf("properties:\n");
       for (i=0; i<numproperties; i++) {
          CMPIString * propertyname;
          CMPIData data = instance->ft->getPropertyAt(instance, i, &propertyname, NULL);
-         printf("\t%s=%s\n", (char *)propertyname->hdl, value2Chars(data.type, &data.value));
+	 char *valuestr;
+	 if (CMIsArray(data)) {
+	     CMPIArray *arr   = data.value.array;
+	     CMPIType  eletyp = data.type & ~CMPI_ARRAY;
+	     int j, n;
+	     n = CMGetArrayCount(arr, NULL);
+	     for (j = 0; j < n; ++j) {
+		CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
+		valuestr = value2Chars(eletyp, &ele.value);
+	        printf("\t%s[%d] = %s\n", (char *)propertyname->hdl,
+					          j, valuestr);
+		free (valuestr);
+	     }
+	 } else {
+	     valuestr = value2Chars(data.type, &data.value);
+	     printf("\t%s=%s\n", (char *)propertyname->hdl, valuestr);
+	     free (valuestr);
+	 }
+	 CMRelease(propertyname);
       }
    }
    else
-      printf("properties are NULL !\n");
+      printf("No properties!\n");
 
    if (classname) CMRelease(classname);
    if (namespace) CMRelease(namespace);

@@ -25,7 +25,7 @@
 
 #include "show.h"
 
-int main( int argc, char * argv[] )
+int main()
 {
     CMCIClient		* cc;
     CMPIObjectPath	* objectpath;
@@ -49,7 +49,7 @@ int main( int argc, char * argv[] )
     /* Test enumInstanceNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumInstanceNames() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_PhysicalPackage", NULL);
+    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_PhysicalPackage", NULL);
 
     enumeration = cc->ft->enumInstanceNames(cc, objectpath, &status);
 

@@ -25,7 +25,7 @@
 
 #include "show.h"
 
-int main( int argc, char * argv[] )
+int main()
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
@@ -49,8 +49,8 @@ int main( int argc, char * argv[] )
     /* Test referenceNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing referenceNames() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_Slot", NULL);
-    CMAddKey(objectpath, "CreationClassName", "IICM_Slot", CMPI_chars);
+    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
+    CMAddKey(objectpath, "CreationClassName", "CIM_Slot", CMPI_chars);
     CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000007", CMPI_chars);
     enumeration = cc->ft->referenceNames(cc, objectpath, NULL, NULL, &status);
 

@@ -25,7 +25,7 @@
 
 #include "show.h"
 
-int main( int argc, char * argv[] )
+int main()
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
@@ -49,7 +49,7 @@ int main( int argc, char * argv[] )
     /* Test getClass() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing getClass() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_AdminDomain", NULL);
+    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_AdminDomain", NULL);
     class = cc->ft->getClass(cc, objectpath, 0, NULL, &status);
 
     /* Print the results */

@@ -1,5 +1,25 @@
-#include "cmci.h"
-#include "native.h"
+/*
+ * test.c
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:        Adrian Schuur <schuur@de.ibm.com>
+ *
+ * Description:
+ *
+ *  General test for library APIs, original from sfcc project. To pass 
+ *  all tests requires additional support to be added to your CIMOM.
+ */
+#include <cmci.h>
+#include <native.h>
+#include <unistd.h>
 
 static char * _HOSTNAME = "bestorga.ibm.com";
 
@@ -89,7 +109,7 @@ int main( int argc, char * argv[] )
    char hostName[512];
 
    /* Setup a conncetion to the CIMOM */   
-   cc = cmciConnect("localhost","http",NULL,NULL,NULL,NULL);
+   cc = cmciConnect("localhost", NULL, "5988", "clp", NULL, NULL);
    
    gethostname(hostName,511);
    _HOSTNAME=strdup(hostName);
@@ -134,7 +154,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test getClass() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing getClass() ...\n");
@@ -268,7 +288,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test associators() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing associators() ...\n");
@@ -312,7 +332,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test references() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing references() ...\n");
@@ -334,7 +354,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test referenceNames() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing referenceNames() ...\n");
@@ -392,7 +412,7 @@ int main( int argc, char * argv[] )
       if (objectpath) CMRelease(objectpath);
    }
 
-   if (0) {
+   if (1) {
       /* Test invokeMethod() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing invokeMethod() ...\n");

@@ -25,7 +25,7 @@
 
 #include "show.h"
 
-int main( int argc, char * argv[] )
+int main()
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
@@ -49,8 +49,8 @@ int main( int argc, char * argv[] )
     /* Test setProperty() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing setProperty() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_PhysicalPackage", NULL);
-    CMAddKey(objectpath, "CreationClassName", "IICM_PhysicalPackage", CMPI_chars);
+    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_PhysicalPackage", NULL);
+    CMAddKey(objectpath, "CreationClassName", "CIM_PhysicalPackage", CMPI_chars);
     CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000002", CMPI_chars);
 
     value.string = newCMPIString("Sorta Fast Fan", NULL);

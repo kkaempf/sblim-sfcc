@@ -1,5 +1,5 @@
 /*
- * test_as.c
+ * test_as_2.c
  *
  * (C) Copyright IBM Corp. 2005
  * (C) Copyright Intel Corp. 2005
@@ -25,7 +25,7 @@
 
 #include "show.h"
 
-int main( int argc, char * argv[] )
+int main()
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
@@ -55,7 +55,7 @@ int main( int argc, char * argv[] )
     CMAddKey(objectpath, "Name", "admin1", CMPI_chars);
 
     enumeration = cc->ft->associators(cc, objectpath, 
-                          "IICM_SystemComponent", NULL, NULL, NULL, 0, NULL, &status);
+                          "CIM_SystemComponent", NULL, NULL, NULL, 0, NULL, &status);
 
     /* Print the results */
     printf("associators() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
