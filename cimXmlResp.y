@@ -408,7 +408,7 @@ static void setError(void *parm, XtokErrorResp *e)
 %token <xtokKeyValue>            XTOK_KEYVALUE
 %token <intValue>                ZTOK_KEYVALUE
 
-%type  <boolValue>               boolValue
+//%type  <boolValue>               boolValue
 
 %token <xtokNamedInstance>       XTOK_VALUENAMEDINSTANCE
 %token <intValue>                ZTOK_VALUENAMEDINSTANCE
@@ -469,11 +469,11 @@ static void setError(void *parm, XtokErrorResp *e)
 %token <xtokObjectPath>          XTOK_OBJECTPATH
 %token <intValue>                ZTOK_OBJECTPATH
 
-%type  <xtokLocalInstancePath>   localInstancePath
+//%type  <xtokLocalInstancePath>   localInstancePath
 %token <xtokLocalInstancePath>   XTOK_LOCALINSTANCEPATH
 %token <intValue>                ZTOK_LOCALINSTANCEPATH
 
-%type  <xtokClassPath>           localClassPath
+//%type  <xtokClassPath>           localClassPath
 %token <xtokLocalClassPath>      XTOK_LOCALCLASSPATH
 %token <intValue>                ZTOK_LOCALCLASSPATH
 
@@ -574,7 +574,7 @@ iReturnValue
 	CMPIValue val = str2CMPIValue(t, $2.value, NULL);
 	simpleArrayAdd(PARM->respHdr.rvArray, (CMPIValue*)&val, t);
     }
-    | /* XTOK_IRETVALUE valueObjectsWithPath ZTOK_IRETVALUE
+    /* | XTOK_IRETVALUE valueObjectsWithPath ZTOK_IRETVALUE
     {
     }
     | XTOK_IRETVALUE valueObjectsWithLocalPath ZTOK_IRETVALUE
@@ -624,7 +624,7 @@ ReturnValue
        val = str2CMPIValue(t, $2.value, NULL);
        simpleArrayAdd(PARM->respHdr.rvArray, (CMPIValue*)&val, t);
     }
-    | /* XTOK_RETVALUE valueObjectsWithPath ZTOK_RETVALUE
+    /* | XTOK_RETVALUE valueObjectsWithPath ZTOK_RETVALUE
     {
     }
     | XTOK_RETVALUE valueObjectsWithLocalPath ZTOK_RETVALUE
@@ -658,13 +658,6 @@ ReturnValue
 
 classes
     : /* empty */
-    | class
-    {
-       PARM->curClass = native_new_CMPIConstClass($1.className,NULL);
-       setClassProperties(PARM->curClass, &PARM->properties);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curClass,CMPI_class);
-       PARM->curClass = NULL;
-    }
     | classes class
     {
        PARM->curClass = native_new_CMPIConstClass($2.className,NULL);
@@ -676,15 +669,6 @@ classes
 
 instances
     : /* empty */
-    | instance
-    {
-       PARM->curInstance = native_new_CMPIInstance(NULL,NULL);
-       setInstNsAndCn(PARM->curInstance,PARM->da_nameSpace,$1.className);
-       setInstProperties(PARM->curInstance, &PARM->properties);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
-       PARM->curInstance = NULL;
-       PARM->Qs = PARM->Ps = 0;
-    }
     | instances instance
     {
        PARM->curInstance = native_new_CMPIInstance(NULL,NULL);
@@ -698,11 +682,6 @@ instances
 
 instanceNames
     : /* empty */
-    | instanceName
-    {
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
-       PARM->curPath = NULL;
-    }
     | instanceNames instanceName
     {
 //       setInstNsAndCn(PARM->curInstance,PARM->da_nameSpace,$2.className);
@@ -713,17 +692,6 @@ instanceNames
 
 objectsWithPath
     : /* empty */
-    | objectWithPath
-    {
-       createPath(&(PARM->curPath),&($1.path.instanceName));
-       CMSetNameSpace(PARM->curPath,PARM->da_nameSpace);
-       PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
-       setInstProperties(PARM->curInstance, &PARM->properties);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
-       PARM->curInstance = NULL;
-       PARM->curPath = NULL;
-       PARM->Qs = PARM->Ps = 0;
-    }
     | objectsWithPath objectWithPath
     {
        createPath(&(PARM->curPath),&($2.path.instanceName));
@@ -740,16 +708,6 @@ objectsWithPath
 
 namedInstances
     : /* empty */
-    | namedInstance
-    {
-       createPath(&(PARM->curPath),&($1.path));
-       PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
-       setInstProperties(PARM->curInstance, &PARM->properties);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
-       PARM->curInstance = NULL;
-       PARM->curPath = NULL;
-       PARM->Qs = PARM->Ps = 0;
-    }
     | namedInstances namedInstance
     {
        createPath(&(PARM->curPath),&($2.path));
@@ -1028,6 +986,7 @@ valueReference
     }
 ;
 
+/*
 boolValue
     : XTOK_VALUE ZTOK_VALUE
     {
@@ -1035,14 +994,10 @@ boolValue
 //       if (b >= 0) $$ = (b != 0);
     }
 ;
+*/
 
 classNames
     : /* empty */
-    | className
-    {
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
-       PARM->curPath = NULL;
-    }
     | classNames className
     {
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curPath,CMPI_ref);
@@ -1133,6 +1088,7 @@ instancePath
     } */
 ;
 
+/*
 localInstancePath
     : XTOK_LOCALINSTANCEPATH localNameSpacePath instanceName ZTOK_LOCALINSTANCEPATH
     {
@@ -1150,6 +1106,7 @@ localClassPath
        $$.type = 1;
     }
 ;
+*/
 
 classPath
     : XTOK_CLASSPATH nameSpacePath className ZTOK_CLASSPATH
