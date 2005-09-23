@@ -14,7 +14,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 */
 
 #include <stdio.h>
@@ -145,8 +145,8 @@ static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
    unsigned int size;
    CMPIString *cStr;
 
+   str[0]=0;
    if (type & CMPI_ARRAY) {
-
    }
    else if (type & CMPI_ENC) {
 
@@ -168,7 +168,8 @@ static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
       case CMPI_booleanString:
       case CMPI_dateTimeString:
       case CMPI_classNameString:
-	 return strdup(value->string->hdl);
+         if (value->string->hdl) return strdup((char*)value->string->hdl);
+         return strdup("NULL");
 
       case CMPI_dateTime:
          cStr=CMGetStringFormat(value->dateTime,NULL);
