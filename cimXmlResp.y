@@ -705,6 +705,7 @@ objectsWithPath
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
+       CMRelease(PARM->curPath);
        PARM->curPath = NULL;
        PARM->Qs = PARM->Ps = 0;
     }
@@ -720,6 +721,7 @@ namedInstances
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
+       CMRelease(PARM->curPath);
        PARM->curPath = NULL;
        PARM->Qs = PARM->Ps = 0;
     }

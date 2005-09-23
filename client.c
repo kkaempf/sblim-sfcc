@@ -68,6 +68,7 @@ static void set_debug()
 
 
 typedef const struct _CMCIConnectionFT {
+    CMPIStatus (*release) (CMCIConnection *);
     char *(*genRequest)(ClientEnc *cle, const char *op, CMPIObjectPath *cop,
 						  int classWithKeys);
     char *(*addPayload)(CMCIConnection *, UtilStringBuffer *pl);
@@ -125,6 +126,27 @@ static inline size_t writeCb(void *ptr, size_t size,
     unsigned int length = size * nmemb;
     sb->ft->appendBlock(sb, ptr, length);
     return length;
+}
+
+
+
+/* --------------------------------------------------------------------------*/
+
+static CMPIStatus releaseConnection(CMCIConnection *con)
+{
+  CMPIStatus rc = {CMPI_RC_OK,NULL};
+  if (con->mHeaders) {
+    curl_slist_free_all(con->mHeaders);
+    con->mHeaders = NULL;
+  }
+  curl_easy_cleanup(con->mHandle);
+  if (con->mBody) CMRelease(con->mBody);
+  if (con->mUri) CMRelease(con->mUri);
+  if (con->mUserPass) CMRelease(con->mUserPass);
+  if (con->mResponse) CMRelease(con->mResponse);
+
+  free(con);
+  return rc;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -214,6 +236,7 @@ static char* genRequest(ClientEnc *cle, const char *op,
        nsp = nsc->ft->getFirst(nsc);
        while (nsp != NULL) {
 	   strcat(CimObject, nsp);
+	   free(nsp); /* VM: freeing strdup'ed memory - should be part of release */
            if ((nsp = nsc->ft->getNext(nsc)) != NULL)
 	       strcat(CimObject, "%2F");
        }
@@ -287,6 +310,7 @@ static void initializeHeaders(CMCIConnection *con)
 }
 
 static CMCIConnectionFT conFt={
+  releaseConnection,
   genRequest,
   addPayload,
   getResponse,
@@ -361,8 +385,10 @@ static void addXmlNamespace(UtilStringBuffer *sb, CMPIObjectPath *cop)
    char *nsp;
 
    sb->ft->appendChars(sb,"<LOCALNAMESPACEPATH>");
-   for (nsp = nsc->ft->getFirst(nsc); nsp; nsp = nsc->ft->getNext(nsc))
+   for (nsp = nsc->ft->getFirst(nsc); nsp; nsp = nsc->ft->getNext(nsc)) {
       sb->ft->append3Chars(sb, "<NAMESPACE NAME=\"", nsp, "\"></NAMESPACE>");
+      free(nsp); /* VM: freeing strdup'ed memory - should be part of release */
+   }
    sb->ft->appendChars(sb, "</LOCALNAMESPACEPATH>\n");
    CMRelease(nsc);
 }
@@ -436,6 +462,34 @@ static void addXmlPropertyListParam(UtilStringBuffer *sb, char** properties)
 
 /* --------------------------------------------------------------------------*/
 /* --------------------------------------------------------------------------*/
+
+
+static CMPIStatus releaseClient(CMCIClient * mb)
+{
+  CMPIStatus rc={CMPI_RC_OK,NULL};
+  ClientEnc		* cl = (ClientEnc*)mb;
+  
+  if (cl->data.hostName) {
+    free(cl->data.hostName);
+  }
+  if (cl->data.user) {
+    free(cl->data.user);
+  }
+  if (cl->data.pwd) {
+    free(cl->data.pwd);
+  }
+  if (cl->data.scheme) {
+    free(cl->data.scheme);
+  }
+  if (cl->data.port) {
+    free(cl->data.port);
+  }
+ 
+  if (cl->connection) CMRelease(cl->connection);
+
+  free(cl);
+  return rc;
+}
 
 /* Finished & working */
 static CMPIEnumeration * enumInstanceNames(
@@ -2049,6 +2103,7 @@ static CMPIEnumeration * enumClasses(
 /* --------------------------------------------------------------------------*/
 
 static CMCIClientFT clientFt = {
+   releaseClient,
    getClass,
    enumClassNames,
    enumClasses,
@@ -2078,14 +2133,15 @@ CMCIClient *cmciConnect(const char *hn, const char *scheme, const char *port,
    cc->enc.hdl		= &cc->data;
    cc->enc.ft		= &clientFt;
 
-   cc->data.hostName	= hn ? strdup(hn) : "localhost";
+   cc->data.hostName	= hn ? strdup(hn) : strdup("localhost");
    cc->data.user	= user ? strdup(user) : NULL;
    cc->data.pwd		= pwd ? strdup(pwd) : NULL;
-   cc->data.scheme	= scheme ? strdup(scheme) : "http";
+   cc->data.scheme	= scheme ? strdup(scheme) : strdup("http");
    if (port != NULL)
       cc->data.port = strdup(port);
    else
-      cc->data.port = strcmp(cc->data.scheme, "https") == 0 ? "5989" : "5988";
+      cc->data.port = strcmp(cc->data.scheme, "https") == 0 ? 
+	strdup("5989") : strdup("5988");
 
    cc->connection=initConnection(&cc->data);
 

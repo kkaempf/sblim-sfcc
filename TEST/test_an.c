@@ -76,7 +76,8 @@ int main( int argc, char * argv[] )
 
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
-  
+    if (cc) CMRelease(cc);
+    
     return 0;
 }
 

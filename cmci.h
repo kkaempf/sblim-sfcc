@@ -61,6 +61,13 @@ struct _ClientEnc;
 typedef struct _ClientEnc ClientEnc;
 
 typedef struct _CMCIClientFT {
+      /** The Client object will not be used any further and may be freed by
+           CMPI run time system.
+	 @param clt Client this pointer.
+	 @return Service return status.
+      */
+     CMPIStatus (*release)
+              (CMCIClient* clt);
    
       /** Get Class using &lt;op&gt; as reference. Class structure can be
          controled using the flags parameter.
@@ -350,6 +357,7 @@ typedef struct _CMCIClientFT {
      CMPIData (*getProperty)
                 (CMCIClient *cl, 
                  CMPIObjectPath *op, const char *name, CMPIStatus *rc);
+
 
 } CMCIClientFT;
 
