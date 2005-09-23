@@ -106,7 +106,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
 	     CMSetProperty(ci, p->name, &val, p->valueType);
 	 }
          break;
-      case typeProperty_Reference:
+      case typeProperty_Reference: 
          op=p->val.ref.op;
          CMSetProperty(ci, p->name, &op, CMPI_ref);
          break;
@@ -114,7 +114,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
 	 if (p->val.array.next > 0) {
 	    CMPIArray *arr = newCMPIArray(0, p->valueType, NULL);
 	    int       i;
-	    for (i = 0; i < p->val.array.next; ++i) {
+	    if (p->val.array.max) for (i = 0; i < p->val.array.next; ++i) {
 		val = str2CMPIValue(p->valueType, p->val.array.values[i], NULL);
 		CMSetArrayElementAt(arr, i, &val, p->valueType);
 	    }
@@ -901,6 +901,7 @@ property
     | XTOK_PROPERTYARRAY propertyData ZTOK_PROPERTYARRAY
     {
        $$.val = $2;
+       $2.array.next=$2.array.max=0;
     }
 ;
 
@@ -955,7 +956,7 @@ value
 valueArray
     : /* empty */
     {
-       // printf ("+++ Empty value array\n");
+      // printf ("+++ Empty value array\n");
        $$.next = 0;
        $$.max  = 0;
        $$.values = NULL;

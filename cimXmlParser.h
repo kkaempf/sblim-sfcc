@@ -170,11 +170,11 @@ typedef struct xtokQualifiers {
 
 
 typedef struct xtokPropertyData {
-   union {
+//   union {
       char *value;
       XtokValueReference ref;
       XtokValueArray array;
-   };
+//   };
    XtokQualifiers qualifiers;
    int null;
 } XtokPropertyData;
