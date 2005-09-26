@@ -42,7 +42,8 @@ noinst_PROGRAMS	= test \
                   test_si \
                   test_sp \
                   test_xq \
-		  test_cpp
+		  test_cpp \
+		  test_qualifiers
 
 test_SOURCES = test.c
 test_LDADD = ../libcmpisfcc.la
@@ -125,6 +126,9 @@ test_xq_SOURCES = test_xq.c \
                   show.c
 test_xq_LDADD = ../libcmpisfcc.la
 
+test_qualifiers_SOURCES = test_qualifiers.c \
+                  show.c
+test_qualifiers_LDADD = ../libcmpisfcc.la
 
 
 #@INC_AMINCLUDE@

@@ -47,6 +47,26 @@ void showObjectPath( CMPIObjectPath * objectpath )
    if (namespace) CMRelease(namespace);
 }
 
+void showProperty( CMPIData data, char *name )
+{
+	 char *valuestr;
+	 if (CMIsArray(data)) {
+	     CMPIArray *arr   = data.value.array;
+	     CMPIType  eletyp = data.type & ~CMPI_ARRAY;
+	     int j, n;
+	     n = CMGetArrayCount(arr, NULL);
+	     for (j = 0; j < n; ++j) {
+		CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
+		valuestr = value2Chars(eletyp, &ele.value);
+	        printf("\t%s[%d]=%s\n", name, j, valuestr);
+		free (valuestr);
+	     }
+	 } else {
+	     valuestr = value2Chars(data.type, &data.value);
+	     printf("\t%s=%s\n", name, valuestr);
+	     free (valuestr);
+	 }
+}         
 
 void showInstance( CMPIInstance *instance )
 {
@@ -66,7 +86,9 @@ void showInstance( CMPIInstance *instance )
       for (i=0; i<numkeys; i++) {
          CMPIString * keyname;
          CMPIData data = objectpath->ft->getKeyAt(objectpath, i, &keyname, NULL);
-         printf("\t%s=%s\n", (char *)keyname->hdl, value2Chars(data.type, &data.value)); 
+         char *ptr=NULL;
+         printf("\t%s=%s\n", (char *)keyname->hdl, (ptr=value2Chars(data.type, &data.value))); 
+         free(ptr);
       }
    }
    else
@@ -76,24 +98,7 @@ void showInstance( CMPIInstance *instance )
       for (i=0; i<numproperties; i++) {
          CMPIString * propertyname;
          CMPIData data = instance->ft->getPropertyAt(instance, i, &propertyname, NULL);
-	 char *valuestr;
-	 if (CMIsArray(data)) {
-	     CMPIArray *arr   = data.value.array;
-	     CMPIType  eletyp = data.type & ~CMPI_ARRAY;
-	     int j, n;
-	     n = CMGetArrayCount(arr, NULL);
-	     for (j = 0; j < n; ++j) {
-		CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
-		valuestr = value2Chars(eletyp, &ele.value);
-	        printf("\t%s[%d]=%s\n", (char *)propertyname->hdl, 
-					          j, valuestr);
-		free (valuestr);
-	     }
-	 } else {
-	     valuestr = value2Chars(data.type, &data.value);
-	     printf("\t%s=%s\n", (char *)propertyname->hdl, valuestr);
-	     free (valuestr);
-	 }
+         showProperty( data, (char *)propertyname->hdl );
 	 CMRelease(propertyname);
       }
    }

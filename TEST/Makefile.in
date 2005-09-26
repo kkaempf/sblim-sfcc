@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 
-SOURCES = $(test_SOURCES) $(test_an_SOURCES) $(test_an_2_SOURCES) $(test_as_SOURCES) $(test_as_2_SOURCES) $(test_ci_SOURCES) $(test_cpp_SOURCES) $(test_di_SOURCES) $(test_ec_SOURCES) $(test_ecn_SOURCES) $(test_ei_SOURCES) $(test_ein_SOURCES) $(test_gc_SOURCES) $(test_gi_SOURCES) $(test_gp_SOURCES) $(test_im_SOURCES) $(test_native_SOURCES) $(test_rf_SOURCES) $(test_rfn_SOURCES) $(test_si_SOURCES) $(test_sp_SOURCES) $(test_xq_SOURCES)
+SOURCES = $(test_SOURCES) $(test_an_SOURCES) $(test_an_2_SOURCES) $(test_as_SOURCES) $(test_as_2_SOURCES) $(test_ci_SOURCES) $(test_cpp_SOURCES) $(test_di_SOURCES) $(test_ec_SOURCES) $(test_ecn_SOURCES) $(test_ei_SOURCES) $(test_ein_SOURCES) $(test_gc_SOURCES) $(test_gi_SOURCES) $(test_gp_SOURCES) $(test_im_SOURCES) $(test_native_SOURCES) $(test_qualifiers_SOURCES) $(test_rf_SOURCES) $(test_rfn_SOURCES) $(test_si_SOURCES) $(test_sp_SOURCES) $(test_xq_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -46,7 +46,8 @@ noinst_PROGRAMS = test$(EXEEXT) test_an$(EXEEXT) test_an_2$(EXEEXT) \
 	test_ei$(EXEEXT) test_ein$(EXEEXT) test_gc$(EXEEXT) \
 	test_gi$(EXEEXT) test_gp$(EXEEXT) test_im$(EXEEXT) \
 	test_rf$(EXEEXT) test_rfn$(EXEEXT) test_si$(EXEEXT) \
-	test_sp$(EXEEXT) test_xq$(EXEEXT) test_cpp$(EXEEXT)
+	test_sp$(EXEEXT) test_xq$(EXEEXT) test_cpp$(EXEEXT) \
+	test_qualifiers$(EXEEXT)
 subdir = TEST
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -114,6 +115,9 @@ test_native_OBJECTS = $(am_test_native_OBJECTS)
 @HAVE_AUTOUNIT_CPP_TRUE@am__DEPENDENCIES_1 = $(top_builddir)/src/lib/libcmpisfcc.la
 @HAVE_AUTOUNIT_CPP_TRUE@test_native_DEPENDENCIES =  \
 @HAVE_AUTOUNIT_CPP_TRUE@	$(am__DEPENDENCIES_1)
+am_test_qualifiers_OBJECTS = test_qualifiers.$(OBJEXT) show.$(OBJEXT)
+test_qualifiers_OBJECTS = $(am_test_qualifiers_OBJECTS)
+test_qualifiers_DEPENDENCIES = ../libcmpisfcc.la
 am_test_rf_OBJECTS = test_rf.$(OBJEXT) show.$(OBJEXT)
 test_rf_OBJECTS = $(am_test_rf_OBJECTS)
 test_rf_DEPENDENCIES = ../libcmpisfcc.la
@@ -153,7 +157,8 @@ SOURCES = $(test_SOURCES) $(test_an_SOURCES) $(test_an_2_SOURCES) \
 	$(test_cpp_SOURCES) $(test_di_SOURCES) $(test_ec_SOURCES) \
 	$(test_ecn_SOURCES) $(test_ei_SOURCES) $(test_ein_SOURCES) \
 	$(test_gc_SOURCES) $(test_gi_SOURCES) $(test_gp_SOURCES) \
-	$(test_im_SOURCES) $(test_native_SOURCES) $(test_rf_SOURCES) \
+	$(test_im_SOURCES) $(test_native_SOURCES) \
+	$(test_qualifiers_SOURCES) $(test_rf_SOURCES) \
 	$(test_rfn_SOURCES) $(test_si_SOURCES) $(test_sp_SOURCES) \
 	$(test_xq_SOURCES)
 DIST_SOURCES = $(test_SOURCES) $(test_an_SOURCES) $(test_an_2_SOURCES) \
@@ -162,8 +167,9 @@ DIST_SOURCES = $(test_SOURCES) $(test_an_SOURCES) $(test_an_2_SOURCES) \
 	$(test_ecn_SOURCES) $(test_ei_SOURCES) $(test_ein_SOURCES) \
 	$(test_gc_SOURCES) $(test_gi_SOURCES) $(test_gp_SOURCES) \
 	$(test_im_SOURCES) $(am__test_native_SOURCES_DIST) \
-	$(test_rf_SOURCES) $(test_rfn_SOURCES) $(test_si_SOURCES) \
-	$(test_sp_SOURCES) $(test_xq_SOURCES)
+	$(test_qualifiers_SOURCES) $(test_rf_SOURCES) \
+	$(test_rfn_SOURCES) $(test_si_SOURCES) $(test_sp_SOURCES) \
+	$(test_xq_SOURCES)
 HEADERS = $(noinst_HEADERS)
 ETAGS = etags
 CTAGS = ctags
@@ -362,6 +368,10 @@ test_xq_SOURCES = test_xq.c \
                   show.c
 
 test_xq_LDADD = ../libcmpisfcc.la
+test_qualifiers_SOURCES = test_qualifiers.c \
+                  show.c
+
+test_qualifiers_LDADD = ../libcmpisfcc.la
 all: all-am
 
 .SUFFIXES:
@@ -460,6 +470,9 @@ test_im$(EXEEXT): $(test_im_OBJECTS) $(test_im_DEPENDENCIES)
 test_native$(EXEEXT): $(test_native_OBJECTS) $(test_native_DEPENDENCIES) 
 	@rm -f test_native$(EXEEXT)
 	$(CXXLINK) $(test_native_LDFLAGS) $(test_native_OBJECTS) $(test_native_LDADD) $(LIBS)
+test_qualifiers$(EXEEXT): $(test_qualifiers_OBJECTS) $(test_qualifiers_DEPENDENCIES) 
+	@rm -f test_qualifiers$(EXEEXT)
+	$(LINK) $(test_qualifiers_LDFLAGS) $(test_qualifiers_OBJECTS) $(test_qualifiers_LDADD) $(LIBS)
 test_rf$(EXEEXT): $(test_rf_OBJECTS) $(test_rf_DEPENDENCIES) 
 	@rm -f test_rf$(EXEEXT)
 	$(LINK) $(test_rf_LDFLAGS) $(test_rf_OBJECTS) $(test_rf_LDADD) $(LIBS)
@@ -500,6 +513,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_im.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_objectpath.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_qualifiers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_rf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_rfn.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_si.Po@am__quote@
