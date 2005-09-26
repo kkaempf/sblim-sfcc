@@ -332,7 +332,7 @@ static void setError(ParserControl *parm, XtokErrorResp *e)
        fprintf(stderr,"error:: %s %s\n",e->code,e->description);
 #endif
    PARM->respHdr.errCode = err;
-   PARM->respHdr.description = PARSER_STRDUP(e->description);
+   PARM->respHdr.description = strdup(e->description);
 }
 
 %}
