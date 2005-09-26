@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 */
 
 #include <stdio.h>
@@ -83,7 +83,8 @@ static int __addQualifier ( struct native_qualifier ** qual,
 {
 	CMPIValue v;
 
-	if ( *qual == NULL ) {
+//	fprintf(stderr,"!!! addQualifier %s: %s %x\n",name,(char*)value->string->hdl,type);
+        if ( *qual == NULL ) {
 		struct native_qualifier * tmp = *qual =
 			(struct native_qualifier *) 
 			calloc ( 1, sizeof ( struct native_qualifier ) );
@@ -104,7 +105,7 @@ static int __addQualifier ( struct native_qualifier ** qual,
 			CMPIStatus rc;
 
 			tmp->state = state;
-			tmp->value = native_clone_CMPIValue ( type, value, &rc );
+			tmp->value = *value; //native_clone_CMPIValue ( type, value, &rc );
 		} else
 			tmp->state = CMPI_nullValue;
 
@@ -146,7 +147,7 @@ static int __setQualifier ( struct native_qualifier * qual,
 		qual->type  = type;
 
 		if ( type != CMPI_null ) {
-			qual->value = native_clone_CMPIValue ( type, value, &rc );
+			qual->value = *value; //native_clone_CMPIValue ( type, value, &rc );
 
 		} else
 			qual->state = CMPI_nullValue;
@@ -177,14 +178,14 @@ static CMPIData __getDataQualifier ( struct native_qualifier * qual,
 	if ( rc ) CMSetStatus ( rc,
 				( p )?
 				CMPI_RC_OK:
-				CMPI_RC_ERR_NO_SUCH_PROPERTY );
+				CMPI_RC_ERR_FAILED );
 
 	return __convert2CMPIData ( p, NULL );
 }
 
 
-static struct native_qualifier * __getQualifierAt
-( struct native_qualifier * qual, unsigned int pos )
+static struct native_qualifier * __getQualifierAt ( struct native_qualifier * qual, 
+                   unsigned int pos )
 {
 	if ( ! qual ) {
 		return NULL;
@@ -229,9 +230,11 @@ static CMPICount __getQualifierCount ( struct native_qualifier * qual,
 
 static void __release ( struct native_qualifier * qual )
 {
-	for ( ; qual; qual = qual->next ) {
+        struct native_qualifier *next; 
+        for ( ; qual; qual = next ) {
 		free ( qual->name );
 		native_release_CMPIValue ( qual->type, &qual->value );
+                next = qual->next;
 		free ( qual );
 	}
 }
@@ -272,7 +275,7 @@ static struct native_qualifier * __clone ( struct native_qualifier * qual,
 /**
  * Global function table to access native_qualifier helper functions.
  */
-struct native_qualifierFT qualifierFT = {
+struct native_qualifierFT const qualifierFT = {
 	__addQualifier,
 	__setQualifier,
 	__getDataQualifier,
@@ -281,6 +284,8 @@ struct native_qualifierFT qualifierFT = {
 	__release,
 	__clone
 };
+
+
 
 /****************************************************************************/
 

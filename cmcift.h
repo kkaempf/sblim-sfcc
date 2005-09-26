@@ -143,6 +143,25 @@ extern "C" {
       */
      CMPIStatus (*setPropertyFilter)
               (CMPIInstance* inst, char **propertyList, char **keys);
+              
+              
+     CMPIData (*getQualifier)
+              (CMPIInstance* inst, const char *name, CMPIStatus* rc);
+     CMPIData (*getQualifierAt)
+              (CMPIInstance* inst, unsigned int index, CMPIString** name,
+	       CMPIStatus* rc);
+     unsigned int (*getQualifierCount)
+              (CMPIInstance* inst, CMPIStatus* rc);
+              
+              
+     CMPIData (*getPropertyQualifier)
+              (CMPIInstance* inst, const char *pname, const char *qname, CMPIStatus* rc);
+     CMPIData (*getPropertyQualifierAt)
+              (CMPIInstance* inst, const char *pname, unsigned int index, CMPIString** name,
+	       CMPIStatus* rc);
+     unsigned int (*getPropertyQualifierCount)
+              (CMPIInstance* inst, const char *pname, CMPIStatus* rc);
+              
    };
 
 

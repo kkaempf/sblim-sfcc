@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdio.h>
@@ -92,6 +92,8 @@ static CMPIStatus __ift_release ( CMPIInstance * instance )
 	    if (i->nameSpace) free(i->nameSpace);
 	    __release_list ( i->property_list );
 	    __release_list ( i->key_list );
+            propertyFT.release(i->props);
+            qualifierFT.release(i->qualifiers);
             free(i);
             CMReturn ( CMPI_RC_OK );
 	}   
@@ -106,11 +108,13 @@ static CMPIInstance * __ift_clone ( CMPIInstance * instance, CMPIStatus * rc )
 	struct native_instance * new = (struct native_instance *) 
 			       calloc ( 1, sizeof ( struct native_instance ) );
 
-	new->classname     = strdup ( i->classname );
-	new->nameSpace     = strdup ( i->nameSpace );
+	new->instance.ft=i->instance.ft;
+        if (i->classname) new->classname     = strdup ( i->classname );
+	if (i->nameSpace) new->nameSpace     = strdup ( i->nameSpace );
 	new->property_list = __duplicate_list ( i->property_list );
 	new->key_list      = __duplicate_list ( i->key_list );
-	new->props     = propertyFT.clone ( i->props, rc );
+	new->qualifiers    = qualifierFT.clone ( i->qualifiers, rc );
+	new->props         = propertyFT.clone ( i->props, rc );
 
 	return (CMPIInstance *) new;
 }
@@ -143,6 +147,69 @@ static unsigned int __ift_getPropertyCount ( CMPIInstance * instance,
 	struct native_instance * i = (struct native_instance *) instance;
   
 	return propertyFT.getPropertyCount ( i->props, rc );
+
+}
+
+static CMPIData __ift_getQualifier ( CMPIInstance * instance, 
+				      const char * name,
+				      CMPIStatus * rc )
+{
+	struct native_instance * i = (struct native_instance *) instance;
+
+	return qualifierFT.getDataQualifier ( i->qualifiers, name, rc );
+}
+
+static CMPIData __ift_getQualifierAt ( CMPIInstance * instance, 
+				      unsigned int index,
+				      CMPIString ** name,
+				      CMPIStatus * rc )
+{
+	struct native_instance * i = (struct native_instance *) instance;
+
+	return qualifierFT.getDataQualifierAt ( i->qualifiers, index, name, rc );
+}
+
+static unsigned int __ift_getQualifierCount ( CMPIInstance * instance, 
+					     CMPIStatus * rc )
+{
+	struct native_instance * i = (struct native_instance *) instance;
+  
+	return qualifierFT.getQualifierCount ( i->qualifiers, rc );
+}
+
+static CMPIData __ift_getPropertyQualifier ( CMPIInstance * instance, 
+				      const char * pname, const char *qname,
+				      CMPIStatus * rc )
+{
+	struct native_instance * i = (struct native_instance *) instance;
+	struct native_property *p=propertyFT.getProperty ( i->props, pname );
+
+	if (p) return qualifierFT.getDataQualifier ( p->qualifiers, qname, rc );        
+	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+}
+
+static CMPIData __ift_getPropertyQualifierAt ( CMPIInstance * instance, 
+				      const char * pname, 
+				      unsigned int index,
+				      CMPIString ** name,
+				      CMPIStatus * rc )
+{
+	struct native_instance * i = (struct native_instance *) instance;
+	struct native_property *p=propertyFT.getProperty ( i->props, pname );
+
+	if (p) return qualifierFT.getDataQualifierAt ( p->qualifiers, index, name, rc );
+	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+}
+
+static unsigned int __ift_getPropertyQualifierCount ( CMPIInstance * instance, 
+				             const char * pname, 
+					     CMPIStatus * rc )
+{
+	struct native_instance * i = (struct native_instance *) instance;
+	struct native_property *p=propertyFT.getProperty ( i->props, pname );
+  
+	if (p) return qualifierFT.getQualifierCount ( p->qualifiers, rc );
+	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
 }
 
 
@@ -241,7 +308,13 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 		__ift_getPropertyCount,
 		__ift_setProperty,
 		__ift_getObjectPath,
-		__ift_setPropertyFilter
+		__ift_setPropertyFilter,
+                __ift_getQualifier,
+                __ift_getQualifierAt,
+                __ift_getQualifierCount,
+                __ift_getPropertyQualifier,
+                __ift_getPropertyQualifierAt,
+                __ift_getPropertyQualifierCount
 	};
 	static CMPIInstance i = {
 		"CMPIInstance",
@@ -290,11 +363,57 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 
 void setInstNsAndCn(CMPIInstance *ci, char *ns, char *cn)
 {
-	struct native_instance * i = (struct native_instance *) ci;
+   struct native_instance * i = (struct native_instance *) ci;
+   
    if (cn) i->classname=strdup(cn);
    if (ns) i->nameSpace=strdup(ns);
 }
 
+int addInstQualifier( CMPIInstance* ci, char * name,
+				      CMPIValue * value,
+				      CMPIType type)
+{
+   struct native_instance * i = (struct native_instance *) ci;
+
+	if ( qualifierFT.setQualifier ( i->qualifiers,
+				      name, 
+				      type,
+				      value ) ) {
+		qualifierFT.addQualifier ( &i->qualifiers, 
+					 name, 
+					 type, 
+					 0, 
+					 value );
+		}
+                
+	return ( CMPI_RC_OK );
+}
+
+int addInstPropertyQualifier( CMPIInstance* ci, char * pname, char *qname,
+				      CMPIValue * value,
+				      CMPIType type)
+{
+   struct native_instance * i = (struct native_instance *) ci;
+   struct native_property *p=propertyFT.getProperty ( i->props ,pname );
+   
+   if (p) {
+	if ( qualifierFT.setQualifier ( p->qualifiers,
+				      qname, 
+				      type,
+				      value ) ) {
+		qualifierFT.addQualifier ( &p->qualifiers, 
+					 qname, 
+					 type, 
+					 0, 
+					 value );
+		}
+                
+	return ( CMPI_RC_OK );
+   }
+   return CMPI_RC_ERR_NO_SUCH_PROPERTY;
+}                                      
+                                      
+                                      
 /****************************************************************************/
 
 /*** Local Variables:  ***/

@@ -80,6 +80,7 @@ static void createPath(CMPIObjectPath **op, XtokInstanceName *p)
    int i,m;
    CMPIValue val,*valp;
    CMPIType type;
+   static int n=0;
 
    *op = newCMPIObjectPath(NULL, p->className, NULL);
    for (i = 0, m = p->bindings.next; i < m; i++) {
@@ -97,41 +98,102 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
    CMPIValue val;
    CMPIValueState state;
    CMPIObjectPath *op;
+   XtokQualifier *nq = NULL,*q;
+   XtokQualifiers *qs;
+   int rc, n, setq;
 
    while (p) {
+      setq=1;
       switch (p->propType) {
       case typeProperty_Value:
-	 if (p->val.value != NULL) {
-	     val = str2CMPIValue(p->valueType, p->val.value, NULL);
-	     CMSetProperty(ci, p->name, &val, p->valueType);
-	 }
+         if (p->val.value != NULL && p->val.null==0) {
+            val = str2CMPIValue(p->valueType, p->val.value, NULL);
+            CMSetProperty(ci, p->name, &val, p->valueType);
+         }
+         else setq=0;
          break;
       case typeProperty_Reference: 
          op=p->val.ref.op;
          CMSetProperty(ci, p->name, &op, CMPI_ref);
          break;
       case typeProperty_Array:
-	 if (p->val.array.next > 0) {
-	    CMPIArray *arr = newCMPIArray(0, p->valueType, NULL);
-	    int       i;
-	    if (p->val.array.max) for (i = 0; i < p->val.array.next; ++i) {
-		val = str2CMPIValue(p->valueType, p->val.array.values[i], NULL);
-		CMSetArrayElementAt(arr, i, &val, p->valueType);
-	    }
-	    val.array = arr;
+         if (p->val.array.next > 0) {
+            CMPIArray *arr = newCMPIArray(0, p->valueType, NULL);
+            int i;
+            if (p->val.array.max) for (i = 0; i < p->val.array.next; ++i) {
+               val = str2CMPIValue(p->valueType, p->val.array.values[i], NULL);
+               CMSetArrayElementAt(arr, i, &val, p->valueType);
+            }
+            val.array = arr;
             CMSetProperty(ci, p->name, &val, p->valueType | CMPI_ARRAY);
-	    CMRelease(arr);			/* cloned in property */
-	    //	    free (p->val.array.values);
-	 }
-	 break;
+            CMRelease(arr);			/* cloned in property */
+            //  free (p->val.array.values);
+         }
+         else setq=0;
+         break;
       }
+ 
+      if (setq) {
+         qs=&p->val.qualifiers;
+         q=qs ? qs->first : NULL;  
+         n=0;   
+         while (q) {
+            if (q->type & CMPI_ARRAY) {
+               CMPIType type=q->type&~CMPI_ARRAY;
+               CMPIArray *arr = newCMPIArray(0, type, NULL);
+               int i;
+               if (q->array.max) for (i = 0; i < q->array.next; ++i) {
+                  val = str2CMPIValue(type, q->array.values[i], NULL);
+                  CMSetArrayElementAt(arr, i, &val, type);
+                  native_release_CMPIValue(type,&val);
+               }
+               rc = addInstPropertyQualifier(ci, p->name, q->name, &arr, q->type); 
+            }
+            else {
+               val = str2CMPIValue(q->type, q->value, NULL);
+               rc= addInstPropertyQualifier(ci, p->name, q->name, &val, q->type);
+            }   
+            nq = q->next; 
+            q = nq;
+         }
+      }
+
       np = p->next;
-      //      free(p);
       p = np;
+
    }
 
    if (ps)
       ps->first = ps->last =  NULL;
+}
+
+static void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
+{
+   XtokQualifier *nq = NULL,*q = qs ? qs->first : NULL;
+   CMPIValue val;
+   CMPIValueState state;
+   CMPIObjectPath *op;
+   int rc;
+   
+   while (q) {
+      if (q->type & CMPI_ARRAY) {
+               CMPIType type=q->type&~CMPI_ARRAY;
+               CMPIArray *arr = newCMPIArray(0, type, NULL);
+               int i;
+               if (q->array.max) for (i = 0; i < q->array.next; ++i) {
+                  val = str2CMPIValue(type, q->array.values[i], NULL);
+                  CMSetArrayElementAt(arr, i, &val, type);
+                  native_release_CMPIValue(type,&val);
+               }
+               rc = addInstQualifier(ci, q->name, &arr, q->type);
+      }
+      else {
+         val = str2CMPIValue(q->type, q->value, NULL);
+         rc = addInstQualifier(ci, q->name, &val, q->type);
+      }
+      nq = q->next;
+      q = nq;
+   }
 }
 
 static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
@@ -191,10 +253,8 @@ static void addProperty(ParserControl *parm, XtokProperties *ps, XtokProperty *p
    np = (XtokProperty*)PARSER_MALLOC(sizeof(XtokProperty));
    memcpy(np, p, sizeof(XtokProperty));
    np->next = NULL;
-   if (ps->last)
-      ps->last->next = np;
-   else
-      ps->first = np;
+   if (ps->last) ps->last->next = np;
+   else ps->first = np;
    ps->last = np;
 }
 
@@ -217,17 +277,13 @@ static void addParamValue(ParserControl *parm, XtokParamValues *vs, XtokParamVal
 
 static void addQualifier(ParserControl *parm, XtokQualifiers *qs, XtokQualifier *q)
 {
-#if 0	/* TODO: Reactivate when setQualifier is implemented */
    XtokQualifier *nq;
    nq = (XtokQualifier*)PARSER_MALLOC(sizeof(XtokQualifier));
    memcpy(nq, q, sizeof(XtokQualifier));
    nq->next = NULL;
-   if (qs->last)
-      qs->last->next = nq;
-   else
-      qs->first = nq;
+   if (qs->last) qs->last->next = nq;
+   else qs->first = nq;
    qs->last = nq;
-#endif
 }
 
 static void addMethod(ParserControl *parm, XtokMethods *ms, XtokMethod *m)
@@ -590,6 +646,8 @@ iReturnValue
     }
     | XTOK_IRETVALUE valueArray ZTOK_IRETVALUE
     {
+        memset(&PARM->curArray,0,sizeof(PARM->curArray));
+        PARM->valueSet=0;
     }
     | XTOK_IRETVALUE valueRef ZTOK_IRETVALUE
     {
@@ -640,6 +698,8 @@ ReturnValue
     }
     | XTOK_RETVALUE valueArray ZTOK_RETVALUE
     {
+        memset(&PARM->curArray,0,sizeof(PARM->curArray));
+        PARM->valueSet=0;
     }
     | XTOK_RETVALUE valueRef ZTOK_RETVALUE
     {
@@ -678,6 +738,7 @@ instances
     {
        PARM->curInstance = native_new_CMPIInstance(NULL,NULL);
        setInstNsAndCn(PARM->curInstance,PARM->da_nameSpace,$2.className);
+       setInstQualifiers(PARM->curInstance, &PARM->qualifiers);
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
@@ -699,6 +760,7 @@ objectsWithPath
     : /* empty */
     | objectsWithPath objectWithPath
     {
+       if (PARM->curPath) CMRelease(PARM->curPath);
        createPath(&(PARM->curPath),&($2.path.instanceName));
        CMSetNameSpace(PARM->curPath,PARM->da_nameSpace);
        PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
@@ -716,8 +778,10 @@ namedInstances
     : /* empty */
     | namedInstances namedInstance
     {
+       if (PARM->curPath) CMRelease(PARM->curPath);
        createPath(&(PARM->curPath),&($2.path));
        PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
+       setInstQualifiers(PARM->curInstance, &PARM->qualifiers);
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
@@ -859,11 +923,9 @@ parameter
 instance
     : XTOK_INSTANCE instanceData ZTOK_INSTANCE
     {
-       if (PARM->Qs)
-          $$.qualifiers = PARM->qualifiers;
+       if (PARM->Qs) $$.qualifiers = PARM->qualifiers;
        else memset(&$$.qualifiers, 0, sizeof($$.qualifiers));
-       if (PARM->Ps)
-          $$.properties = PARM->properties;
+       if (PARM->Ps) $$.properties = PARM->properties;
        else memset(&$$.properties, 0, sizeof($$.properties));
     }
 ;
@@ -879,6 +941,7 @@ instanceData
     {
        PARM->Ps++;
        addProperty(PARM,&(PARM->properties),&$2);
+       PARM->PQs = 0;
     }
 ;
 
@@ -891,19 +954,27 @@ property
     : XTOK_PROPERTY ZTOK_PROPERTY
     {
        $$.val.value = NULL;
+       $$.val.null = 1;
+       PARM->valueSet=0;
     }
     | XTOK_PROPERTY propertyData ZTOK_PROPERTY
     {
        $$.val = $2;
+       $$.val.null= PARM->valueSet==0;
+       PARM->valueSet=0;
     }
     | XTOK_PROPERTYREFERENCE propertyData ZTOK_PROPERTYREFERENCE
     {
        $$.val = $2;
+       $$.val.null= PARM->valueSet==0;
+       PARM->valueSet=0;
     }
     | XTOK_PROPERTYARRAY propertyData ZTOK_PROPERTYARRAY
     {
-       $$.val = $2;
-       $2.array.next=$2.array.max=0;
+       $$.val.array = PARM->curArray;
+       $$.val.null= PARM->valueSet==0;
+       memset(&PARM->curArray,0,sizeof(PARM->curArray));
+       PARM->valueSet=0;
     }
 ;
 
@@ -911,35 +982,25 @@ propertyData
     : /* empty */ {$$.null = 1;}
     | propertyData qualifier
     {
-       addQualifier(PARM,&(PARM->qualifiers),&$2);
+       if (PARM->PQs == 0)
+          memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       PARM->PQs++;
+       addQualifier(PARM,&($$.qualifiers),&$2);
     }
     | propertyData value
     {
-    //   printf("--- value: %s\n",$1.value);
        $$.value = $2.value;
-       $$.null = 0;
     }
     | propertyData valueReference
     {
        $$.ref = $2;
        $$.ref.op=PARM->curPath;
-       $$.null = 0;
     }
     | propertyData XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY
     {
-    //   printf("--- valueArray: \n");
-       $$.array = $3;
-       $$.null  = $3.next > 0;
+       $$.array = PARM->curArray;
     }
 ;
-
-//propertyArray
-//    : XTOK_PROPERTYARRAY  ZTOK_PROPERTYARRAY
-//    {
-  //  printf("--- propertyArray\n");
-//    }
-//;
-
 
 
 
@@ -952,33 +1013,36 @@ value
     : XTOK_VALUE ZTOK_VALUE
     {
        $$.value = $1.value;
+       PARM->valueSet=1;
     }
 ;
 
 valueArray
     : /* empty */
     {
-      // printf ("+++ Empty value array\n");
-       $$.next = 0;
-       $$.max  = 0;
-       $$.values = NULL;
+       memset(&PARM->curArray,0,sizeof(PARM->curArray));
+       $$ = PARM->curArray;
     }
     | value
     {
-       $$.next = 1;
-       $$.max  = 16;
-       $$.values = (char**)PARSER_MALLOC(sizeof(char*) * $$.max);
-       $$.values[0] = $1.value;
+       PARM->curArray.next = 1;
+       PARM->curArray.max  = 16;
+       PARM->curArray.values = (char**)PARSER_MALLOC(sizeof(char*)*PARM->curArray.max);
+       PARM->curArray.values[0] = $1.value;
+       PARM->valueSet=1;
+       $$ = PARM->curArray;
     }
     | valueArray value
     {
-       if ($$.next == $$.max) {
-          $$.max *= 2;
-          $$.values = (char**)PARSER_REALLOC($$.values, sizeof(char*) * $$.max);
+       if (PARM->curArray.next >= PARM->curArray.max) {
+          PARM->curArray.max *= 2;
+          PARM->curArray.values = (char**)PARSER_REALLOC(PARM->curArray.values, sizeof(char*)*PARM->curArray.max);
        }
-       $$.values[$$.next] = $2.value;
-       $$.next++;
-    }
+       PARM->curArray.values[PARM->curArray.next] = $2.value;
+       PARM->curArray.next++;
+       PARM->valueSet=1;
+       $$ = PARM->curArray;
+   }
 ;
 
 valueReference
@@ -1028,10 +1092,14 @@ qualifier
     : XTOK_QUALIFIER value ZTOK_QUALIFIER
     {
        $$.value = $2.value;
+       PARM->valueSet=0;
     }
     | XTOK_QUALIFIER XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY ZTOK_QUALIFIER
     {
-//       $$.value = $2.value;
+       $$.type|=CMPI_ARRAY;
+       $$.array=PARM->curArray;
+       memset(&PARM->curArray,0,sizeof(PARM->curArray));
+       PARM->valueSet=0;
     }
 ;
 
@@ -1154,6 +1222,7 @@ objectPath
     	 XtokInstanceName *p = &$2.instanceName;
 
     	 /* A lot of this came from createPath(), has to be unique */
+         if (PARM->curPath) CMRelease(PARM->curPath);
     	 PARM->curPath = newCMPIObjectPath($2.path.nameSpacePath,
     				                           p->className, NULL);
 	 if (p->bindings.next > 0)
@@ -1171,6 +1240,7 @@ objectPath
     }
     | XTOK_OBJECTPATH classPath ZTOK_OBJECTPATH
     {
+         if (PARM->curPath) CMRelease(PARM->curPath);
     	 PARM->curPath = newCMPIObjectPath($2.name.nameSpacePath,
 					   $2.className, NULL);
 	 simpleArrayAdd(PARM->respHdr.rvArray, (CMPIValue*)&PARM->curPath,
@@ -1205,6 +1275,7 @@ instanceName
     {
        $$.className = $1.className;
        $$.bindings = $2;
+       if (PARM->curPath) CMRelease(PARM->curPath);
        createPath(&(PARM->curPath), &$$);
     }
 ;

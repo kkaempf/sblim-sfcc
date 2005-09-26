@@ -20,7 +20,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdio.h>
@@ -69,6 +69,7 @@ static CMPIStatus __oft_release ( CMPIObjectPath * cop )
 		if (o->classname) free ( o->classname );
 		if (o->nameSpace) free ( o->nameSpace );
  		propertyFT.release ( o->keys );
+
 		free ( o );
  
  		CMReturn ( CMPI_RC_OK );

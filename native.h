@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 */
 
 #ifndef _REMOTE_CMPI_NATIVE_DATA_H
@@ -61,6 +61,16 @@ struct native_instance {
 	char ** key_list;
 
 	struct native_property * props;
+        struct native_qualifier *qualifiers;
+};
+
+struct native_property {
+	char * name;		                //!< Property identifier.
+	CMPIType type;		                //!< Associated CMPIType.
+	CMPIValueState state; 	                //!< Current value state.
+	CMPIValue value;	                //!< Current value.
+	struct native_qualifier *qualifiers;	//!< Qualifiers.
+	struct native_property * next;	        //!< Pointer to next property.
 };
 
 
@@ -72,6 +82,10 @@ struct native_instance {
   \sa propertyFT in native.h
 */
 struct native_propertyFT {
+
+	//! Adds a new native_property to a list.
+	struct native_property* (* getProperty) ( struct native_property *,
+			      const char *);
 
 	//! Adds a new native_property to a list.
 	int (* addProperty) ( struct native_property **,
@@ -153,6 +167,9 @@ struct native_qualifierFT {
 					     CMPIStatus * );
 };
 
+extern int addInstQualifier( CMPIInstance* ci, char * name,
+				      CMPIValue * value,
+				      CMPIType type);
 
 
 /****************************************************************************/
@@ -194,6 +211,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, struct xtokValueReference
 /****************************************************************************/
 
 extern struct native_propertyFT const propertyFT;
+extern struct native_qualifierFT const qualifierFT;
 
 #ifdef __cplusplus
  }

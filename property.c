@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 */
 
 #include <stdio.h>
@@ -38,15 +38,6 @@
   This structure is used to build linked lists of data containers as needed
   for various native data types.
 */
-struct native_property {
-	char * name;		                //!< Property identifier.
-	CMPIType type;		                //!< Associated CMPIType.
-	CMPIValueState state; 	                //!< Current value state.
-	CMPIValue value;	                //!< Current value.
-	struct native_qualifier *qualifiers;	//!< Qualifiers.
-	struct native_property * next;	        //!< Pointer to next property.
-};
-
 /****************************************************************************/
 
 static CMPIData __convert2CMPIData ( struct native_property * prop,
@@ -131,6 +122,7 @@ static int __setProperty ( struct native_property * prop,
 			   CMPIValue * value )
 {
 	CMPIValue v;
+
 	if ( prop == NULL ) {
 		return -1;
 	}
@@ -145,8 +137,7 @@ static int __setProperty ( struct native_property * prop,
 		if ( type == CMPI_chars ) {
 
 			type = CMPI_string;
-			v.string = native_new_CMPIString ( (char *) value,
-							   NULL );
+			v.string = native_new_CMPIString ( (char *) value, NULL );
 			value = &v;
 		}
 
@@ -205,8 +196,8 @@ static struct native_qualifier *__getDataPropertyQualifiers ( struct native_prop
 }
 
 
-static struct native_property * __getPropertyAt
-( struct native_property * prop, unsigned int pos )
+static struct native_property * __getPropertyAt( struct native_property * prop, 
+unsigned int pos )
 {
 	if ( ! prop ) {
 		return NULL;
@@ -246,7 +237,7 @@ static CMPICount __getPropertyCount ( struct native_property * prop,
 	}
 
 	return c;
-}
+} 
 
 
 static void __release ( struct native_property * prop )
@@ -255,6 +246,7 @@ static void __release ( struct native_property * prop )
 	for ( ; prop; prop = next ) {
 		free ( prop->name );
  		native_release_CMPIValue ( prop->type, &prop->value );
+                qualifierFT.release(prop->qualifiers);
                 next=prop->next;
 		free ( prop );
  	}
@@ -288,6 +280,8 @@ static struct native_property * __clone ( struct native_property * prop,
 		result->state = CMPI_nullValue;
 	}
 
+	result->qualifiers    = qualifierFT.clone ( prop->qualifiers, rc );
+        
 	result->next  = __clone ( prop->next, rc );
 	return result;
 }
@@ -297,6 +291,7 @@ static struct native_property * __clone ( struct native_property * prop,
  * Global function table to access native_property helper functions.
  */
 struct native_propertyFT const propertyFT = {
+        __getProperty,
 	__addProperty,
 	__setProperty,
 	__getDataProperty,

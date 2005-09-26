@@ -160,6 +160,7 @@ typedef struct xtokQualifier {
    char *name;
    CMPIType type;
    char *value;
+   XtokValueArray array;
    char propagated, overridable, tosubclass, toinstance, translatable;
 } XtokQualifier;
 
@@ -331,7 +332,9 @@ typedef struct parser_control {
    XtokQualifiers qualifiers;
    XtokMethods     methods;
    XtokParamValues paramValues;
-   int Qs,Ps,Ms,MPs,MQs,MPQs;
+   XtokValueArray curArray;
+   int valueSet;
+   int Qs,Ps,Ms,MPs,MQs,MPQs,PQs;
    ParserHeap *heap;
 } ParserControl;
 
