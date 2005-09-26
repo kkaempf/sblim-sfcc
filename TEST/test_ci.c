@@ -30,7 +30,7 @@ static char * _HOSTNAME = "bestorga.ibm.com";
 int main( int argc, char * argv[] )
 {
     CMCIClient *cc;
-    CMPIObjectPath * objectpath;
+    CMPIObjectPath * objectpath, *objectpath_r;
     CMPIInstance * instance;
     CMPIStatus status;
     char hostName[512];
@@ -60,18 +60,22 @@ int main( int argc, char * argv[] )
     CMSetProperty(instance, "Username", "bestorga", CMPI_chars);
     CMSetProperty(instance, "Classname", "foobar", CMPI_chars);
 
-    objectpath = cc->ft->createInstance(cc, objectpath, instance, &status);
+    objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &status);
 
     /* Print the results */
     printf( "createInstance() rc=%d, msg=%s\n", 
             status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
     if (!status.rc) {
         printf("result:\n");
-        showObjectPath(objectpath);
+        showObjectPath(objectpath_r);
     }
 
     if (instance) CMRelease(instance);
     if (objectpath) CMRelease(objectpath);
+    if (objectpath_r) CMRelease(objectpath_r);
+    if (cc) CMRelease(cc);
+    if (status.msg) CMRelease(status.msg);
+    if (_HOSTNAME) free(_HOSTNAME);
     
     return 0;
 }

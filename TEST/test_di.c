@@ -61,6 +61,8 @@ int main( int argc, char * argv[] )
             status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
 
     if (objectpath) CMRelease(objectpath);
+    if (cc) CMRelease(cc);
+    if (status.msg) CMRelease(status.msg);
 
     return 0;
 }

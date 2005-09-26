@@ -134,6 +134,7 @@ void showClass( CMPIConstClass * class )
 	    if(cv) free(cv);	    
 	 }
          else printf("\t%s=NIL\n", (char *)propertyname->hdl);
+	 if (propertyname) CMRelease(propertyname);
       }
    }
 

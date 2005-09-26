@@ -223,7 +223,7 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
 	 state = CMPI_nullValue;
 #endif
          addClassProperty(cls, p->name, NULL, p->valueType, state);
-	 native_release_CMPIValue(p->valueType,&val);
+	 if (!p->val.null) native_release_CMPIValue(p->valueType,&val);
          break;
       case typeProperty_Reference:
          op = NULL;

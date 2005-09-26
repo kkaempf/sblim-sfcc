@@ -519,10 +519,12 @@ static CMPIEnumeration * enumInstanceNames(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con, sb);
+   error = con->ft->addPayload(con, sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc, CMPI_RC_ERR_FAILED, error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -532,6 +534,8 @@ static CMPIEnumeration * enumInstanceNames(
 
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -599,6 +603,7 @@ static CMPIInstance * getInstance(
 </CIM>
 */
 {
+   CMPIInstance *cci;
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
    UtilStringBuffer *sb=newStringBuffer(2048);
@@ -630,10 +635,12 @@ static CMPIInstance * getInstance(
 
    addXmlFooter(sb);
 
-   con->ft->addPayload(con, sb);
+   error = con->ft->addPayload(con, sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -643,6 +650,8 @@ static CMPIInstance * getInstance(
 
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -663,7 +672,10 @@ static CMPIInstance * getInstance(
 #endif
 
    CMSetStatus(rc,CMPI_RC_OK);
-   return rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL).value.inst;
+   cci = rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL).value.inst;
+   cci = CMClone(cci,NULL);
+   CMRelease(rh.rvArray);
+   return cci;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -709,16 +721,19 @@ static CMPIObjectPath * createInstance(
       propertydata = inst->ft->getPropertyAt(inst, i, &propertyname, NULL);
       addXmlProperty(sb, propertyname->hdl, cv=value2Chars(propertydata.type,&(propertydata.value)));
       if (cv) free(cv);
+      if (propertyname) CMRelease(propertyname);
    }
 
    sb->ft->appendChars(sb,"</INSTANCE>\n</IPARAMVALUE>\n");
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -727,6 +742,8 @@ static CMPIObjectPath * createInstance(
    rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -864,6 +881,7 @@ static CMPIStatus setInstance(
       addXmlProperty(sb, propertyname->hdl,
 			 cv=value2Chars(propertydata.type,&(propertydata.value)));
       if(cv) free(cv);
+      if(propertyname) CMRelease(propertyname);
    }
    sb->ft->appendChars(sb,"</INSTANCE>\n");
 
@@ -872,10 +890,12 @@ static CMPIStatus setInstance(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(&rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return rc;
    }
 
@@ -884,6 +904,8 @@ static CMPIStatus setInstance(
    rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
       CMSetStatusWithChars(&rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return rc;
    }
 
@@ -956,10 +978,12 @@ static CMPIStatus deleteInstance(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(&rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return rc;
    }
 
@@ -968,6 +992,8 @@ static CMPIStatus deleteInstance(
    rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
       CMSetStatusWithChars(&rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return rc;
    }
 
@@ -1037,10 +1063,12 @@ static CMPIEnumeration * execQuery(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -1049,6 +1077,8 @@ static CMPIEnumeration * execQuery(
    rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -1112,10 +1142,11 @@ static CMPIEnumeration * enumInstances(
     sb->ft->appendChars(sb,"</IMETHODCALL>\n");
     addXmlFooter(sb);
 
-    con->ft->addPayload(con,sb);
+    error = con->ft->addPayload(con,sb);
 
-    if ((error = con->ft->getResponse(con, cop))) {
+    if (error || (error = con->ft->getResponse(con, cop))) {
         CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+	free(error);
         return NULL;
     }
 
@@ -1125,6 +1156,8 @@ static CMPIEnumeration * enumInstances(
 
     if (rh.errCode != 0) {
         CMSetStatusWithChars(rc, rh.errCode, rh.description);
+	free(rh.description);
+	CMRelease(rh.rvArray);
         return NULL;
     }
 
@@ -1243,10 +1276,12 @@ static CMPIEnumeration * associators(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con, sb);
+   error = con->ft->addPayload(con, sb);
 
-   if ((error = con->ft->getResponse(con,cop))) {
+   if (error || (error = con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc, CMPI_RC_ERR_FAILED, error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -1256,6 +1291,8 @@ static CMPIEnumeration * associators(
 
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -1357,10 +1394,12 @@ static CMPIEnumeration * associatorNames(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error=con->ft->getResponse(con,cop))) {
+   if (error || (error=con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -1370,6 +1409,8 @@ static CMPIEnumeration * associatorNames(
 
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -1443,10 +1484,11 @@ static CMPIEnumeration * references(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con, sb);
+   error = con->ft->addPayload(con, sb);
 
-   if ((error=con->ft->getResponse(con,cop))) {
+   if (error || (error=con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
       return NULL;
    }
 
@@ -1456,6 +1498,8 @@ static CMPIEnumeration * references(
 
    if (rh.errCode!=0) {
       CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -1518,10 +1562,12 @@ static CMPIEnumeration * referenceNames(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con, sb);
+   error = con->ft->addPayload(con, sb);
 
-   if ((error=con->ft->getResponse(con,cop))) {
+   if (error || (error=con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -1531,6 +1577,8 @@ static CMPIEnumeration * referenceNames(
 
    if (rh.errCode!=0) {
       CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -1641,16 +1689,19 @@ static CMPIData invokeMethod(
       sb->ft->append3Chars(sb,"<VALUE>", cv=value2Chars(argdata.type,&(argdata.value)), "</VALUE>\n");
       sb->ft->appendChars(sb,"</PARAMVALUE>\n");
       if(cv) free(cv);
+      if(argname) CMRelease(argname);
    }
 
    sb->ft->appendChars(sb,"</METHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
       retval.state = CMPI_notFound | CMPI_nullValue;
+      CMRelease(sb);
       return retval;
    }
 
@@ -1660,6 +1711,8 @@ static CMPIData invokeMethod(
 
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       retval.state = CMPI_notFound | CMPI_nullValue;
       return retval;
    }
@@ -1770,10 +1823,12 @@ static CMPIStatus setProperty(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(&rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return rc;
    }
 
@@ -1783,6 +1838,8 @@ static CMPIStatus setProperty(
 
    if (rh.errCode != 0) {
       CMSetStatusWithChars(&rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return rc;
    }
 
@@ -1867,11 +1924,13 @@ static CMPIData getProperty(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
       retval.state = CMPI_notFound | CMPI_nullValue;
+      CMRelease(sb);
       return retval;
    }
 
@@ -1881,6 +1940,8 @@ static CMPIData getProperty(
 
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       retval.state = CMPI_notFound | CMPI_nullValue;
       return retval;
    }
@@ -1906,6 +1967,7 @@ static CMPIConstClass * getClass(
 	char ** properties,
 	CMPIStatus * rc)
 {
+   CMPIConstClass *ccl;
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
    UtilStringBuffer *sb=newStringBuffer(2048);
@@ -1935,10 +1997,12 @@ static CMPIConstClass * getClass(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error=con->ft->getResponse(con,cop))) {
+   if (error || (error=con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -1948,6 +2012,8 @@ static CMPIConstClass * getClass(
 
    if (rh.errCode!=0) {
       CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -1968,7 +2034,10 @@ static CMPIConstClass * getClass(
 #endif
 
    CMSetStatus(rc, CMPI_RC_OK);
-   return rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL).value.cls;
+   ccl = rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL).value.cls;
+   // ccl = CMClone(ccl,NULL); // MUST fix property handling
+   // CMRelease(rh.rvArray);
+   return ccl;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -2003,10 +2072,12 @@ static CMPIEnumeration* enumClassNames(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con,cop))) {
+   if (error || (error = con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
 
@@ -2016,6 +2087,8 @@ static CMPIEnumeration* enumClassNames(
 
    if (rh.errCode!=0) {
       CMSetStatusWithChars(rc,rh.errCode,rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 
@@ -2074,17 +2147,23 @@ static CMPIEnumeration * enumClasses(
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 
-   con->ft->addPayload(con,sb);
+   error = con->ft->addPayload(con,sb);
 
-   if ((error = con->ft->getResponse(con, cop))) {
+   if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+      free(error);
+      CMRelease(sb);
       return NULL;
    }
+
+   CMRelease(sb);
 
    rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse), cop);
 
    if (rh.errCode != 0) {
       CMSetStatusWithChars(rc, rh.errCode, rh.description);
+      free(rh.description);
+      CMRelease(rh.rvArray);
       return NULL;
    }
 

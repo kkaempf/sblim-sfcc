@@ -63,6 +63,8 @@ int main()
 
     if (class) CMRelease(class);
     if (objectpath) CMRelease(objectpath);
+    if (cc) CMRelease(cc);
+    if (status.msg) CMRelease(status.msg);
     
     return 0;
 }

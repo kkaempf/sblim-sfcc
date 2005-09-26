@@ -14,7 +14,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 */
 
 #include <stdio.h>
@@ -43,6 +43,11 @@ void native_release_CMPIValue ( CMPIType type, CMPIValue * val )
 		switch ( type ) {
 	
 		case CMPI_instance:
+			if (val->inst)
+			    CMRelease ( val->inst );
+			break;
+	
+		case CMPI_class:
 			if (val->inst)
 			    CMRelease ( val->inst );
 			break;
