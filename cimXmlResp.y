@@ -150,7 +150,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
                   native_release_CMPIValue(type,&val);
                }
                rc = addInstPropertyQualifier(ci, p->name, q->name, &arr, q->type); 
-               native_release_CMPIValue(q->type,&arr);
+               native_release_CMPIValue(q->type,(CMPIValue*)&arr);
             }
             else {
                val = str2CMPIValue(q->type, q->value, NULL);
@@ -189,8 +189,8 @@ static void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
                   CMSetArrayElementAt(arr, i, &val, type);
                   native_release_CMPIValue(type,&val);
                }
-               rc = addInstQualifier(ci, q->name, &arr, q->type);
-               native_release_CMPIValue(q->type,&arr);
+               rc = addInstQualifier(ci, q->name, (CMPIValue*)&arr, q->type);
+               native_release_CMPIValue(q->type,(CMPIValue*)&arr);
       }
       else {
          val = str2CMPIValue(q->type, q->value, NULL);
@@ -208,50 +208,75 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
    CMPIValue val;
    CMPIValueState state;
    CMPIObjectPath *op;
+   CMPIArray *arr = NULL;
+   XtokQualifier *nq = NULL,*q;
+   XtokQualifiers *qs;
+   int rc, n;
 
    while (p) {
+      val.uint64=0l;
+      state = 0;
       switch (p->propType) {
       case typeProperty_Value:
-#if 0
-         if (p->val.null)
-	    state = CMPI_nullValue;
-         else {
-            state = 0;
-            val = str2CMPIValue(p->valueType, p->val.value, NULL);
-         }
-#else
-	 state = CMPI_nullValue;
-#endif
-         addClassProperty(cls, p->name, NULL, p->valueType, state);
+//      if (strcasecmp(p->name,"EnabledDefault")==0) asm("int $3");
+         if (p->val.null) state = CMPI_nullValue;
+         else val = str2CMPIValue(p->valueType, p->val.value, NULL);
+         addClassProperty(cls, p->name, &val, p->valueType, state);
 	 if (!p->val.null) native_release_CMPIValue(p->valueType,&val);
          break;
       case typeProperty_Reference:
          op = NULL;
-#if 0
-         if (p->val.null)
-	    state = CMPI_nullValue;
-         else {
-            state = 0;
-            op=p->val.ref.op;
-         }
-#else
-	 state = CMPI_nullValue;
-#endif
+         if (p->val.null) state = CMPI_nullValue;
+         else op=p->val.ref.op;
          addClassProperty(cls,p->name,(CMPIValue*)&op,CMPI_ref,state);
+         if (op) CMRelease(op);
 	 break;
       case typeProperty_Array:
-	 op = NULL;
-	 state = CMPI_nullValue;
-	 addClassProperty(cls, p->name, (CMPIValue*)op,
-			       p->valueType | CMPI_ARRAY, state);
+         arr = NULL;
+         arr = newCMPIArray(0, p->valueType, NULL);
+         if (p->val.array.next > 0) {
+            int i;
+            if (p->val.array.max) for (i = 0; i < p->val.array.next; ++i) {
+               val = str2CMPIValue(p->valueType, p->val.array.values[i], NULL);
+               CMSetArrayElementAt(arr, i, &val, p->valueType);
+	       native_release_CMPIValue(p->valueType,&val);
+            }
+         }
+         val.array = arr;
+	 addClassProperty(cls, p->name, &val, p->valueType | CMPI_ARRAY, state);
+         if (arr) CMRelease(arr);			/* cloned in property */
          break;
       }
+
+      qs=&p->val.qualifiers;
+      q=qs ? qs->first : NULL;  
+      n=0;   
+      while (q) {
+         if (q->type & CMPI_ARRAY) {
+            CMPIType type=q->type&~CMPI_ARRAY;
+            CMPIArray *arr = newCMPIArray(0, type, NULL);
+            int i;
+            if (q->array.max) for (i = 0; i < q->array.next; ++i) {
+               val = str2CMPIValue(type, q->array.values[i], NULL);
+               CMSetArrayElementAt(arr, i, &val, type);
+               native_release_CMPIValue(type,&val);
+            }
+            rc = addClassPropertyQualifier(cls, p->name, q->name, &arr, q->type); 
+            native_release_CMPIValue(q->type,(CMPIValue*)&arr);
+         }
+         else {
+            val = str2CMPIValue(q->type, q->value, NULL);
+            rc= addClassPropertyQualifier(cls, p->name, q->name, &val, q->type);
+            native_release_CMPIValue(q->type,&val);
+         }   
+         nq = q->next; 
+         q = nq;
+      }
+
       np = p->next;
-      //      free(p);
       p = np;
    }
-   if (ps)
-      ps->first = ps->last = NULL;
+   if (ps) ps->first = ps->last = NULL;
 }
 
 static void addProperty(ParserControl *parm, XtokProperties *ps, XtokProperty *p)
@@ -736,6 +761,7 @@ classes
        setClassProperties(PARM->curClass, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curClass,CMPI_class);
        PARM->curClass = NULL;
+       PARM->Qs = PARM->Ps = 0;
     }
 ;
 
@@ -856,6 +882,7 @@ classData
     | classData property     {
        PARM->Ps++;
        addProperty(PARM,&(PARM->properties),&$2);
+       PARM->PQs = 0;
     }
     | classData method     {
         PARM->Ms++;
@@ -888,6 +915,17 @@ methodData
        addQualifier(PARM,&($$.qualifiers),&$2);
     }
     | methodData XTOK_PARAM parameter ZTOK_PARAM
+    {
+       if (PARM->MPs == 0)
+          memset(&$$.params,0,sizeof($$.params));
+       PARM->MPs++;
+       if (PARM->MPQs)
+          $2.qualifiers = $3.qualifiers;
+       else memset(&$2.qualifiers,0,sizeof($2.qualifiers));
+       addParam(PARM,&($$.params),&$2);
+       PARM->MPQs = 0;
+    }
+    | methodData XTOK_PARAMARRAY parameter ZTOK_PARAMARRAY
     {
        if (PARM->MPs == 0)
           memset(&$$.params,0,sizeof($$.params));

@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 */
 
 #include <stdio.h>
@@ -263,13 +263,14 @@ static struct native_qualifier * __clone ( struct native_qualifier * qual,
  * Global function table to access native_qualifier helper functions.
  */
 struct native_qualifierFT const qualifierFT = {
+        NATIVE_FT_VERSION,
+	__release,
+	__clone,
 	__addQualifier,
 	__setQualifier,
 	__getDataQualifier,
 	__getDataQualifierAt,
-	__getQualifierCount,
-	__release,
-	__clone
+	__getQualifierCount
 };
 
 

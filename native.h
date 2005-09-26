@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 */
 
 #ifndef _REMOTE_CMPI_NATIVE_DATA_H
@@ -81,8 +81,18 @@ struct native_property {
 
   \sa propertyFT in native.h
 */
-struct native_propertyFT {
+struct native_propertyFT 
+{
+        //! Function table version
+        int ftVersion;
 
+	//! Releases a complete list of native_property items.
+	void (* release) ( struct native_property * );
+
+	//! Clones a complete list of native_property items.
+	struct native_property * (* clone) ( struct native_property *,
+					     CMPIStatus * );
+                                             
 	//! Adds a new native_property to a list.
 	struct native_property* (* getProperty) ( struct native_property *,
 			      const char *);
@@ -120,17 +130,21 @@ struct native_propertyFT {
 				       const char *,
 				       CMPIStatus * );
 
-	//! Releases a complete list of native_property items.
-	void (* release) ( struct native_property * );
-
-	//! Clones a complete list of native_property items.
-	struct native_property * (* clone) ( struct native_property *,
-					     CMPIStatus * );
 };
 
 
-struct native_qualifierFT {
+struct native_qualifierFT 
+{
+        //! Function table version
+        int ftVersion;
+        
+	//! Releases a complete list of native_qualifier items.
+	void (* release) ( struct native_qualifier * );
 
+	//! Clones a complete list of native_qualifier items.
+	struct native_qualifier * (* clone) ( struct native_qualifier *,
+					     CMPIStatus * );
+                                             
 	//! Adds a new native_qualifier to a list.
 	int (* addQualifier) ( struct native_qualifier **,
 			      const char *,
@@ -158,13 +172,6 @@ struct native_qualifierFT {
 	//! Yields the number of native_qualifier items in a list.
 	CMPICount (* getQualifierCount) ( struct native_qualifier *,
 					 CMPIStatus * );
-
-	//! Releases a complete list of native_qualifier items.
-	void (* release) ( struct native_qualifier * );
-
-	//! Clones a complete list of native_qualifier items.
-	struct native_qualifier * (* clone) ( struct native_qualifier *,
-					     CMPIStatus * );
 };
 
 extern int addInstQualifier( CMPIInstance* ci, char * name,

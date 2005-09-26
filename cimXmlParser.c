@@ -1071,7 +1071,7 @@ static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PARAMETER.ARRAY")) {
       attr[1].attr = NULL;
-      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.ARRAY", ZTOK_PARAM)) {
+      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.ARRAY", ZTOK_PARAMARRAY)) {
          memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
          lvalp->xtokParam.pType = ZTOK_PARAMARRAY;
          lvalp->xtokParam.name = attr[0].attr;
@@ -1085,7 +1085,7 @@ static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
                }
             }
          lvalp->xtokParam.arraySize = attr[2].attr;
-         return XTOK_PARAM;
+         return XTOK_PARAMARRAY;
       }
    }
    return 0;
@@ -1103,7 +1103,7 @@ static int procParamRef(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PARAMETER.REFERENCE")) {
       attr[1].attr = NULL;
-      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.REFERENCE", ZTOK_PARAM)) {
+      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.REFERENCE", ZTOK_PARAMREF)) {
          memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
          lvalp->xtokParam.pType = ZTOK_PARAMREF;
          lvalp->xtokParam.name = attr[0].attr;

@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.8 $
+  $Revision: 1.9 $
 */
 
 #include <stdio.h>
@@ -272,15 +272,16 @@ static struct native_property * __clone ( struct native_property * prop,
  * Global function table to access native_property helper functions.
  */
 struct native_propertyFT const propertyFT = {
+        NATIVE_FT_VERSION,
+	__release,
+	__clone,
         __getProperty,
 	__addProperty,
 	__setProperty,
 	__getDataProperty,
 	__getDataPropertyAt,
 	__getPropertyCount,
-        __getDataPropertyQualifiers,
-	__release,
-	__clone
+        __getDataPropertyQualifiers
 };
 
 /****************************************************************************/

@@ -113,6 +113,68 @@ static unsigned int __ccft_getPropertyCount ( CMPIConstClass * ccls,
 }
 
 
+static CMPIData __ccft_getQualifier ( CMPIConstClass * ccls, 
+				      const char * name,
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+
+	return qualifierFT.getDataQualifier ( c->qualifiers, name, rc );
+}
+
+static CMPIData __ccft_getQualifierAt ( CMPIConstClass * ccls, 
+				      unsigned int index,
+				      CMPIString ** name,
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+
+	return qualifierFT.getDataQualifierAt ( c->qualifiers, index, name, rc );
+}
+
+static unsigned int __ccft_getQualifierCount ( CMPIConstClass * ccls, 
+					     CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+  
+	return qualifierFT.getQualifierCount ( c->qualifiers, rc );
+}
+
+static CMPIData __ccft_getPropertyQualifier ( CMPIConstClass * ccls, 
+				      const char * pname, const char *qname,
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_property *p=propertyFT.getProperty ( c->props, pname );
+
+	if (p) return qualifierFT.getDataQualifier ( p->qualifiers, qname, rc );        
+	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+}
+
+static CMPIData __ccft_getPropertyQualifierAt ( CMPIConstClass * ccls, 
+				      const char * pname, 
+				      unsigned int index,
+				      CMPIString ** name,
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_property *p=propertyFT.getProperty ( c->props, pname );
+
+	if (p) return qualifierFT.getDataQualifierAt ( p->qualifiers, index, name, rc );
+	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+}
+
+static unsigned int __ccft_getPropertyQualifierCount ( CMPIConstClass * ccls, 
+				             const char * pname, 
+					     CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_property *p=propertyFT.getProperty ( c->props, pname );
+  
+	if (p) return qualifierFT.getQualifierCount ( p->qualifiers, rc );
+	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+}
+
 
 
 
@@ -126,7 +188,13 @@ CMPIConstClass * native_new_CMPIConstClass ( char  *cn, CMPIStatus * rc )
 		__ccft_getClassName,
 		__ccft_getProperty,
 		__ccft_getPropertyAt,
-		__ccft_getPropertyCount
+		__ccft_getPropertyCount,
+                __ccft_getQualifier,
+                __ccft_getQualifierAt,
+                __ccft_getQualifierCount,
+                __ccft_getPropertyQualifier,
+                __ccft_getPropertyQualifierAt,
+                __ccft_getPropertyQualifierCount
 	};
 	static CMPIConstClass cc = {
 		"CMPIConstClass",
@@ -168,6 +236,50 @@ int addClassProperty( CMPIConstClass * ccls,
 	return ( CMPI_RC_OK );
 }
 
+int addClassQualifier( CMPIConstClass* cc, char * name,
+				      CMPIValue * value,
+				      CMPIType type)
+{
+   struct native_constClass * c = (struct native_constClass *) cc;
+
+	if ( qualifierFT.setQualifier ( c->qualifiers,
+				      name, 
+				      type,
+				      value ) ) {
+		qualifierFT.addQualifier ( &c->qualifiers, 
+					 name, 
+					 type, 
+					 0, 
+					 value );
+		}
+                
+	return ( CMPI_RC_OK );
+}
+
+int addClassPropertyQualifier( CMPIConstClass* cc, char * pname, char *qname,
+				      CMPIValue * value,
+				      CMPIType type)
+{
+   struct native_constClass * c = (struct native_constClass *) cc;
+   struct native_property *p=propertyFT.getProperty ( c->props ,pname );
+   
+   if (p) {
+	if ( qualifierFT.setQualifier ( p->qualifiers,
+				      qname, 
+				      type,
+				      value ) ) {
+		qualifierFT.addQualifier ( &p->qualifiers, 
+					 qname, 
+					 type, 
+					 0, 
+					 value );
+		}
+                
+	return ( CMPI_RC_OK );
+   }
+   return CMPI_RC_ERR_NO_SUCH_PROPERTY;
+}                                      
+                                      
 /****************************************************************************/
 
 /*** Local Variables:  ***/

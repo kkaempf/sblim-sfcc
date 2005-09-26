@@ -29,7 +29,104 @@ extern "C" {
 #endif
 
 
+ 
    //---------------------------------------------------
+   //--
+   //	_CMPIConstClass Function Table
+   //--
+   //---------------------------------------------------
+
+
+   /** This structure is a table of pointers providing access to ConstClass
+       support sevices.
+   */
+typedef struct _CMPIConstClassFT {
+
+       /** Function table version
+       */
+     int ftVersion;
+
+       /** The ConstClass object will not be used any further and may be freed by
+           CMPI run time system.
+	 @param ccls ConstClass this pointer.
+	 @return Service return status.
+      */
+     CMPIStatus (*release)
+              (CMPIConstClass* ccls);
+
+       /** Create an independent copy of this CpnstClass object. The resulting
+           object must be released explicitly.
+	 @param ccls ConstClass this pointer.
+	 @param rc Output: Service return status (suppressed when NULL).
+	 @return Pointer to copied ConstClass object.
+      */
+     CMPIConstClass* (*clone)
+              (CMPIConstClass* ccls, CMPIStatus* rc);
+
+       /** Gets the classname.
+	 @param ccls ConstClass this pointer.
+	 @param rc Output: Service return status (suppressed when NULL).
+	 @return classname.
+      */     
+     CMPIString *(*getClassName) 
+              ( CMPIConstClass * ccls, CMPIStatus * rc );
+                
+       /** Gets a named property value.
+	 @param ccls ConstClass this pointer.
+	 @param name Property name.
+	 @param rc Output: Service return status (suppressed when NULL).
+	 @return Property value.
+      */
+     CMPIData (*getProperty)
+              (CMPIConstClass* ccls, const char *name, CMPIStatus* rc);
+
+       /** Gets a Property value defined by its index.
+	 @param ccls ConstClass this pointer.
+	 @param index Position in the internal Data array.
+	 @param name Output: Returned property name (suppressed when NULL).
+	 @param rc Output: Service return status (suppressed when NULL).
+	 @return Property value.
+      */
+     CMPIData (*getPropertyAt)
+              (CMPIConstClass* ccls, unsigned int index, CMPIString** name,
+	       CMPIStatus* rc);
+
+      /** Gets the number of properties contained in this Instance.
+	 @param ccls ConstClass this pointer.
+	 @param rc Output: Service return status (suppressed when NULL).
+	 @return Number of properties.
+      */
+     unsigned int (*getPropertyCount)
+              (CMPIConstClass* ccls, CMPIStatus* rc);
+
+              
+     CMPIData (*getQualifier)
+              (CMPIConstClass * ccls,const char *name, CMPIStatus* rc);
+     CMPIData (*getQualifierAt)
+              (CMPIConstClass * ccls,unsigned int index, CMPIString** name,
+	       CMPIStatus* rc);
+     unsigned int (*getQualifierCount)
+              (CMPIConstClass * ccls,CMPIStatus* rc);
+              
+              
+     CMPIData (*getPropertyQualifier)
+              (CMPIConstClass * ccls,const char *pname, const char *qname, CMPIStatus* rc);
+     CMPIData (*getPropertyQualifierAt)
+              (CMPIConstClass * ccls,const char *pname, unsigned int index, CMPIString** name,
+	       CMPIStatus* rc);
+     unsigned int (*getPropertyQualifierCount)
+              (CMPIConstClass * ccls,const char *pname, CMPIStatus* rc);
+              
+} CMPIConstClassFT;
+
+
+struct _CMPIConstClass {
+   void *hdl;
+   CMPIConstClassFT *ft;
+};
+
+
+  //---------------------------------------------------
    //--
    //	_CMPIInstance Encapsulated object
    //--

@@ -52,7 +52,8 @@ int main( int argc, char * argv[] )
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumClasses() ...\n");
     objectpath = newCMPIObjectPath("root/cimv2", NULL, NULL);
-    enumeration = cc->ft->enumClasses(cc, objectpath, 0, &status);
+    enumeration = cc->ft->enumClasses(cc, objectpath, 
+       CMPI_FLAG_DeepInheritance|CMPI_FLAG_IncludeQualifiers, &status);
 
     /* Print the results */
     printf( "enumClasses() rc=%d, msg=%s\n", 

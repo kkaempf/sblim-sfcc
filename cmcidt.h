@@ -119,7 +119,8 @@ extern "C" {
    struct _CMPIArray;
    struct _CMPIString;
    struct _CMPIDateTime;
-
+   struct _CMPIConstClass;
+   
    typedef struct _CMPIInstance       CMPIInstance;
    typedef struct _CMPIObjectPath     CMPIObjectPath;
    typedef struct _CMPIArgs           CMPIArgs;
@@ -127,6 +128,7 @@ extern "C" {
    typedef struct _CMPIArray          CMPIArray;
    typedef struct _CMPIString         CMPIString;
    typedef struct _CMPIDateTime       CMPIDateTime;
+   typedef struct _CMPIConstClass     CMPIConstClass;
 
    struct _CMPIInstanceFT;
    struct _CMPIObjectPathFT;
@@ -185,9 +187,7 @@ extern "C" {
         CMPIBoolean          boolean;
         CMPIChar16           char16;
 
-#ifdef _CMPIC_H_
         CMPIConstClass*      cls;
-#endif
         CMPIInstance*        inst;
         CMPIObjectPath*      ref;
         CMPIArgs*            args;

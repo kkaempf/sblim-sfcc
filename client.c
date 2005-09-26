@@ -463,6 +463,13 @@ static void addXmlPropertyListParam(UtilStringBuffer *sb, char** properties)
 /* --------------------------------------------------------------------------*/
 /* --------------------------------------------------------------------------*/
 
+static CMCIClient * cloneClient ( CMCIClient * cl, CMPIStatus * st )
+{
+  CMPIStatus rc;
+  CMSetStatusWithChars(&rc, CMPI_RC_ERR_NOT_SUPPORTED, "Clone function not supported");
+  if (st) *st=rc;
+  return NULL;
+}  
 
 static CMPIStatus releaseClient(CMCIClient * mb)
 {
@@ -2190,7 +2197,9 @@ static CMPIEnumeration * enumClasses(
 /* --------------------------------------------------------------------------*/
 
 static CMCIClientFT clientFt = {
+   NATIVE_FT_VERSION,
    releaseClient,
+   cloneClient,
    getClass,
    enumClassNames,
    enumClasses,
