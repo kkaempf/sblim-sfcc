@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 
   \todo Once CMGetCharPtr() macro uses the appropriate function call instead
   of casting the internal hdl, store "CMPIString" type in there.
@@ -35,8 +35,8 @@
 #include "dmalloc.h"
 #endif
 
-CMPIString *strTab[5000];
-int strTabNext=0;
+//CMPIString *strTab[5000];
+//int strTabNext=0;
 
 struct native_string {
 	CMPIString string;
