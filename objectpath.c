@@ -20,7 +20,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 */
 
 #include <stdio.h>
@@ -399,10 +399,10 @@ char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str, int uri)
          } 
          str[s]=0;   
       }
-      CMRelease(ns);
       strcat(str,colon);
    }   
    
+   if (ns) CMRelease(ns);
    strcat(str, (char *) cn->hdl);
    CMRelease(cn);
    

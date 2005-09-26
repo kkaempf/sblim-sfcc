@@ -72,8 +72,8 @@ int main( int argc, char * argv[] )
              fprintf(stderr,"Releasing\n");
            CMRelease(clone);  
             
-            qd=data.value.inst->ft->getPropertyQualifier(data.value.inst,
-               "NameFormat","ValueMap",&status);
+//            qd=data.value.inst->ft->getPropertyQualifier(data.value.inst,
+  //             "NameFormat","ValueMap",&status);
             showProperty(qd,"NameFormat - ValueMap"); 
         }
     }

@@ -150,11 +150,12 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
                   native_release_CMPIValue(type,&val);
                }
                rc = addInstPropertyQualifier(ci, p->name, q->name, &arr, q->type); 
+               native_release_CMPIValue(q->type,&arr);
             }
             else {
                val = str2CMPIValue(q->type, q->value, NULL);
                rc= addInstPropertyQualifier(ci, p->name, q->name, &val, q->type);
-	       native_release_CMPIValue(q->type,&val);
+               native_release_CMPIValue(q->type,&val);
             }   
             nq = q->next; 
             q = nq;
@@ -189,10 +190,12 @@ static void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
                   native_release_CMPIValue(type,&val);
                }
                rc = addInstQualifier(ci, q->name, &arr, q->type);
+               native_release_CMPIValue(q->type,&arr);
       }
       else {
          val = str2CMPIValue(q->type, q->value, NULL);
          rc = addInstQualifier(ci, q->name, &val, q->type);
+         native_release_CMPIValue( q->type,&val);
       }
       nq = q->next;
       q = nq;
