@@ -81,12 +81,6 @@ int main( int argc, char * argv[] )
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
     CMRelease(cc);
-   
-    extern int strTabNext;
-    extern CMPIString *strTab[]; 
-    int i;
-    for (i=0; i<strTabNext; i++)
-       if (strTab[i]) fprintf(stderr,"%p %s\n",strTab[i],(char*)strTab[i]->hdl);
-    
+       
     return 0;
 }
