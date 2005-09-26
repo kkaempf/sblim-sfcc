@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdio.h>
@@ -81,39 +81,33 @@ static int __addQualifier ( struct native_qualifier ** qual,
 			   CMPIValueState state, 
 			   CMPIValue * value )
 {
-	CMPIValue v;
+   CMPIStatus rc;
+   
+   if ( *qual == NULL ) {
+      struct native_qualifier * tmp = *qual =
+         (struct native_qualifier *) calloc ( 1, sizeof ( struct native_qualifier ) );
 
-//	fprintf(stderr,"!!! addQualifier %s: %s %x\n",name,(char*)value->string->hdl,type);
-        if ( *qual == NULL ) {
-		struct native_qualifier * tmp = *qual =
-			(struct native_qualifier *) 
-			calloc ( 1, sizeof ( struct native_qualifier ) );
-  
-		tmp->name = strdup ( name );
+      tmp->name = strdup ( name );
+      tmp->type  = type;
+      tmp->state = state;
+      
+      if ( type != CMPI_null && state != CMPI_nullValue) {
+         if ( type == CMPI_chars ) {
+            tmp->type = CMPI_string;
+            tmp->value.string = native_new_CMPIString ( (char *) value, &rc );
+         }
+         else tmp->value = native_clone_CMPIValue ( type, value, &rc );
+      }      
+      else {
+         tmp->state = CMPI_nullValue;
+         tmp->value.uint64=0;
+      }
 
-		if ( type == CMPI_chars ) {
-
-			type = CMPI_string;
-			v.string = native_new_CMPIString ( (char *) value,
-							   NULL );
-			value = &v;
-		}
-
-		tmp->type  = type;
-
-		if ( type != CMPI_null ) {
-			CMPIStatus rc;
-
-			tmp->state = state;
-			tmp->value = *value; //native_clone_CMPIValue ( type, value, &rc );
-		} else
-			tmp->state = CMPI_nullValue;
-
-		return 0;
-	}
-	return ( strcmp ( (*qual)->name, name ) == 0 ||
-		 __addQualifier ( &( (*qual)->next ), name, type,
-						      state, value ) );
+      return 0;
+   }
+   
+   return ( strcmp ( (*qual)->name, name ) == 0 ||
+          __addQualifier ( &( (*qual)->next ), name, type, state, value ) );
 }
 
 
@@ -125,36 +119,29 @@ static int __setQualifier ( struct native_qualifier * qual,
 			   CMPIType type,
 			   CMPIValue * value )
 {
-	CMPIValue v;
-	if ( qual == NULL )
-		return -1;
+   CMPIStatus rc;
 
-	if ( strcmp ( qual->name, name ) == 0 ) {
+   if ( qual == NULL ) return -1;
 
-		CMPIStatus rc;
+   if ( strcmp ( qual->name, name ) == 0 ) {
 
-		if ( ! ( qual->state & CMPI_nullValue ) )
-			native_release_CMPIValue ( qual->type, &qual->value );
+      if ( ! ( qual->state & CMPI_nullValue ) )
+         native_release_CMPIValue ( qual->type, &qual->value );
 
-		if ( type == CMPI_chars ) {
-
-			type = CMPI_string;
-			v.string = native_new_CMPIString ( (char *) value,
-							   NULL );
-			value = &v;
-		}
-
-		qual->type  = type;
-
-		if ( type != CMPI_null ) {
-			qual->value = *value; //native_clone_CMPIValue ( type, value, &rc );
-
-		} else
-			qual->state = CMPI_nullValue;
-
-		return 0;
-	}
-	return __setQualifier ( qual->next, name, type, value);
+      qual->type  = type;
+      if ( type == CMPI_chars ) {
+         qual->type = CMPI_string;
+         qual->value.string = native_new_CMPIString ( (char *) value, &rc );
+      }
+      else { 
+         if ( type != CMPI_null ) 
+             qual->value = native_clone_CMPIValue ( type, value, &rc );
+         else qual->state = CMPI_nullValue;
+      }
+      return 0;
+   }
+   return __setQualifier ( qual->next, name, type, value);
+   
 }
 
 

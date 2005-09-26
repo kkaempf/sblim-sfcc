@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 
   \todo Once CMGetCharPtr() macro uses the appropriate function call instead
   of casting the internal hdl, store "CMPIString" type in there.
@@ -91,7 +91,6 @@ static struct native_string * __new_string ( const char * ptr,
 		(struct native_string *)
 		calloc ( 1, sizeof ( struct native_string ) );
 
-//	strTab[strTabNext++]=(CMPIString*)string;
         string->string.hdl = ( ptr )? strdup ( ptr ): NULL;
 	string->string.ft  = &sft;
 

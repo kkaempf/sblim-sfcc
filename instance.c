@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 */
 
 #include <stdio.h>
@@ -332,10 +332,14 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 
 	if (cop) {
 	   int j = CMGetKeyCount ( cop, &tmp1 );
-           str = CMGetClassName ( cop, &tmp2 );
-	   instance->classname = CMGetCharPtr ( str );
+    
+      str = CMGetClassName ( cop, &tmp2 );
+	   instance->classname = strdup(CMGetCharPtr ( str ));
+      CMRelease(str);
+      
 	   str = CMGetNameSpace ( cop, &tmp3 );
-	   instance->nameSpace = CMGetCharPtr ( str );
+	   instance->nameSpace = strdup(CMGetCharPtr ( str ));
+      CMRelease(str);
 
 	   if ( tmp1.rc != CMPI_RC_OK ||
 	        tmp2.rc != CMPI_RC_OK ||

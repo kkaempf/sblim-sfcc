@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 */
 
 #include <stdio.h>
@@ -72,44 +72,34 @@ static int __addProperty ( struct native_property ** prop,
 			   CMPIValueState state,
 			   CMPIValue * value )
 {
-	CMPIValue v;
+   CMPIStatus rc;
 
-	if ( *prop == NULL ) {
-		struct native_property * tmp = *prop =
-			(struct native_property *)
-			calloc ( 1, sizeof ( struct native_property ) );
+   if ( *prop == NULL ) {
+      struct native_property * tmp = *prop =
+         (struct native_property *) calloc ( 1, sizeof ( struct native_property ) );
 
-		tmp->qualifiers = NULL;
-		tmp->name = strdup ( name );
-
-		if ( type == CMPI_chars ) {
-			type = CMPI_string;
-			v.string = native_new_CMPIString ( (char *) value, NULL );
-			value = &v;
-		}
-
-		tmp->type  = type;
-
-		if ( type != CMPI_null && state != CMPI_nullValue) {
-			CMPIStatus rc;
-			tmp->state = state;
-			tmp->value = native_clone_CMPIValue ( type, value, &rc );
-			// what if clone() fails???
-
-		}
+      tmp->qualifiers = NULL;
+      tmp->name = strdup ( name );
+      tmp->type  = type;
+      tmp->state = state;
+      
+      if ( type != CMPI_null && state != CMPI_nullValue) {
+         if ( type == CMPI_chars ) {
+            tmp->type = CMPI_string;
+            tmp->value.string = native_new_CMPIString ( (char *) value, &rc );
+         }
+         else tmp->value = native_clone_CMPIValue ( type, value, &rc );
+      }      
       else {
          tmp->state = CMPI_nullValue;
          tmp->value.uint64=0;
       }
 
-		return 0;
-	}
-	return ( strcmp ( (*prop)->name, name ) == 0 ||
-		 __addProperty ( &( (*prop)->next ),
-				 name,
-				 type,
-				 state,
-				 value ) );
+      return 0;
+   }
+   
+   return ( strcmp ( (*prop)->name, name ) == 0 ||
+          __addProperty ( &( (*prop)->next ), name, type, state, value ) );
 }
 
 
@@ -121,38 +111,29 @@ static int __setProperty ( struct native_property * prop,
 			   CMPIType type,
 			   CMPIValue * value )
 {
-	CMPIValue v;
+   CMPIStatus rc;
+   
+   if ( prop == NULL ) return -1;
 
-	if ( prop == NULL ) {
-		return -1;
-	}
+   if ( strcmp ( prop->name, name ) == 0 ) {
 
-	if ( strcmp ( prop->name, name ) == 0 ) {
+      if ( ! ( prop->state & CMPI_nullValue ) )
+         native_release_CMPIValue ( prop->type, &prop->value );
 
-		CMPIStatus rc;
+      prop->type  = type;
+      if ( type == CMPI_chars ) {
+         prop->type = CMPI_string;
+         prop->value.string = native_new_CMPIString ( (char *) value, &rc );
+      }
 
-		if ( ! ( prop->state & CMPI_nullValue ) )
-			native_release_CMPIValue ( prop->type, &prop->value );
-
-		if ( type == CMPI_chars ) {
-
-			type = CMPI_string;
-			v.string = native_new_CMPIString ( (char *) value, NULL );
-			value = &v;
-		}
-
-		prop->type  = type;
-
-		if ( type != CMPI_null ) {
-			prop->value = native_clone_CMPIValue ( type, value, &rc );
-
-			// what if clone() fails ???
-
-		} else prop->state = CMPI_nullValue;
-
-		return 0;
-	}
-	return __setProperty ( prop->next, name, type, value);
+      else { 
+         if ( type != CMPI_null ) 
+             prop->value = native_clone_CMPIValue ( type, value, &rc );
+         else prop->state = CMPI_nullValue;
+      }
+      return 0;
+   }
+   return __setProperty ( prop->next, name, type, value);
 }
 
 
