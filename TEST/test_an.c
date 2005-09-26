@@ -23,6 +23,8 @@
 #include <native.h>
 #include <unistd.h>
 
+#include <curl/curl.h>
+
 #include "show.h"
 
 int main( int argc, char * argv[] )
@@ -78,6 +80,7 @@ int main( int argc, char * argv[] )
     if (objectpath) CMRelease(objectpath);
     if (cc) CMRelease(cc);
     
+    curl_global_cleanup();
     return 0;
 }
 

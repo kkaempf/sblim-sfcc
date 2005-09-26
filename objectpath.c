@@ -20,7 +20,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 */
 
 #include <stdio.h>
@@ -305,6 +305,7 @@ int sameCMPIObjectPath (const CMPIObjectPath *cop1, const CMPIObjectPath *cop2)
    struct native_cop *ncop1 = (struct native_cop *)cop1;
    struct native_cop *ncop2 = (struct native_cop *)cop2;
    unsigned int i, m;
+   char *cv1, *cv2;
 
    /* Check if name spaces are the same */
    if (strcmp(ncop1->nameSpace, ncop2->nameSpace) != 0)
@@ -346,10 +347,20 @@ int sameCMPIObjectPath (const CMPIObjectPath *cop1, const CMPIObjectPath *cop2)
 
       /* Check if the values are the same */
       if( data1.type  != data2.type       ||
-          data1.state != data2.state      ||
-          strcmp(value2Chars(data1.type, &data1.value),
-                 value2Chars(data2.type, &data2.value)) != 0)
-	  return 0;
+          data1.state != data2.state  ){
+	      return 0;
+      } else {
+	      cv1 = value2Chars(data1.type, &data1.value);
+	      cv2 = value2Chars(data2.type, &data2.value);
+	      if (strcmp(cv1,cv2) == 0) {
+		      if (cv1) free(cv1);
+		      if (cv2) free(cv2);
+	      } else {
+		      if (cv1) free(cv1);
+		      if (cv2) free(cv2);
+		      return 0;
+	      }
+      }
    }
 
    return 1;
@@ -458,6 +469,7 @@ void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop)
    int i,s,m,state=0;
    CMPIData data;
    CMPIString *name;
+   char *cv;
 
    for (i=0,s=__oft_getKeyCount(cop,NULL); i<s; i++) {
       data=__oft_getKeyAt(cop,i,&name,NULL);
@@ -499,7 +511,8 @@ void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop)
          }
          else {
             sb->ft->append5Chars(sb,"<KEYVALUE VALUETYPE=\"",keytype2Chars(data.type),"\">",
-                value2Chars(data.type,&data.value),"</KEYVALUE>");
+                cv=value2Chars(data.type,&data.value),"</KEYVALUE>");
+	    if (cv) free (cv);
             state=0;
          }
          break; 
@@ -512,11 +525,13 @@ void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop)
          else {
             sb->ft->append3Chars(sb,"<KEYBINDING NAME=\"",(char*)name->hdl,"\">");
             sb->ft->append5Chars(sb,"<KEYVALUE VALUETYPE=\"",keytype2Chars(data.type),"\">",
-                value2Chars(data.type,&data.value),"</KEYVALUE>");
+                cv=value2Chars(data.type,&data.value),"</KEYVALUE>");
+	    if (cv) free (cv);
          }
          break;
       }
       sb->ft->appendChars(sb,"</KEYBINDING>\n");
+      if (name) CMRelease(name);
    }
 
    if (state==1)

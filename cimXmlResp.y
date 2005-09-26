@@ -109,6 +109,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
          if (p->val.value != NULL && p->val.null==0) {
             val = str2CMPIValue(p->valueType, p->val.value, NULL);
             CMSetProperty(ci, p->name, &val, p->valueType);
+	    native_release_CMPIValue(p->valueType,&val);
          }
          else setq=0;
          break;
@@ -123,6 +124,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
             if (p->val.array.max) for (i = 0; i < p->val.array.next; ++i) {
                val = str2CMPIValue(p->valueType, p->val.array.values[i], NULL);
                CMSetArrayElementAt(arr, i, &val, p->valueType);
+	       native_release_CMPIValue(p->valueType,&val);
             }
             val.array = arr;
             CMSetProperty(ci, p->name, &val, p->valueType | CMPI_ARRAY);
@@ -152,6 +154,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
             else {
                val = str2CMPIValue(q->type, q->value, NULL);
                rc= addInstPropertyQualifier(ci, p->name, q->name, &val, q->type);
+	       native_release_CMPIValue(q->type,&val);
             }   
             nq = q->next; 
             q = nq;
@@ -217,6 +220,7 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
 	 state = CMPI_nullValue;
 #endif
          addClassProperty(cls, p->name, NULL, p->valueType, state);
+	 native_release_CMPIValue(p->valueType,&val);
          break;
       case typeProperty_Reference:
          op = NULL;
@@ -1222,7 +1226,7 @@ objectPath
     	 XtokInstanceName *p = &$2.instanceName;
 
     	 /* A lot of this came from createPath(), has to be unique */
-         if (PARM->curPath) CMRelease(PARM->curPath);
+	 if (PARM->curPath) CMRelease(PARM->curPath);
     	 PARM->curPath = newCMPIObjectPath($2.path.nameSpacePath,
     				                           p->className, NULL);
 	 if (p->bindings.next > 0)

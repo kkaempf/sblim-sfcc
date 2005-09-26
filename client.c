@@ -683,6 +683,7 @@ static CMPIObjectPath * createInstance(
    int		    i, numproperties = inst->ft->getPropertyCount(inst, NULL);
    CMPIString	    *classname, *propertyname;
    CMPIData	    propertydata;
+   char             *cv;
 
 #if DEBUG
    set_debug();
@@ -706,7 +707,8 @@ static CMPIObjectPath * createInstance(
    /* Add all the instance properties */
    for (i=0; i<numproperties; i++) {
       propertydata = inst->ft->getPropertyAt(inst, i, &propertyname, NULL);
-      addXmlProperty(sb, propertyname->hdl, value2Chars(propertydata.type,&(propertydata.value)));
+      addXmlProperty(sb, propertyname->hdl, cv=value2Chars(propertydata.type,&(propertydata.value)));
+      if (cv) free(cv);
    }
 
    sb->ft->appendChars(sb,"</INSTANCE>\n</IPARAMVALUE>\n");
@@ -821,6 +823,7 @@ static CMPIStatus setInstance(
    CMPIString	    * cn;
    CMPIData	    propertydata;
    CMPIStatus	    rc;
+   char             *cv;
 
 #if DEBUG
    set_debug();
@@ -859,7 +862,8 @@ static CMPIStatus setInstance(
    for (i = 0; i < numproperties; i++) {
       propertydata = inst->ft->getPropertyAt(inst, i, &propertyname, NULL);
       addXmlProperty(sb, propertyname->hdl,
-			 value2Chars(propertydata.type,&(propertydata.value)));
+			 cv=value2Chars(propertydata.type,&(propertydata.value)));
+      if(cv) free(cv);
    }
    sb->ft->appendChars(sb,"</INSTANCE>\n");
 
@@ -1597,6 +1601,7 @@ static CMPIData invokeMethod(
    CMPIString		*cn;
    CMPIData		retval;
    int			i, numinargs = 0, numoutargs = 0;
+   char                 *cv;
 
 #if DEBUG
    set_debug();
@@ -1633,8 +1638,9 @@ static CMPIData invokeMethod(
       CMPIString * argname;
       CMPIData argdata = in->ft->getArgAt(in, i, &argname, NULL);
       sb->ft->append3Chars(sb,"<PARAMVALUE NAME=\"", argname->hdl, "\">\n");
-      sb->ft->append3Chars(sb,"<VALUE>", value2Chars(argdata.type,&(argdata.value)), "</VALUE>\n");
+      sb->ft->append3Chars(sb,"<VALUE>", cv=value2Chars(argdata.type,&(argdata.value)), "</VALUE>\n");
       sb->ft->appendChars(sb,"</PARAMVALUE>\n");
+      if(cv) free(cv);
    }
 
    sb->ft->appendChars(sb,"</METHODCALL>\n");
@@ -1729,6 +1735,7 @@ static CMPIStatus setProperty(
    ResponseHdr      rh;
    CMPIString	    *cn;
    CMPIStatus	    rc = {CMPI_RC_OK, NULL};
+   char             *cv;
 
 #if DEBUG
    set_debug();
@@ -1749,7 +1756,8 @@ static CMPIStatus setProperty(
    /* Add the new value */
    sb->ft->append3Chars(sb,
         "<IPARAMVALUE NAME=\"NewValue\">\n<VALUE>",
-        value2Chars(type,value), "</VALUE>\n</IPARAMVALUE>");
+        cv=value2Chars(type,value), "</VALUE>\n</IPARAMVALUE>");
+   if(cv) free(cv);
 
    /* Add the objectpath */
    cn = cop->ft->getClassName(cop,NULL);

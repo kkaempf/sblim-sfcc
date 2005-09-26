@@ -31,6 +31,7 @@ void showObjectPath( CMPIObjectPath * objectpath )
    CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
    int numkeys = objectpath->ft->getKeyCount(objectpath, NULL);
    int i;
+   char *cv;
 
    if (namespace && namespace->hdl) printf("namespace=%s\n", (char *)namespace->hdl);
    if (classname && classname->hdl) printf("classname=%s\n", (char *)classname->hdl);
@@ -39,7 +40,9 @@ void showObjectPath( CMPIObjectPath * objectpath )
       for (i=0; i<numkeys; i++) {
          CMPIString * keyname;
          CMPIData data = objectpath->ft->getKeyAt(objectpath, i, &keyname, NULL);
-         printf("\t%s=%s\n", (char *)keyname->hdl, value2Chars(data.type, &data.value)); 
+         printf("\t%s=%s\n", (char *)keyname->hdl, cv=value2Chars(data.type, &data.value)); 
+	 if(cv) free(cv);
+	 if(keyname) CMRelease(keyname);
       }
    }
 
@@ -89,6 +92,7 @@ void showInstance( CMPIInstance *instance )
          char *ptr=NULL;
          printf("\t%s=%s\n", (char *)keyname->hdl, (ptr=value2Chars(data.type, &data.value))); 
          free(ptr);
+	 if (keyname) CMRelease(keyname);
       }
    }
    else
@@ -117,6 +121,7 @@ void showClass( CMPIConstClass * class )
    CMPIString * classname = class->ft->getClassName(class, NULL);
    int numproperties = class->ft->getPropertyCount(class, NULL);
    int i;
+   char *cv;
 
    if (classname && classname->hdl) printf("classname=%s\n", (char *)classname->hdl);
    if (numproperties) {
@@ -124,8 +129,10 @@ void showClass( CMPIConstClass * class )
       for (i=0; i<numproperties; i++) {
          CMPIString * propertyname;
          CMPIData data = class->ft->getPropertyAt(class, i, &propertyname, NULL);
-         if (data.state==0)
-            printf("\t%s=%s\n", (char *)propertyname->hdl, value2Chars(data.type, &data.value));
+         if (data.state==0) {
+            printf("\t%s=%s\n", (char *)propertyname->hdl, cv=value2Chars(data.type, &data.value));
+	    if(cv) free(cv);	    
+	 }
          else printf("\t%s=NIL\n", (char *)propertyname->hdl);
       }
    }
