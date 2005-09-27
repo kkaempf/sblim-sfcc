@@ -62,6 +62,9 @@ int main()
             status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
 
     if (objectpath) CMRelease(objectpath);
+    if (value.string) CMRelease(value.string);
+    if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
 
     return 0;
 }

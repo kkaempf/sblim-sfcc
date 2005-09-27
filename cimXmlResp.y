@@ -89,6 +89,9 @@ static void createPath(CMPIObjectPath **op, XtokInstanceName *p)
                                 &p->bindings.keyBindings[i].ref,
                                 &val, &type);
       CMAddKey(*op, p->bindings.keyBindings[i].name, valp, type);
+      if (type == CMPI_ref) {
+	CMRelease(valp->ref);
+      }
    }
 }
 
@@ -116,6 +119,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
       case typeProperty_Reference: 
          op=p->val.ref.op;
          CMSetProperty(ci, p->name, &op, CMPI_ref);
+	 CMRelease(op);
          break;
       case typeProperty_Array:
          if (p->val.array.next > 0) {
@@ -134,7 +138,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
          else setq=0;
          break;
       }
- 
+
       if (setq) {
          qs=&p->val.qualifiers;
          q=qs ? qs->first : NULL;  
@@ -1024,7 +1028,12 @@ property
 ;
 
 propertyData
-    : /* empty */ {$$.null = 1;}
+    : /* empty */ 
+    {
+      /*$$.null = 1;*/
+       if (PARM->PQs == 0)
+          memset(&$$.qualifiers,0,sizeof($$.qualifiers)); 
+    }
     | propertyData qualifier
     {
        if (PARM->PQs == 0)
@@ -1040,6 +1049,7 @@ propertyData
     {
        $$.ref = $2;
        $$.ref.op=PARM->curPath;
+       PARM->curPath=NULL;
     }
     | propertyData XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY
     {
@@ -1095,11 +1105,13 @@ valueReference
     {
        $$.instancePath = $2;
        $$.type = typeValRef_InstancePath;
+       PARM->valueSet=1;
     }
     | XTOK_VALUEREFERENCE instanceName ZTOK_VALUEREFERENCE
     {
        $$.instanceName = $2;
        $$.type = typeValRef_InstanceName;
+       PARM->valueSet=1;
     }
 ;
 
@@ -1278,6 +1290,9 @@ objectPath
 					  &val, &type);
 		CMAddKey(PARM->curPath, p->bindings.keyBindings[i].name,
     							    valp, type);
+		if (type == CMPI_ref) {
+		  CMRelease(valp->ref);
+		}
 	     }
 	 simpleArrayAdd(PARM->respHdr.rvArray, (CMPIValue*)&PARM->curPath,
 								CMPI_ref);

@@ -875,7 +875,6 @@ static CMPIStatus setInstance(
    cn = cop->ft->getClassName(cop,NULL);
    sb->ft->append3Chars(sb, "<INSTANCENAME CLASSNAME=\"",
 			    (char *)cn->hdl, "\">\n");
-   CMRelease(cn);
    pathToXml(sb, cop);
    sb->ft->appendChars(sb,"</INSTANCENAME>\n");
 
@@ -1738,7 +1737,10 @@ static CMPIData invokeMethod(
 #endif
 
    CMSetStatus(rc, CMPI_RC_OK);
-   return rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
+   retval=rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
+   retval.value=native_clone_CMPIValue(rh.rvArray->ft->getSimpleType(rh.rvArray, NULL),&retval.value,NULL);
+   CMRelease(rh.rvArray);
+   return retval;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -1846,10 +1848,9 @@ static CMPIStatus setProperty(
    if (rh.errCode != 0) {
       CMSetStatusWithChars(&rc, rh.errCode, rh.description);
       free(rh.description);
-      CMRelease(rh.rvArray);
-      return rc;
    }
-
+   
+   CMRelease(rh.rvArray);
    return rc;
 }
 
@@ -1961,7 +1962,10 @@ static CMPIData getProperty(
 #endif
 
    CMSetStatus(rc, CMPI_RC_OK);
-   return rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
+   retval=rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
+   retval.value=native_clone_CMPIValue(rh.rvArray->ft->getSimpleType(rh.rvArray, NULL),&retval.value,NULL);
+   CMRelease(rh.rvArray);
+   return retval;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -1974,7 +1978,7 @@ static CMPIConstClass * getClass(
 	char ** properties,
 	CMPIStatus * rc)
 {
-   CMPIConstClass *ccl;
+   CMPIConstClass *ccl, *ccc;
    ClientEnc *cl=(ClientEnc*)mb;
    CMCIConnection *con=cl->connection;
    UtilStringBuffer *sb=newStringBuffer(2048);
@@ -2042,9 +2046,9 @@ static CMPIConstClass * getClass(
 
    CMSetStatus(rc, CMPI_RC_OK);
    ccl = rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL).value.cls;
-   // ccl = CMClone(ccl,NULL); // MUST fix property handling
-   // CMRelease(rh.rvArray);
-   return ccl;
+   ccc = CMClone(ccl,NULL);
+   CMRelease(rh.rvArray);
+   return ccc;
 }
 
 /* --------------------------------------------------------------------------*/

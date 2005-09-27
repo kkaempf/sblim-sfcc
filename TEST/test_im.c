@@ -68,9 +68,14 @@ int main( int argc, char * argv[] )
     if (!status.rc) {
         printf("result(s):\n");
         printf("PrimaryOwnerName=%s\n", (char*)(data.value.string)->hdl);
+	native_release_CMPIValue(data.type,&data.value);
     }
 
     if (objectpath) CMRelease(objectpath);
+    if (cc) CMRelease(cc);
+    if (status.msg) CMRelease(status.msg);
+    if (argsin) CMRelease(argsin);
+    if (value.string) CMRelease(value.string);
   
     return 0;
 }

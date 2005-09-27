@@ -14,7 +14,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.8 $
+  $Revision: 1.9 $
 */
 
 #include <stdio.h>
@@ -102,7 +102,7 @@ CMPIValue native_clone_CMPIValue ( CMPIType type,
 	     v.array = CMClone ( array, rc );
 	} 
 	else
-	if ( type & CMPI_ENC ) {
+		if ( (type & CMPI_ENC) && val->inst ) {
 
 		switch ( type ) {
 
@@ -352,7 +352,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       value.char16 = *val;
       break;
    case CMPI_chars:
-      value.char16 = *val;
+      value.chars = strdup(val);
       break;
    case CMPI_string:
       value.string = native_new_CMPIString(val, NULL);

@@ -68,6 +68,8 @@ int main( int argc, char * argv[] )
 
     if (instance) CMRelease(instance);
     if (objectpath) CMRelease(objectpath);
+    if (cc) CMRelease(cc);
+    if (status.msg) CMRelease(status.msg);
 
     return 0;
 }

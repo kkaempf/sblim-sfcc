@@ -61,6 +61,7 @@ int main()
     {
         printf("result(s):\n");
         printf("ElementName=%s\n", (char*)(data.value.string)->hdl);
+	native_release_CMPIValue(data.type,&data.value);
     }
 
     data = cc->ft->getProperty(cc, objectpath, "Width", &status);
@@ -70,7 +71,8 @@ int main()
     if (!status.rc) 
     {
         printf("result(s):\n");
-        printf("ElementName=%s\n", (char*)(data.value.string)->hdl);
+        printf("Width=%s\n", (char*)(data.value.string)->hdl);
+	native_release_CMPIValue(data.type,&data.value);
     }
 
     if (objectpath) CMRelease(objectpath);

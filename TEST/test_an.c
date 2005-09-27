@@ -48,6 +48,7 @@ int main( int argc, char * argv[] )
     cc = cmciConnect(cim_host, NULL, "5988",
 			       cim_host_userid, cim_host_passwd, NULL);
    
+
     /* Test associatorNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing associatorNames() ...\n");
@@ -79,8 +80,8 @@ int main( int argc, char * argv[] )
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
     if (cc) CMRelease(cc);
-    
-    curl_global_cleanup();
+    if (status.msg) CMRelease(status.msg);
+
     return 0;
 }
 

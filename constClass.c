@@ -68,7 +68,8 @@ static CMPIConstClass * __ccft_clone ( CMPIConstClass * ccls, CMPIStatus * rc )
 	struct native_constClass * new = (struct native_constClass *) 
 		calloc ( 1, sizeof ( struct native_constClass ) );
 
-	new->classname     = strdup ( cc->classname );
+	new->ccls      = cc->ccls;
+	new->classname = strdup ( cc->classname );
 	new->props     = propertyFT.clone ( cc->props, rc );
 
 	return (CMPIConstClass *) new;
