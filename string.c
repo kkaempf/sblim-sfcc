@@ -19,7 +19,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 
   \todo Once CMGetCharPtr() macro uses the appropriate function call instead
   of casting the internal hdl, store "CMPIString" type in there.
@@ -54,7 +54,8 @@ int i;
 //	for (i=0; i<strTabNext; i++) if (strTab[i]==string) { strTab[i]=NULL; break; }
         if ( s ) {
 
-		free ( s->string.hdl );
+		if (s->string.hdl != NULL)
+		    free ( s->string.hdl );
 		free ( s );
 
 		CMReturn ( CMPI_RC_OK );

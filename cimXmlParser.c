@@ -1276,7 +1276,9 @@ void parser_heap_term(ParserHeap* ph)
   int i;
   if (ph) {
     for (i=ph->numBlocks - 1; i >= 0; i--) {
-      free(ph->blocks[i]);
+      void * blk = ph->blocks[i];
+      if (blk != NULL)
+	  free(ph->blocks[i]);
     }
     free(ph->blocks);
     free(ph);

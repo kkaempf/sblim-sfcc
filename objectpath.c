@@ -20,7 +20,7 @@
   http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
 
   \author Frank Scheffler
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 */
 
 #include <stdio.h>
@@ -105,7 +105,8 @@ static CMPIStatus __oft_setNameSpace ( CMPIObjectPath * cop,
 	char * ns = ( nameSpace )? strdup ( nameSpace ): NULL;
   
 	if ( o ) {
-		free ( o->nameSpace );
+		if ( o->nameSpace )
+		     free ( o->nameSpace );
 	}
 
 	o->nameSpace = ns;

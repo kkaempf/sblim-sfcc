@@ -37,6 +37,7 @@ noinst_PROGRAMS	= test \
                   test_gi \
                   test_gp \
                   test_im \
+		  test_leak \
                   test_rf \
                   test_rfn \
                   test_si \
@@ -105,6 +106,10 @@ test_gp_LDADD = ../libcmpisfcc.la
 test_im_SOURCES = test_im.c \
                   show.c
 test_im_LDADD = ../libcmpisfcc.la
+
+test_leak_SOURCES = test_leak.c \
+                  show.c
+test_leak_LDADD = ../libcmpisfcc.la
 
 test_rf_SOURCES = test_rf.c \
                   show.c
