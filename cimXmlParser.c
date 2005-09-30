@@ -43,10 +43,12 @@ extern int yyparse(void *);
 
 typedef struct tags {
    const char *tag;
+   const int tagLen;
    int (*process) (YYSTYPE *, ParserControl * parm);
    int etag;
 } Tags;
 
+#define TAG(t) t,(sizeof(t)-1)
 
 
 static void Throw(XmlBuffer * xb, char *msg)
@@ -72,7 +74,7 @@ static XmlBuffer releaseXmlBuffer(XmlBuffer *xb)
     free (xb);
 }
 
-static void skipWS(XmlBuffer * xb)
+inline void skipWS(XmlBuffer * xb)
 {
    static int c = 0;
    c++;
@@ -98,7 +100,7 @@ static int getChar(XmlBuffer * xb, const char c)
    return 0;
 }
 
-static char *nextTag(XmlBuffer * xb)
+inline char *nextTag(XmlBuffer * xb)
 {
    if (xb->nulledChar) {
       xb->nulledChar = 0;
@@ -110,9 +112,9 @@ static char *nextTag(XmlBuffer * xb)
    return NULL;
 }
 
-static int nextEquals(const char *n, const char *t)
+inline  int nextEquals(const char *n, const char *t, const int l)
 {
-   int l = strlen(t);
+//   int l = strlen(t);
    if (strncmp(n, t, l) == 0) {
       if (!isalnum(*(n + l))) {
          return 1;
@@ -1143,45 +1145,45 @@ static int procParamRefArray(YYSTYPE * lvalp, ParserControl * parm)
 
 
 static Tags tags[] = {
-   {"?xml", procXml, ZTOK_XML},
-   {"CIM", procCim, ZTOK_CIM},
-   {"MESSAGE", procMessage, ZTOK_MESSAGE},
-   {"SIMPLERSP", procSimpleResp, ZTOK_SIMPLERSP},
-   {"ERROR", procErrorResp, ZTOK_ERROR},
-   {"IMETHODRESPONSE", procIMethodResp, ZTOK_IMETHODRESP},
-   {"IRETURNVALUE", procIRetValue, ZTOK_IRETVALUE},
-   {"LOCALNAMESPACEPATH", procLocalNameSpacePath, ZTOK_LOCALNAMESPACEPATH},
-   {"LOCALINSTANCEPATH", procLocalInstancePath, ZTOK_LOCALINSTANCEPATH},
-   {"LOCALCLASSPATH", procLocalClassPath, ZTOK_LOCALCLASSPATH},
-   {"NAMESPACEPATH", procNameSpacePath, ZTOK_NAMESPACEPATH},
-   {"NAMESPACE", procNameSpace, ZTOK_NAMESPACE},
-   {"PARAMVALUE", procParamValue, ZTOK_PARAMVALUE},
-   {"CLASSNAME", procClassName, ZTOK_CLASSNAME},
-   {"VALUE.ARRAY", procValueArray, ZTOK_VALUEARRAY},
-   {"VALUE.NAMEDINSTANCE", procValueNamedInstance, ZTOK_VALUENAMEDINSTANCE},
-   {"VALUE.REFERENCE", procValueReference, ZTOK_VALUEREFERENCE},
-   {"VALUE.OBJECTWITHPATH", procValueObjectWithPath, ZTOK_VALUEOBJECTWITHPATH},
-   {"VALUE", procValue, ZTOK_VALUE},
-   {"HOST", procHost, ZTOK_HOST},
-   {"KEYVALUE", procKeyValue, ZTOK_KEYVALUE},
-   {"KEYBINDING", procKeyBinding, ZTOK_KEYBINDING},
-   {"INSTANCEPATH", procInstancePath, ZTOK_INSTANCEPATH},
-   {"INSTANCENAME", procInstanceName, ZTOK_INSTANCENAME},
-   {"INSTANCE", procInstance, ZTOK_INSTANCE},
-   {"PROPERTY.REFERENCE", procPropertyReference, ZTOK_PROPERTYREFERENCE},
-   {"PROPERTY.ARRAY", procPropertyArray, ZTOK_PROPERTYARRAY},
-   {"PROPERTY", procProperty, ZTOK_PROPERTY},
-   {"QUALIFIER", procQualifier, ZTOK_QUALIFIER},
-   {"PARAMETER.ARRAY", procParamArray, ZTOK_PARAMARRAY},
-   {"PARAMETER.REFERENCE", procParamRef, ZTOK_PARAMREF},
-   {"PARAMETER.REFARRAY", procParamRefArray, ZTOK_PARAMREFARRAY},
-   {"PARAMETER", procParam, ZTOK_PARAM},
-   {"METHOD", procMethod, ZTOK_METHOD},
-   {"CLASS", procClass, ZTOK_CLASS},
-   {"OBJECTPATH", procObjectPath, ZTOK_OBJECTPATH},
-   {"METHODRESPONSE", procMethodResp, ZTOK_METHODRESP},
-   {"RETURNVALUE", procRetValue, ZTOK_RETVALUE},
-   {"CLASSPATH", procClassPath, ZTOK_CLASSPATH}
+   {TAG("?xml"), procXml, ZTOK_XML},
+   {TAG("CIM"), procCim, ZTOK_CIM},
+   {TAG("MESSAGE"), procMessage, ZTOK_MESSAGE},
+   {TAG("SIMPLERSP"), procSimpleResp, ZTOK_SIMPLERSP},
+   {TAG("ERROR"), procErrorResp, ZTOK_ERROR},
+   {TAG("IMETHODRESPONSE"), procIMethodResp, ZTOK_IMETHODRESP},
+   {TAG("IRETURNVALUE"), procIRetValue, ZTOK_IRETVALUE},
+   {TAG("LOCALNAMESPACEPATH"), procLocalNameSpacePath, ZTOK_LOCALNAMESPACEPATH},
+   {TAG("LOCALINSTANCEPATH"), procLocalInstancePath, ZTOK_LOCALINSTANCEPATH},
+   {TAG("LOCALCLASSPATH"), procLocalClassPath, ZTOK_LOCALCLASSPATH},
+   {TAG("NAMESPACEPATH"), procNameSpacePath, ZTOK_NAMESPACEPATH},
+   {TAG("NAMESPACE"), procNameSpace, ZTOK_NAMESPACE},
+   {TAG("PARAMVALUE"), procParamValue, ZTOK_PARAMVALUE},
+   {TAG("CLASSNAME"), procClassName, ZTOK_CLASSNAME},
+   {TAG("VALUE.ARRAY"), procValueArray, ZTOK_VALUEARRAY},
+   {TAG("VALUE.NAMEDINSTANCE"), procValueNamedInstance, ZTOK_VALUENAMEDINSTANCE},
+   {TAG("VALUE.REFERENCE"), procValueReference, ZTOK_VALUEREFERENCE},
+   {TAG("VALUE.OBJECTWITHPATH"), procValueObjectWithPath, ZTOK_VALUEOBJECTWITHPATH},
+   {TAG("VALUE"), procValue, ZTOK_VALUE},
+   {TAG("HOST"), procHost, ZTOK_HOST},
+   {TAG("KEYVALUE"), procKeyValue, ZTOK_KEYVALUE},
+   {TAG("KEYBINDING"), procKeyBinding, ZTOK_KEYBINDING},
+   {TAG("INSTANCEPATH"), procInstancePath, ZTOK_INSTANCEPATH},
+   {TAG("INSTANCENAME"), procInstanceName, ZTOK_INSTANCENAME},
+   {TAG("INSTANCE"), procInstance, ZTOK_INSTANCE},
+   {TAG("PROPERTY.REFERENCE"), procPropertyReference, ZTOK_PROPERTYREFERENCE},
+   {TAG("PROPERTY.ARRAY"), procPropertyArray, ZTOK_PROPERTYARRAY},
+   {TAG("PROPERTY"), procProperty, ZTOK_PROPERTY},
+   {TAG("QUALIFIER"), procQualifier, ZTOK_QUALIFIER},
+   {TAG("PARAMETER.ARRAY"), procParamArray, ZTOK_PARAMARRAY},
+   {TAG("PARAMETER.REFERENCE"), procParamRef, ZTOK_PARAMREF},
+   {TAG("PARAMETER.REFARRAY"), procParamRefArray, ZTOK_PARAMREFARRAY},
+   {TAG("PARAMETER"), procParam, ZTOK_PARAM},
+   {TAG("METHOD"), procMethod, ZTOK_METHOD},
+   {TAG("CLASS"), procClass, ZTOK_CLASS},
+   {TAG("OBJECTPATH"), procObjectPath, ZTOK_OBJECTPATH},
+   {TAG("METHODRESPONSE"), procMethodResp, ZTOK_METHODRESP},
+   {TAG("RETURNVALUE"), procRetValue, ZTOK_RETVALUE},
+   {TAG("CLASSPATH"), procClassPath, ZTOK_CLASSPATH}
 };
 #define TAGS_NITEMS	(int)(sizeof(tags)/sizeof(Tags))
 
@@ -1203,7 +1205,7 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
 
       if (*next == '/') {
          for (i = 0; i < TAGS_NITEMS; i++) {
-            if (nextEquals(next + 1, tags[i].tag) == 1) {
+            if (nextEquals(next + 1, tags[i].tag, tags[i].tagLen) == 1) {
                skipTag(parm->xmb);
                return tags[i].etag;
             }
@@ -1216,7 +1218,7 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
             continue;
          }
          for (i = 0; i < TAGS_NITEMS; i++) {
-            if (nextEquals(next, tags[i].tag) == 1) {
+            if (nextEquals(next, tags[i].tag, tags[i].tagLen) == 1) {
 //	       printf("+++ %d\n",i);
                rc=tags[i].process(lvalp, parm);
                return rc;
