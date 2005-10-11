@@ -373,8 +373,6 @@ typedef struct _CMCIClientFT {
 } CMCIClientFT;
 
 
-
-
 typedef struct clientData {
    char *hostName;
    char *port;
@@ -383,6 +381,16 @@ typedef struct clientData {
    char *scheme;
    int  status;
 } CMCIClientData;
+  
+#define CMCI_VERIFY_NONE 0
+#define CMCI_VERIFY_PEER 1
+
+typedef struct credentialData {
+  int    verifyMode;
+  char * trustStore;
+  char * certFile;
+  char * keyFile;
+} CMCICredentialData;
 
 struct _CMCIClient {
    void *hdl;
@@ -391,6 +399,12 @@ struct _CMCIClient {
 
 CMCIClient *cmciConnect(const char *hn, const char *scheme, const char *port, 
                         const char *user, const char *pwd, CMPIStatus *rc);   
+
+CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port, 
+			 const char *user, const char *pwd, 
+			 int verifyMode, const char * trustStore,
+			 const char * certFile, const char * keyFile,
+			 CMPIStatus *rc);   
 
 int sameCMPIObjectPath ( const CMPIObjectPath *cop1, const CMPIObjectPath *cop2);
    

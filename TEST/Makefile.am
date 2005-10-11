@@ -31,6 +31,7 @@ noinst_PROGRAMS	= test \
                   test_di \
                   test_ec \
                   test_ecn \
+                  test_ecn_ssl \
                   test_ei \
                   test_ein \
                   test_gc \
@@ -82,6 +83,10 @@ test_ec_LDADD = ../libcmpisfcc.la
 test_ecn_SOURCES = test_ecn.c \
                    show.c
 test_ecn_LDADD = ../libcmpisfcc.la
+
+test_ecn_ssl_SOURCES = test_ecn_ssl.c \
+                   show.c
+test_ecn_ssl_LDADD = ../libcmpisfcc.la
 
 test_ei_SOURCES = test_ei.c \
                    show.c

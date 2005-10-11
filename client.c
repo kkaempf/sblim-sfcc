@@ -78,9 +78,10 @@ typedef const struct _CMCIConnectionFT {
 } CMCIConnectionFT;
 
 struct _ClientEnc {
-   CMCIClient enc;
-   CMCIClientData data;
-   CMCIConnection *connection;
+   CMCIClient          enc;
+   CMCIClientData      data;
+   CMCICredentialData  certData;
+   CMCIConnection     *connection;
 };
 
 struct _CMCIConnection {
@@ -201,9 +202,8 @@ static char* genRequest(ClientEnc *cle, const char *op,
    /* This will be a HTTP post */
    curl_easy_setopt(con->mHandle, CURLOPT_POST, 1);
 
-   /* Disable SSL verification */
+   /* Disable SSL Host verification */
    curl_easy_setopt(con->mHandle, CURLOPT_SSL_VERIFYHOST, 0);
-   curl_easy_setopt(con->mHandle, CURLOPT_SSL_VERIFYPEER, 0);
 
    /* Setup authentication */
    curl_easy_setopt(con->mHandle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
@@ -490,6 +490,15 @@ static CMPIStatus releaseClient(CMCIClient * mb)
   }
   if (cl->data.port) {
     free(cl->data.port);
+  }
+  if (cl->certData.trustStore) {
+    free(cl->certData.trustStore);
+  }
+  if (cl->certData.certFile) {
+    free(cl->certData.certFile);
+  }
+  if (cl->certData.keyFile) {
+    free(cl->certData.keyFile);
   }
  
   if (cl->connection) CMRelease(cl->connection);
@@ -2228,6 +2237,16 @@ static CMCIClientFT clientFt = {
 CMCIClient *cmciConnect(const char *hn, const char *scheme, const char *port,
                         const char *user, const char *pwd, CMPIStatus *rc)
 {
+  return cmciConnect2(hn, scheme, port, user, pwd, CMCI_VERIFY_PEER, NULL,
+		      NULL, NULL, rc);
+}
+
+CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
+			 const char *user, const char *pwd, 
+			 int verifyMode, const char * trustStore,
+			 const char * certFile, const char * keyFile,
+			 CMPIStatus *rc)
+{  
    ClientEnc *cc = (ClientEnc*)calloc(1, sizeof(ClientEnc));
 
    cc->enc.hdl		= &cc->data;
@@ -2237,13 +2256,36 @@ CMCIClient *cmciConnect(const char *hn, const char *scheme, const char *port,
    cc->data.user	= user ? strdup(user) : NULL;
    cc->data.pwd		= pwd ? strdup(pwd) : NULL;
    cc->data.scheme	= scheme ? strdup(scheme) : strdup("http");
+
    if (port != NULL)
       cc->data.port = strdup(port);
    else
       cc->data.port = strcmp(cc->data.scheme, "https") == 0 ? 
 	strdup("5989") : strdup("5988");
 
+   cc->certData.verifyMode = verifyMode;
+   cc->certData.trustStore = trustStore ? strdup(trustStore) : NULL;
+   cc->certData.certFile = certFile ? strdup(certFile) : NULL;
+   cc->certData.keyFile = keyFile ? strdup(keyFile) : NULL;
+   
    cc->connection=initConnection(&cc->data);
+
+   /* set SSL options */
+   if (cc->connection) {
+     curl_easy_setopt(cc->connection->mHandle,CURLOPT_SSL_VERIFYPEER,
+		      verifyMode == CMCI_VERIFY_PEER ? 1 : 0);
+     if (trustStore) {
+       curl_easy_setopt(cc->connection->mHandle,CURLOPT_CAINFO,trustStore);
+     }
+     if (certFile) {
+       curl_easy_setopt(cc->connection->mHandle,CURLOPT_SSLCERT,certFile);
+     }
+     if (keyFile) {
+       curl_easy_setopt(cc->connection->mHandle,CURLOPT_SSLKEY,keyFile);       
+     }
+ 
+   }
+
 
    return (CMCIClient*)cc;
 }
