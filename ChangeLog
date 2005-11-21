@@ -1,0 +1,30 @@
+2005-11-20  bestorga-oss
+
+	* COPYING, args.c, array.c, cimXmlParser.c, cimXmlParser.h,
+	cimXmlResp.y, client.c, cmci.h, cmcidt.h, cmcift.h, cmcimacs.h,
+	constClass.c, datetime.c, enumeration.c, genericlist.c,
+	genericlist.h, instance.c, native.h, objectpath.c, property.c,
+	qualifier.c, string.c, utilList.h, utilStringBuffer.c,
+	utilStringBuffer.h, value.c, TEST/show.c, TEST/test.c,
+	TEST/test_an.c, TEST/test_an_2.c, TEST/test_as.c, TEST/test_as_2.c,
+	TEST/test_ci.c, TEST/test_di.c, TEST/test_ec.c, TEST/test_ecn.c,
+	TEST/test_ecn_ssl.c, TEST/test_ei.c, TEST/test_ein.c,
+	TEST/test_gc.c, TEST/test_gi.c, TEST/test_gp.c, TEST/test_im.c,
+	TEST/test_leak.c, TEST/test_objectpath.cpp, TEST/test_qualifiers.c,
+	TEST/test_rf.c, TEST/test_rfn.c, TEST/test_si.c, TEST/test_sp.c,
+	TEST/test_xq.c: 
+	Bugs: 1362805. changed all license references to Eclipse Public
+	license
+
+2005-10-11  mihajlov
+
+	* client.c, cmci.h, TEST/Makefile.am, TEST/test_ecn_ssl.c,
+	man/man3/cmciConnect.3: 
+	Bugs: 1315810. Added support for client
+	certificates.
+
+2005-10-01  a3schuur
+
+	* cimXmlParser.c: Inproving user time performance by about 30% as
+	measured with time command.
+

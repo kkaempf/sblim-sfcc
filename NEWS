@@ -1,0 +1,8 @@
+Small Footprint CIM Client Library NEWS
+
+
+Changes in 0.7.0:
+=================
+Bugs:
+- 1315810: Support for Client Certificates Added.
+- 1362805: Relicenced from CPL to EPL.
