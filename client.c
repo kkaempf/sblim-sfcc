@@ -85,13 +85,14 @@ struct _ClientEnc {
 };
 
 struct _CMCIConnection {
-    CMCIConnectionFT *ft;        // The handle to the curl object
-    CURL *mHandle;               // The list of headers sent with each request
-    struct curl_slist *mHeaders; // The body of the request
-    UtilStringBuffer *mBody;     // The uri of the request
-    UtilStringBuffer *mUri;      // The username/password used in authentication
-    UtilStringBuffer *mUserPass; // Used to store the HTTP response
-    UtilStringBuffer *mResponse;
+    CMCIConnectionFT *ft;        
+    CURL *mHandle;               // The handle to the curl object
+    struct curl_slist *mHeaders; // The list of headers sent with each request
+    UtilStringBuffer *mBody;     // The body of the request
+    UtilStringBuffer *mUri;      // The uri of the request
+    UtilStringBuffer *mUserPass; // The username/password used in authentication
+    UtilStringBuffer *mResponse; // Used to store the HTTP response
+    CMPIStatus        mStatus;   // returned request status (via HTTP trailers)               
 };
 
 /* --------------------------------------------------------------------------*/
@@ -116,6 +117,37 @@ void list2StringBuffer(UtilStringBuffer *sb, UtilList *ul, char *sep)
       sb->ft->appendChars(sb,(char*)e);
       sb->ft->appendChars(sb,sep);
    }
+}
+
+/* --------------------------------------------------------------------------*/
+
+static inline size_t writeHeaders(void *ptr, size_t size,
+				  size_t nmemb, void *stream)
+{
+  
+  CMPIStatus *status=(CMPIStatus*)stream;
+  char *str=ptr;
+  char *colonidx; 
+  
+  if (str[nmemb-1] != 0) {
+    /* make sure the string is zero-terminated */
+      str = calloc(1,nmemb+1);
+      memcpy(str,ptr,nmemb);
+  } else {
+    str = strdup(ptr);
+  }
+  colonidx=strchr(str,':');
+  if (colonidx) {
+    *colonidx=0;
+    if (strcasecmp(str,"cimstatuscode") == 0) {
+      /* set status code */
+      status->rc = atoi(colonidx+1);
+    } else if (strcasecmp(str,"cimstatuscodedescription") == 0) {
+      status->msg=newCMPIString(colonidx+1,NULL);
+    }
+  }
+  free(str);
+  return nmemb;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -145,6 +177,7 @@ static CMPIStatus releaseConnection(CMCIConnection *con)
   if (con->mUri) CMRelease(con->mUri);
   if (con->mUserPass) CMRelease(con->mUserPass);
   if (con->mResponse) CMRelease(con->mResponse);
+  if (con->mStatus.msg) CMRelease(con->mStatus.msg);
 
   free(con);
   return rc;
@@ -221,6 +254,9 @@ static char* genRequest(ClientEnc *cle, const char *op,
 				     UserPass->ft->getCharPtr(UserPass));
    }
 
+   /* initialize status */
+   CMSetStatus(&con->mStatus,CMPI_RC_OK);
+
    // Initialize default headers
    con->ft->initializeHeaders(con);
 
@@ -252,6 +288,10 @@ static char* genRequest(ClientEnc *cle, const char *op,
 
    // Use CURLOPT_FILE instead of CURLOPT_WRITEDATA - more portable
    curl_easy_setopt(con->mHandle, CURLOPT_FILE, con->mResponse);
+
+   // Header processing: 
+   curl_easy_setopt(con->mHandle, CURLOPT_WRITEHEADER, &con->mStatus);
+   curl_easy_setopt(con->mHandle, CURLOPT_HEADERFUNCTION, writeHeaders);
 
    // Fail if we receive an error (HTTP response code >= 300)
    curl_easy_setopt(con->mHandle, CURLOPT_FAILONERROR, 1);
@@ -297,6 +337,7 @@ static void initializeHeaders(CMCIConnection *con)
 	"Expect:",
 	"CIMProtocolVersion: 1.0",
 	"CIMOperation: MethodCall",
+	"TE: trailers",
 	NULL
     };
     unsigned int i;
@@ -542,6 +583,10 @@ static CMPIEnumeration * enumInstanceNames(
       free(error);
       CMRelease(sb);
       return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      CMRelease(sb);
+      return NULL;
    }
 
    CMRelease(sb);
@@ -658,6 +703,10 @@ static CMPIInstance * getInstance(
       free(error);
       CMRelease(sb);
       return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      CMRelease(sb);
+      return NULL;
    }
 
    CMRelease(sb);
@@ -749,6 +798,10 @@ static CMPIObjectPath * createInstance(
    if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       free(error);
+      CMRelease(sb);
+      return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
       CMRelease(sb);
       return NULL;
    }
@@ -912,6 +965,10 @@ static CMPIStatus setInstance(
       free(error);
       CMRelease(sb);
       return rc;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+      rc=con->mStatus;
+      CMRelease(sb);
+      return rc;
    }
 
    CMRelease(sb);
@@ -1000,6 +1057,10 @@ static CMPIStatus deleteInstance(
       free(error);
       CMRelease(sb);
       return rc;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     rc=con->mStatus;
+     CMRelease(sb);
+     return rc;
    }
 
    CMRelease(sb);
@@ -1085,6 +1146,10 @@ static CMPIEnumeration * execQuery(
       free(error);
       CMRelease(sb);
       return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      CMRelease(sb);
+      return NULL;
    }
 
    CMRelease(sb);
@@ -1162,7 +1227,12 @@ static CMPIEnumeration * enumInstances(
     if (error || (error = con->ft->getResponse(con, cop))) {
         CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
 	free(error);
+	CMRelease(sb);
         return NULL;
+    } else if (con->mStatus.rc != CMPI_RC_OK) {
+      *rc=con->mStatus;
+      CMRelease(sb);
+      return NULL;
     }
 
     CMRelease(sb);
@@ -1298,6 +1368,10 @@ static CMPIEnumeration * associators(
       free(error);
       CMRelease(sb);
       return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      CMRelease(sb);
+      return NULL;
    }
 
    CMRelease(sb);
@@ -1416,6 +1490,10 @@ static CMPIEnumeration * associatorNames(
       free(error);
       CMRelease(sb);
       return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      CMRelease(sb);
+      return NULL;
    }
 
    CMRelease(sb);
@@ -1504,6 +1582,11 @@ static CMPIEnumeration * references(
    if (error || (error=con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       free(error);
+      CMRelease(sb);
+      return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      CMRelease(sb);
       return NULL;
    }
 
@@ -1582,6 +1665,10 @@ static CMPIEnumeration * referenceNames(
    if (error || (error=con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       free(error);
+      CMRelease(sb);
+      return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
       CMRelease(sb);
       return NULL;
    }
@@ -1718,6 +1805,11 @@ static CMPIData invokeMethod(
       retval.state = CMPI_notFound | CMPI_nullValue;
       CMRelease(sb);
       return retval;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      retval.state = CMPI_notFound | CMPI_nullValue;
+      CMRelease(sb);
+      return retval;
    }
 
    CMRelease(sb);
@@ -1848,6 +1940,10 @@ static CMPIStatus setProperty(
       free(error);
       CMRelease(sb);
       return rc;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     rc=con->mStatus;
+     CMRelease(sb);
+     return rc;
    }
 
    CMRelease(sb);
@@ -1949,6 +2045,11 @@ static CMPIData getProperty(
       retval.state = CMPI_notFound | CMPI_nullValue;
       CMRelease(sb);
       return retval;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      retval.state = CMPI_notFound | CMPI_nullValue;
+      CMRelease(sb);
+      return retval;
    }
 
    CMRelease(sb);
@@ -2022,6 +2123,10 @@ static CMPIConstClass * getClass(
    if (error || (error=con->ft->getResponse(con,cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       free(error);
+      CMRelease(sb);
+      return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
       CMRelease(sb);
       return NULL;
    }
@@ -2099,6 +2204,10 @@ static CMPIEnumeration* enumClassNames(
       free(error);
       CMRelease(sb);
       return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
+      CMRelease(sb);
+      return NULL;
    }
 
    CMRelease(sb);
@@ -2172,6 +2281,10 @@ static CMPIEnumeration * enumClasses(
    if (error || (error = con->ft->getResponse(con, cop))) {
       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
       free(error);
+      CMRelease(sb);
+      return NULL;
+   } else if (con->mStatus.rc != CMPI_RC_OK) {
+     *rc=con->mStatus;
       CMRelease(sb);
       return NULL;
    }
