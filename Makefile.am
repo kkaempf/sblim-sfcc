@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.5 2005/09/21 13:16:51 mihajlov Exp $
+# $Id: Makefile.am,v 1.6 2006/03/06 16:08:05 a3schuur Exp $
 
 LT_CURRENT=0
 LT_REVISION=0
@@ -22,11 +22,21 @@ pkginclude_HEADERS = \
 	cmcidt.h \
 	cmcift.h \
 	cmci.h \
-	cmcimacs.h
+	cmcimacs.h \
+	cimcClient.h \
+	cimcdt.h \
+	cimcft2.h \
+	cimcft.h \
+	cimcmacs.h
+	
 pkgincludedir = $(includedir)/CimClientLib
 
-lib_LTLIBRARIES=libcmpisfcc.la
+lib_LTLIBRARIES=libcmpisfcc.la \
+   libcimcClient.la 
 
+libcimcClient_la_SOURCES = \
+   cimcClient.c
+   
 libcmpisfcc_la_SOURCES = \
                    args.c \
                    array.c \

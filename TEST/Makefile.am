@@ -38,14 +38,16 @@ noinst_PROGRAMS	= test \
                   test_gi \
                   test_gp \
                   test_im \
-		  test_leak \
+                  test_leak \
                   test_rf \
                   test_rfn \
                   test_si \
                   test_sp \
                   test_xq \
-		  test_cpp \
-		  test_qualifiers
+                  test_cpp \
+                  test_qualifiers \
+                  cimc_test_ec \
+                  cimc_test_ein
 
 test_SOURCES = test.c
 test_LDADD = ../libcmpisfcc.la
@@ -80,6 +82,10 @@ test_ec_SOURCES = test_ec.c \
                    show.c
 test_ec_LDADD = ../libcmpisfcc.la
 
+cimc_test_ec_SOURCES = cimcTest_ec.c \
+                   cimcShow.c
+cimc_test_ec_LDADD = ../libcimcClient.la
+
 test_ecn_SOURCES = test_ecn.c \
                    show.c
 test_ecn_LDADD = ../libcmpisfcc.la
@@ -91,6 +97,10 @@ test_ecn_ssl_LDADD = ../libcmpisfcc.la
 test_ei_SOURCES = test_ei.c \
                    show.c
 test_ei_LDADD = ../libcmpisfcc.la
+
+cimc_test_ein_SOURCES = cimcTest_ein.c \
+                   cimcShow.c
+cimc_test_ein_LDADD = ../libcimcClient.la
 
 test_ein_SOURCES = test_ein.c \
                    show.c

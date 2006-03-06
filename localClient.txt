@@ -1,0 +1,39 @@
+
+Local Client Support - experimental version
+
+A set of codings has been committed to support local client applications executing on the same system.
+Changes have been made in sfcb as well (Bugzilla 1443861) to enable client applications to connect to 
+the provider manager. The client application acts as a adapter (aka codec). The protocol used is the internal
+binray sfcb adapter to sfcb protocol, shipping binary representation of cim artifact across local domain 
+sockets. No marshaling is done.
+
+In order to enhance flexibility and also isolate client application from protocol issue (HTTP, 
+local binary, remote binary, etc) we introduced the concept of a cim environment. When creating a cim environment
+a environment id has to be used. This id gets appended to "cimcClient" to form the name of a .so file containing
+the support for this cim environment. The id of the local Client Support is "SfcbLocal". 
+
+The client will use the following statement to create a SfcbLocal environment
+
+   cimcEnv *ce=NewCimcEnv("SfcbLocal",0,&rc,&msg);
+
+cimEnv is a function table that contains factory functions for cim artifacts (cimcInstance, cimcObjetpath, etc).
+It also contains then an entry to connect to the cim object manager (sfcb in our case). The connect parameters
+are for worst case scenarios. At a later point in time we will also offer client support in this manner using the 
+"CIM over HTTP protocol" in that case one would use "Http" as a client environment id. So by simple changing 
+the environment id we can reuse the management application without any other change. In fact, one could uses
+multiple environments in the same application.
+
+    cimcClient *cc = ce->connect(ce, cim_host, NULL, "5988", cim_host_userid, cim_host_passwd, &status);
+
+The parameters not used by SfcbLocal are simply ignored.
+
+Factory functions are used in a similar way, for instance
+
+    cimcObjectPath *op = ce->newObjectPath("root/cimv2", "CIM_process", NULL);
+
+Invoking a cimom operation is like this:
+
+    cimcEnumeration *en = cc->ft->enumInstanceNames(cc, op, &status);
+
+
+A complete example can be found in sfcc/TEST/cimcTest_ein.c
