@@ -1,6 +1,6 @@
 Small Footprint CIM Client Library NEWS
 
-Changes in 0.7.1:
+Changes in 1.0.0:
 =================
 Bugs:
 - 1439103: Evaluation of trailer headers for chunked transfers added.
