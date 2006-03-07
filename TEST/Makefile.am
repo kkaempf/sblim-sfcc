@@ -46,8 +46,12 @@ noinst_PROGRAMS	= test \
                   test_xq \
                   test_cpp \
                   test_qualifiers \
+                  cimc_test_gc \
                   cimc_test_ec \
-                  cimc_test_ein
+                  cimc_test_ecn \
+                  cimc_test_ein \
+                  cimc_test_di \
+                  cimc_test_ci
 
 test_SOURCES = test.c
 test_LDADD = ../libcmpisfcc.la
@@ -82,10 +86,6 @@ test_ec_SOURCES = test_ec.c \
                    show.c
 test_ec_LDADD = ../libcmpisfcc.la
 
-cimc_test_ec_SOURCES = cimcTest_ec.c \
-                   cimcShow.c
-cimc_test_ec_LDADD = ../libcimcClient.la
-
 test_ecn_SOURCES = test_ecn.c \
                    show.c
 test_ecn_LDADD = ../libcmpisfcc.la
@@ -97,10 +97,6 @@ test_ecn_ssl_LDADD = ../libcmpisfcc.la
 test_ei_SOURCES = test_ei.c \
                    show.c
 test_ei_LDADD = ../libcmpisfcc.la
-
-cimc_test_ein_SOURCES = cimcTest_ein.c \
-                   cimcShow.c
-cimc_test_ein_LDADD = ../libcimcClient.la
 
 test_ein_SOURCES = test_ein.c \
                    show.c
@@ -149,6 +145,31 @@ test_xq_LDADD = ../libcmpisfcc.la
 test_qualifiers_SOURCES = test_qualifiers.c \
                   show.c
 test_qualifiers_LDADD = ../libcmpisfcc.la
+
+
+cimc_test_gc_SOURCES = cimcTest_gc.c \
+                   cimcShow.c
+cimc_test_gc_LDADD = ../libcimcClient.la
+
+cimc_test_ecn_SOURCES = cimcTest_ecn.c \
+                   cimcShow.c
+cimc_test_ecn_LDADD = ../libcimcClient.la
+
+cimc_test_ec_SOURCES = cimcTest_ec.c \
+                   cimcShow.c
+cimc_test_ec_LDADD = ../libcimcClient.la
+
+cimc_test_ein_SOURCES = cimcTest_ein.c \
+                   cimcShow.c
+cimc_test_ein_LDADD = ../libcimcClient.la
+
+cimc_test_ci_SOURCES = cimcTest_ci.c \
+                   cimcShow.c
+cimc_test_ci_LDADD = ../libcimcClient.la
+
+cimc_test_di_SOURCES = cimcTest_di.c \
+                   cimcShow.c
+cimc_test_di_LDADD = ../libcimcClient.la
 
 
 #@INC_AMINCLUDE@
