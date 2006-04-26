@@ -29,6 +29,12 @@ extern "C" {
 #endif
 
 
+
+typedef struct _cimcObject {
+   void *hdl;
+   void *ft;
+   int refCount;
+} cimcObject;   
  
    //---------------------------------------------------
    //--

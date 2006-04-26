@@ -37,7 +37,7 @@ int main( int argc, char * argv[] )
     cimcInstance * instance;
     cimcStatus status;
     char hostName[512];
-    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
+    char *cim_host, *cim_host_passwd, *cim_host_userid;
 
     ce=NewCimcEnv("SfcbLocal",0,&rc,&msg);
     if (ce==NULL) {
@@ -56,7 +56,7 @@ int main( int argc, char * argv[] )
     if (cim_host_passwd == NULL)
 	cim_host_passwd = "password";
 	
-    cc = ce->connect(ce, cim_host, NULL, "5988",
+    cc = cimcEnvConnect(ce, cim_host, NULL, "5988",
 			       cim_host_userid, cim_host_passwd, &status);
 			       
 	 if (cc==NULL)
@@ -72,12 +72,12 @@ int main( int argc, char * argv[] )
     /* Test createInstance() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing createInstance() ...\n");
-    objectpath = ce->newObjectPath("root/cimv2", "CWS_Authorization", NULL);
-    instance = ce->newInstance(objectpath, NULL);
-    CMSetProperty(instance, "Username", "bestorga", CIMC_chars);
-    CMSetProperty(instance, "Classname", "foobar", CIMC_chars);
+    objectpath = cimcEnvNewObjectPath(ce,"root/cimv2", "CWS_Authorization", NULL);
+    instance = cimcEnvNewInstance(ce,objectpath, NULL);
+    cimcInstSetProperty(instance, "Username", "bestorga", CIMC_chars);
+    cimcInstSetProperty(instance, "Classname", "foobar", CIMC_chars);
 
-    objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &status);
+    objectpath_r = cimcClntCreateInstance(cc, objectpath, instance, &status);
 
     /* Print the results */
     printf( "createInstance() rc=%d, msg=%s\n", 
@@ -87,11 +87,11 @@ int main( int argc, char * argv[] )
         showObjectPath(objectpath_r);
     }
 
-    if (instance) CMRelease(instance);
-    if (objectpath) CMRelease(objectpath);
-    if (objectpath_r) CMRelease(objectpath_r);
-    if (cc) CMRelease(cc);
-    if (status.msg) CMRelease(status.msg);
+    if (instance) cimcInstRelease(instance);
+    if (objectpath) cimcOpRelease(objectpath);
+    if (objectpath_r) cimcOpRelease(objectpath_r);
+    if (cc) cimcClntRelease(cc);
+    if (status.msg) cimcStrRelease(status.msg);
     if (_HOSTNAME) free(_HOSTNAME);
     
     return 0;

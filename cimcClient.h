@@ -405,31 +405,14 @@ struct _cimcClient {
    void *hdl;
    cimcClientFT *ft;
 };
-  
+
+   
 struct _cimcEnv;
 typedef struct _cimcEnv cimcEnv;
-   
-typedef cimcClient* (*CimeConnect2)(cimcEnv *ce, const char *hn, const char *scheme, const char *port, 
-                const char *user, const char *pwd, 
-                int verifyMode, const char * trustStore,
-                const char * certFile, const char * keyFile,
-                cimcStatus *rc);
-typedef cimcClient* (*CimeConnect)(cimcEnv *ce, const char *hn, const char *scheme, const char *port, 
-                const char *user, const char *pwd, cimcStatus *rc);
-                
-typedef cimcInstance *(*CimeNewInstance)(const cimcObjectPath* op, cimcStatus* rc);
-typedef cimcObjectPath *(*CimeNewObjectPath)(const char *ns, const char *cn, cimcStatus* rc);
-typedef cimcArgs *(*CimeNewArgs)(cimcStatus* rc);
-typedef cimcString *(*CimeNewString)(const char *data, cimcStatus* rc);
-typedef cimcArray *(*CimeNewArray)(cimcCount max, cimcType type, cimcStatus* rc);
-typedef cimcDateTime *(*CimeNewDateTime)(cimcStatus* rc);
-typedef cimcDateTime *(*CimeNewDateTimeFromBinary)(cimcUint64 binTime, cimcBoolean interval, cimcStatus* rc);
-typedef cimcDateTime *(*CimeNewDateTimeFromChars)(const char *utcTime, cimcStatus* rc);
 
-
-   
-struct _cimcEnv {
+typedef struct _cimcEnvFT {
    char *env;
+   void* (*release)(cimcEnv *ce);
    cimcClient* (*connect)
                (cimcEnv *ce, const char *hn, const char *scheme, const char *port, 
                 const char *user, const char *pwd,cimcStatus *rc);
@@ -440,26 +423,33 @@ struct _cimcEnv {
                 const char * certFile, const char * keyFile,
                 cimcStatus *rc);
    cimcInstance* (*newInstance)
-               (const cimcObjectPath* op, cimcStatus* rc);
+               (cimcEnv *ce, const cimcObjectPath* op, cimcStatus* rc);
    cimcObjectPath* (*newObjectPath)
-               (const char *ns, const char *cn, cimcStatus* rc);
+               (cimcEnv *ce, const char *ns, const char *cn, cimcStatus* rc);
    cimcArgs* (*newArgs)
-               (cimcStatus* rc);
+               (cimcEnv *ce, cimcStatus* rc);
    cimcString* (*newString)
-               (const char *data, cimcStatus* rc);
+               (cimcEnv *ce, const char *data, cimcStatus* rc);
    cimcArray* (*newArray)
-               (cimcCount max, cimcType type, cimcStatus* rc);
+               (cimcEnv *ce, cimcCount max, cimcType type, cimcStatus* rc);
    cimcDateTime* (*newDateTime)
-               (cimcStatus* rc);
+               (cimcEnv *ce, cimcStatus* rc);
    cimcDateTime* (*newDateTimeFromBinary)
-               (cimcUint64 binTime, cimcBoolean interval, cimcStatus* rc);
+               (cimcEnv *ce, cimcUint64 binTime, cimcBoolean interval, cimcStatus* rc);
    cimcDateTime* (*newDateTimeFromChars)
-               (const char *utcTime, cimcStatus* rc);
+               (cimcEnv *ce, const char *utcTime, cimcStatus* rc);
+} cimcEnvFT;
+
+struct _cimcEnv {
+   void *hdl;
+   cimcEnvFT *ft;
 };
 
 
 cimcEnv* NewCimcEnv(const char *id, unsigned int options, int *rc, char **msg);
+void ReleaseCimcEnv(cimcEnv* env);
 
+#include "cimcfc.h"
 
 #ifdef __cplusplus
  };

@@ -54,7 +54,7 @@ int main()
     if (cim_host_passwd == NULL)
 	cim_host_passwd = "password";
 	
-    cc = ce->connect(ce, cim_host, NULL, "5988",
+    cc = cimcEnvConnect(ce, cim_host, NULL, "5988",
 			       cim_host_userid, cim_host_passwd, &status);
 			       
 	 if (cc==NULL)
@@ -67,25 +67,25 @@ int main()
     /* Test enumInstanceNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumInstanceNames() ...\n");
-    objectpath = ce->newObjectPath("root/cimv2", "CIM_process", NULL);
+    objectpath = cimcEnvNewObjectPath(ce,"root/cimv2", "CIM_process", NULL);
 
-    enumeration = cc->ft->enumInstanceNames(cc, objectpath, &status);
+    enumeration = cimcClntEnumInstanceNames(cc, objectpath, &status);
 
     /* Print the results */
     printf( "enumInstanceNames() rc=%d, msg=%s\n", 
             status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
     if (!status.rc) {
         printf("result(s):\n");
-        while (enumeration->ft->hasNext(enumeration, NULL)) {
-            cimcData data = enumeration->ft->getNext(enumeration, NULL);
+        while (cimcEnmHasNext(enumeration, NULL)) {
+            cimcData data = cimcEnmGetNext(enumeration, NULL);
             showObjectPath(data.value.ref);
         }
     }
 
-    if (enumeration) CMRelease(enumeration);
-    if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
-    if (status.msg) CMRelease(status.msg);
+    if (enumeration) cimcEnmRelease(enumeration);
+    if (objectpath) cimcOpRelease(objectpath);
+    if (cc) cimcClntRelease(cc);
+    if (status.msg) cimcStrRelease(status.msg);
  
     return 0;
 }

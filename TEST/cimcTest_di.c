@@ -36,7 +36,7 @@ int main( int argc, char * argv[] )
     cimcInstance * instance;
     cimcStatus status;
     char hostName[512];
-    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
+    char *cim_host, *cim_host_passwd, *cim_host_userid;
 
     ce=NewCimcEnv("SfcbLocal",0,&rc,&msg);
     if (ce==NULL) {
@@ -55,7 +55,7 @@ int main( int argc, char * argv[] )
     if (cim_host_passwd == NULL)
 	cim_host_passwd = "password";
 	
-    cc = ce->connect(ce, cim_host, NULL, "5988",
+    cc = cimcEnvConnect(ce, cim_host, NULL, "5988",
 			       cim_host_userid, cim_host_passwd, &status);
 			       
 	 if (cc==NULL)
@@ -69,19 +69,19 @@ int main( int argc, char * argv[] )
     /* Test deleteInstance() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing deleteInstance() ...\n");
-    objectpath = ce->newObjectPath("root/cimv2", "CWS_Authorization", NULL);
-    CMAddKey(objectpath, "Username", "bestorga", CIMC_chars);
-    CMAddKey(objectpath, "Classname", "foobar", CIMC_chars);
+    objectpath = cimcEnvNewObjectPath(ce,"root/cimv2", "CWS_Authorization", NULL);
+    cimcOpAddKey(objectpath, "Username", "bestorga", CIMC_chars);
+    cimcOpAddKey(objectpath, "Classname", "foobar", CIMC_chars);
 
-    status = cc->ft->deleteInstance(cc, objectpath);
+    status = cimcClntDeleteInstance(cc, objectpath);
 
     /* Print the results */
     printf( "deleteInstance() rc=%d, msg=%s\n", 
             status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
 
-    if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
-    if (status.msg) CMRelease(status.msg);
+    if (objectpath) cimcOpRelease(objectpath);
+    if (cc) cimcClntRelease(cc);
+    if (status.msg) cimcStrRelease(status.msg);
 
     return 0;
 }

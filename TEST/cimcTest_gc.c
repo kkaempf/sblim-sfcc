@@ -27,14 +27,14 @@
 
 int main()
 {
-    cimcEnv		* ce;
+    cimcEnv* ce;
     int rc;
     char *msg;
     cimcClient *cc;
     cimcObjectPath * objectpath;
     cimcConstClass * class;
     cimcStatus status;
-    char 	*cim_host, *cim_host_passwd, *cim_host_userid;
+    char *cim_host, *cim_host_passwd, *cim_host_userid;
 
     ce=NewCimcEnv("SfcbLocal",0,&rc,&msg);
     if (ce==NULL) {
@@ -53,7 +53,7 @@ int main()
     if (cim_host_passwd == NULL)
 	cim_host_passwd = "password";
 	
-    cc = ce->connect(ce, cim_host, NULL, "5988",
+    cc = cimcEnvConnect(ce, cim_host, NULL, "5988",
 			       cim_host_userid, cim_host_passwd, &status);
 			       
 	 if (cc==NULL)
@@ -66,8 +66,8 @@ int main()
     /* Test getClass() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing getClass() ...\n");
-    objectpath = ce->newObjectPath("root/iicmv1", "CIM_AdminDomain", NULL);
-    class = cc->ft->getClass(cc, objectpath, 0, NULL, &status);
+    objectpath = cimcEnvNewObjectPath(ce,"root/cimv2", "CIM_OperatingSystem", NULL);
+    class = cimcClntGetClass(cc, objectpath, 0, NULL, &status);
 
     /* Print the results */
     printf( "getClass() rc=%d, msg=%s\n", 
@@ -75,13 +75,13 @@ int main()
 
     if (!status.rc) {
         printf("result:\n");
-        showClass(class);
+         showClass(class);
     }
 
-    if (class) CMRelease(class);
-    if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
-    if (status.msg) CMRelease(status.msg);
+    if (class) cimcClsRelease(class);
+    if (objectpath) cimcOpRelease(objectpath);
+    if (cc) cimcClntRelease(cc);
+    if (status.msg) cimcStrRelease(status.msg);
     
     return 0;
 }
