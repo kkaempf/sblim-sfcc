@@ -114,7 +114,10 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
             CMSetProperty(ci, p->name, &val, p->valueType);
 	    native_release_CMPIValue(p->valueType,&val);
          }
-         else setq=0;
+         else {
+            CMSetProperty(ci, p->name, NULL, p->valueType);
+            setq = 0;
+         }
          break;
       case typeProperty_Reference: 
          op=p->val.ref.op;
@@ -566,7 +569,7 @@ static void setError(ParserControl *parm, XtokErrorResp *e)
 %token <xtokObjectPath>          XTOK_OBJECTPATH
 %token <intValue>                ZTOK_OBJECTPATH
 
-//%type  <xtokLocalInstancePath>   localInstancePath
+%type  <xtokLocalInstancePath>   localInstancePath
 %token <xtokLocalInstancePath>   XTOK_LOCALINSTANCEPATH
 %token <intValue>                ZTOK_LOCALINSTANCEPATH
 
@@ -1113,6 +1116,12 @@ valueReference
        $$.type = typeValRef_InstanceName;
        PARM->valueSet=1;
     }
+    | XTOK_VALUEREFERENCE localInstancePath ZTOK_VALUEREFERENCE
+    {
+       $$.localInstancePath = $2;
+       $$.type = typeValRef_LocalInstancePath;
+       PARM->valueSet=1;
+    }
 ;
 
 /*
@@ -1221,7 +1230,6 @@ instancePath
     } */
 ;
 
-/*
 localInstancePath
     : XTOK_LOCALINSTANCEPATH localNameSpacePath instanceName ZTOK_LOCALINSTANCEPATH
     {
@@ -1231,6 +1239,7 @@ localInstancePath
     }
 ;
 
+/*
 localClassPath
     : XTOK_LOCALCLASSPATH localNameSpacePath className ZTOK_LOCALCLASSPATH
     {

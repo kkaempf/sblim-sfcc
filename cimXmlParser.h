@@ -40,7 +40,7 @@ extern "C" {
 typedef enum typeValRef {
    typeValRef_InstanceName,
    typeValRef_InstancePath,
-   typevalRef_LocalInstancePath
+   typeValRef_LocalInstancePath
 } TypeValRef;
 
 typedef enum typeProperty {

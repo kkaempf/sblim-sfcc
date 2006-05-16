@@ -49,7 +49,7 @@ int main( int argc, char * argv[] )
     /* Test enumInstances() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumInstances() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
+    objectpath = newCMPIObjectPath("root/cimv2", "CIM_Slot", NULL);
     enumeration = cc->ft->enumInstances(cc, objectpath, 0, NULL, &status);
 
     /* Print the results */

@@ -5,6 +5,7 @@
 #include "CimObjectPath.h"
 #include "CimDateTime.h"
 #include "CimEnumeration.h"
+#include "CimArray.h"
 
 #include "sfccPtr.h"
 
@@ -52,6 +53,12 @@
 
 #define Tc CimcObjectPathEnumeration
 #define Te cimcEnumeration
+#include "sfccPtrImpl.h"
+#undef Tc
+#undef Te
+
+#define Tc CimcArray
+#define Te cimcArray
 #include "sfccPtrImpl.h"
 #undef Tc
 #undef Te   

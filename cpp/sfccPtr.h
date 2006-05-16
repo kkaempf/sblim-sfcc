@@ -14,6 +14,7 @@ template <class Tc, class Te> class  sfccPtr {
   friend class CimcObjectPath;
   friend class CimcIterator;
   friend class CimcDateTime;
+  friend class CimcArray;
   private:
    Tc* enc;
    void release();

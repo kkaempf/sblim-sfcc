@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.in,v 1.1 2006/04/26 02:04:49 a3schuur Exp $
+# $Id: Makefile.in,v 1.2 2006/05/16 22:16:33 a3schuur Exp $
 
 
 
@@ -79,7 +79,8 @@ am_libcimcCppImpl_la_OBJECTS = libcimcCppImpl_la-sfccPtr.lo \
 	libcimcCppImpl_la-CimString.lo libcimcCppImpl_la-CimClass.lo \
 	libcimcCppImpl_la-CimInstance.lo \
 	libcimcCppImpl_la-CimObjectPath.lo \
-	libcimcCppImpl_la-CimData.lo libcimcCppImpl_la-CimDateTime.lo
+	libcimcCppImpl_la-CimData.lo libcimcCppImpl_la-CimDateTime.lo \
+	libcimcCppImpl_la-CimArray.lo
 libcimcCppImpl_la_OBJECTS = $(am_libcimcCppImpl_la_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_sfccTest_OBJECTS = sfccTest-sfccTest.$(OBJEXT)
@@ -224,9 +225,9 @@ libcimcCppImpl_la_SOURCES = \
     CimInstance.cpp \
     CimObjectPath.cpp \
     CimData.cpp \
-    CimDateTime.cpp 
+    CimDateTime.cpp \
+    CimArray.cpp
 
-#    CimArray.cpp
 libcimcCppImpl_la_CPPFLAGS = -Wall -I$(srcdir)/.. -I.
 sfccTest_SOURCES = sfccTest.cpp 
 sfccTest_LDADD = libcimcCppImpl.la ../libcimcClient.la
@@ -335,6 +336,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcimcCppImpl_la-CimArray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcimcCppImpl_la-CimClass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcimcCppImpl_la-CimClient.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcimcCppImpl_la-CimData.Plo@am__quote@
@@ -453,6 +455,13 @@ libcimcCppImpl_la-CimDateTime.lo: CimDateTime.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='CimDateTime.cpp' object='libcimcCppImpl_la-CimDateTime.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile --tag=CXX $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcimcCppImpl_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libcimcCppImpl_la-CimDateTime.lo `test -f 'CimDateTime.cpp' || echo '$(srcdir)/'`CimDateTime.cpp
+
+libcimcCppImpl_la-CimArray.lo: CimArray.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile --tag=CXX $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcimcCppImpl_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libcimcCppImpl_la-CimArray.lo -MD -MP -MF "$(DEPDIR)/libcimcCppImpl_la-CimArray.Tpo" -c -o libcimcCppImpl_la-CimArray.lo `test -f 'CimArray.cpp' || echo '$(srcdir)/'`CimArray.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/libcimcCppImpl_la-CimArray.Tpo" "$(DEPDIR)/libcimcCppImpl_la-CimArray.Plo"; else rm -f "$(DEPDIR)/libcimcCppImpl_la-CimArray.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='CimArray.cpp' object='libcimcCppImpl_la-CimArray.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile --tag=CXX $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcimcCppImpl_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libcimcCppImpl_la-CimArray.lo `test -f 'CimArray.cpp' || echo '$(srcdir)/'`CimArray.cpp
 
 sfccTest-sfccTest.o: sfccTest.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sfccTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT sfccTest-sfccTest.o -MD -MP -MF "$(DEPDIR)/sfccTest-sfccTest.Tpo" -c -o sfccTest-sfccTest.o `test -f 'sfccTest.cpp' || echo '$(srcdir)/'`sfccTest.cpp; \

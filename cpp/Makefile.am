@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006/04/26 02:04:49 a3schuur Exp $
+# $Id: Makefile.am,v 1.2 2006/05/16 22:16:33 a3schuur Exp $
 
 docdir=$(datadir)/doc/$(PACKAGE)-$(VERSION)
 
@@ -20,8 +20,8 @@ libcimcCppImpl_la_SOURCES = \
     CimInstance.cpp \
     CimObjectPath.cpp \
     CimData.cpp \
-    CimDateTime.cpp 
-#    CimArray.cpp
+    CimDateTime.cpp \
+    CimArray.cpp
 
 libcimcCppImpl_la_CPPFLAGS = -Wall -I$(srcdir)/.. -I.
 

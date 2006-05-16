@@ -14,7 +14,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.11 $
+  $Revision: 1.12 $
 */
 
 #include <stdio.h>
@@ -289,6 +289,10 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
          case typeValRef_InstanceName: 
             in=&ref->instanceName;
             break;   
+         case typeValRef_LocalInstancePath:
+            in = &ref->localInstancePath.instanceName;
+            ns = ref->localInstancePath.path;
+            break;
          default:
 //            mlogf(M_ERROR,M_SHOW,"%s(%d): unexpected reference type %d %x\n", __FILE__, __LINE__, 
             printf("%s(%d): unexpected reference type %d %x\n", __FILE__, __LINE__, 

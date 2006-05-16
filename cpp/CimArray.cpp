@@ -20,6 +20,25 @@ CimcArray::CimcArray() {
  void CimcArray::operator=(int x) {
  }
 
+int CimcArray::decRefCount()
+{
+   return --(((cimcObject*)enc)->refCount);
+}
+
+int CimcArray::incRefCount()
+{
+   return ++(((cimcObject*)enc)->refCount);   
+}
+
+void CimcArray::releaseEnc()
+{
+   if (enc) enc->ft->release(enc); 
+   enc=NULL;
+}
+
+
+
+
 CimcArrayIdx CimcArray::operator[](int idx) const {
    return CimcArrayIdx(*this,idx);
 }
@@ -46,26 +65,30 @@ CimcArrayIdx::CimcArrayIdx(const CimcArray &a, cimcCount i)
 {
 }
 
-CimcArrayIdx& CimcArrayIdx::operator=(const cimcData& v) {
+CimcArrayIdx& CimcArrayIdx::operator=(const CimData& v) {
    cimcStatus rc={CIMC_RC_OK,NULL};
    if (ar.getEnc()->ft->getSimpleType(ar.getEnc(),&rc)!=v._data.type)
-      throw cimcStatus(CIMC_RC_ERR_TYPE_MISMATCH);
+      throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
    rc=ar.getEnc()->ft->setElementAt(ar.getEnc(),idx,(cimcValue*)&v._data.value,
 				    v._data.type);
-   if (rc.rc!=CIMC_RC_OK) throw cimcStatus(rc);
+   if (rc.rc!=CIMC_RC_OK) throw CimStatus(rc.rc);
    return *this;
 }
 
 
-cimcData CimcArrayIdx::getData() const{
+CimData CimcArrayIdx::getData() const{
    cimcStatus rc={CIMC_RC_OK,NULL};
    cimcData d;
    d=ar.getEnc()->ft->getElementAt(ar.getEnc(),idx,&rc);
-   if (rc.rc!=CIMC_RC_OK) throw cimcStatus(rc);
-   return d;
+   if (rc.rc!=CIMC_RC_OK) throw CimStatus(rc.rc);
+   return CimData(d);
 }
 
-CimcArrayIdx::operator cimcString() const{
+CimcArrayIdx::operator CimString() const{
+   return getData();
+}
+
+CimcArrayIdx::operator unsigned char () const{
    return getData();
 }
 
@@ -73,21 +96,21 @@ CimcArrayIdx::operator const char* () const{
    return getData();
 }
 
-CimcArrayIdx::operator cimcDateTime() const{
+CimcArrayIdx::operator CimDateTime() const{
    return getData();
 }
 
-CimcArrayIdx::operator cimcObjectPath() const{
+CimcArrayIdx::operator CimObjectPath() const{
    return getData();
 }
 
-CimcArrayIdx::operator cimcInstance() const{
+CimcArrayIdx::operator CimInstance() const{
    return getData();
 }
 
-CimcArrayIdx::operator cimcUint8() const{
-   return getData();
-}
+//CimcArrayIdx::operator cimcUint8() const{
+//   return getData();
+//}
 
 CimcArrayIdx::operator cimcUint16() const{
    return getData();

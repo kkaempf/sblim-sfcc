@@ -15,6 +15,8 @@ class CimcInstance;
 typedef class sfccPtr<CimcInstance, cimcInstance> CimInstance;
 class CimcDateTime;
 typedef class sfccPtr<CimcDateTime, cimcDateTime> CimDateTime;
+class CimcArray;
+typedef class sfccPtr<CimcArray, cimcArray> CimArray;
 
 class CimData {
   friend class CimcObjectPath; 
@@ -22,6 +24,8 @@ class CimData {
   friend class CimcIterator;
   friend class CimcClass; 
   friend class CimcDateTime; 
+  friend class CimcArrayIdx; 
+  friend class CimcArray; 
   
   protected:
    cimcData _data;
@@ -30,6 +34,7 @@ class CimData {
       CimInstance *inst;      
       CimObjectPath *ref;
       CimDateTime *dateTime;
+      CimArray *array;
    } cim;
    CimData(cimcData data);
    
@@ -53,7 +58,7 @@ class CimData {
    CimData(const char* d);
    CimData(const CimObjectPath& d);
    CimData(const CimDateTime& d);
-//   CimData(const CimArray& d);
+   CimData(const CimArray& d);
    operator CimString() const;
    operator const char* () const;
    operator CimDateTime() const;
@@ -67,7 +72,7 @@ class CimData {
    operator cimcUint64() const;
    operator cimcReal32() const;
    operator cimcReal64() const;
-//   operator CimArray() const;
+   operator CimArray() const;
    operator CimInstance() const;
    operator CimObjectPath() const;
    int isNullValue() const;

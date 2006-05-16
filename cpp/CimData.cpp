@@ -4,6 +4,8 @@
 #include "CimObjectPath.h"
 #include "CimInstance.h"
 #include "CimString.h"
+#include "CimDateTime.h"
+#include "CimArray.h"
 
 
 cimcData CimData::getEnc() {
@@ -119,32 +121,33 @@ CimData::CimData(const char* d) {
   _data.value.chars=(char*)d;
   _data.type=CIMC_chars;
 }
-/*
+
 CimData::CimData(const CimDateTime& d) {
    _data.state=CIMC_goodValue;
-   _data.value.dateTime=d.getEnc();
+   cim.dateTime=&((CimDateTime&)d);
    _data.type=CIMC_dateTime;
 }
 
 CimData::CimData(const CimArray& d) {
    _data.state=CIMC_goodValue;
-   _data.value.array=d.getEnc();
-   _data.type=((cimcArrayFT*)d.getEnc()->ft)->getSimpleType(d.getEnc(),0) | CIMC_ARRAY;
+   cim.array=&((CimArray&)d);
+   _data.type=(d->getEnc()->ft)->getSimpleType(d->getEnc(),0) | CIMC_ARRAY;
 }
-*/
+
+
+
 CimData::operator CimString() const {
    if (_data.type!=CIMC_string)
      throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
    return *cim.string;
 }
-/*
+
 CimData::operator const char* () const {
    if (_data.type!=CIMC_string)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return CimString(_data.value.string).charPtr();
+   else return (const char*)cim.string;
 }
-*/
+
 CimData::operator CimDateTime() const {
    if (_data.type!=CIMC_dateTime)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
@@ -154,28 +157,24 @@ CimData::operator CimDateTime() const {
 CimData::operator cimcSint8() const {
    if (_data.type!=CIMC_sint8)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return _data.value.sint8;
+   else return _data.value.sint8;
 }
 CimData::operator cimcSint16() const {
    if (_data.type!=CIMC_sint16)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return _data.value.sint16;
+   else return _data.value.sint16;
 }
 
 CimData::operator cimcSint32() const {
    if (_data.type!=CIMC_sint32)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return _data.value.sint32;
+   else return _data.value.sint32;
 }
 
 CimData::operator cimcSint64() const {
    if (_data.type!=CIMC_sint64)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return _data.value.sint64;
+   else return _data.value.sint64;
 }
 
 CimData::operator unsigned char() const {
@@ -183,8 +182,7 @@ CimData::operator unsigned char() const {
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
    if (_data.type==CIMC_uint8)
       return _data.value.uint8;
-   else
-      return _data.value.boolean;
+   else return _data.value.boolean;
 }
 
 CimData::operator unsigned short() const {
@@ -192,36 +190,31 @@ CimData::operator unsigned short() const {
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
    if (_data.type==CIMC_uint16)
       return _data.value.uint16;
-   else
-      return _data.value.char16;
+   else return _data.value.char16;
 }
 
 CimData::operator cimcUint32() const {
    if (_data.type!=CIMC_uint32)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return _data.value.uint32;
+   else return _data.value.uint32;
 }
 
 CimData::operator cimcUint64() const {
    if (_data.type!=CIMC_uint64)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return _data.value.uint64;
+   else return _data.value.uint64;
 }
 
 CimData::operator cimcReal32() const {
    if (_data.type!=CIMC_real32)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return _data.value.real32;
+   else return _data.value.real32;
 }
 
 CimData::operator cimcReal64() const {
    if (_data.type!=CIMC_real64)
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else
-      return _data.value.real64;
+   else return _data.value.real64;
 }
 
 CimData::CimData(const CimObjectPath& d) {
@@ -241,13 +234,13 @@ CimData::operator CimObjectPath() const {
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
    else return *cim.ref;
 }
-/*
+
 CimData::operator CimArray() const {
    if (!(_data.type&CIMC_ARRAY))
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else return CimArray(_data.value.array);
+   else return *cim.array;
 }
-*/
+
 int CimData::isNullValue() const {
   return (_data.state & CIMC_nullValue);
 }

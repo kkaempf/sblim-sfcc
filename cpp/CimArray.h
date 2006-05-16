@@ -19,13 +19,13 @@ class CimcArrayIdx {
    cimcCount idx;
    CimcArrayIdx(const CimcArray &a, cimcCount i);
 public:
-   CimcArrayIdx& operator=(const CimcData&);
-   CimcData getData() const;
-   operator CimcString() const;
+   CimcArrayIdx& operator=(const CimData&);
+   CimData getData() const;
+   operator CimString() const;
    operator const char* () const;
-//   operator CimcDateTime() const;
-   operator CimcInstance() const;
-   operator CimcObjectPath() const;
+   operator CimDateTime() const;
+   operator CimInstance() const;
+   operator CimObjectPath() const;
    operator cimcSint8() const;
    operator cimcSint16() const;
    operator cimcSint32() const;
@@ -36,6 +36,7 @@ public:
    operator cimcUint32() const;
    operator unsigned int() const;
    operator cimcUint64() const;
+   operator cimcReal32() const;
    operator cimcReal64() const;
 
 };
@@ -65,11 +66,16 @@ public:
 class CimcArray {
    friend class CimcArrayIdx;
    friend class CimcData;
+   friend class CimData;
    friend class CimcEnumeration;
+   friend class sfccPtr<CimcArray, cimcArray>;
    cimcArray *enc;
    void operator=(int x);
    cimcArray *getEnc() const;
    CimcArray(cimcArray *arr);
+   int decRefCount();
+   int incRefCount();
+   void releaseEnc();
 public:
    CimcArray(cimcCount max, cimcType type);
    CimcArray();

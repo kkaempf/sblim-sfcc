@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.8 $
+  $Revision: 1.9 $
 */
 
 #include <stdio.h>
@@ -232,9 +232,10 @@ static CMPIStatus __ift_setProperty ( CMPIInstance * instance,
 			propertyFT.addProperty ( &i->props, 
 						 name, 
 						 type, 
-						 0, 
+                                                 (value == NULL) ?
+                                                    CMPI_nullValue : 0, 
 						 value );
-		}
+               }
 
 	}
 	CMReturn ( CMPI_RC_OK );
