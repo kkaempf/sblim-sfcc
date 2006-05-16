@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include "cmcidt.h"
@@ -98,7 +98,7 @@ static CMPIArray * __eft_toArray ( CMPIEnumeration * enumeration,
 				   CMPIStatus * rc )
 {
 	struct native_enum * e = (struct native_enum *) enumeration;
-	rc->rc = CMPI_RC_OK;
+	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
 	return e->data;
 }
 
