@@ -1,5 +1,10 @@
 Small Footprint CIM Client Library NEWS
 
+Changes in 1.0.1:
+=================
+Bugs:
+- 1513278: Fixed segfault in property qualifier processing
+
 Changes in 1.0.0:
 =================
 Bugs:

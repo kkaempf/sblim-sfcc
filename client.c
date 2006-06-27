@@ -121,7 +121,7 @@ void list2StringBuffer(UtilStringBuffer *sb, UtilList *ul, char *sep)
 
 /* --------------------------------------------------------------------------*/
 
-static inline size_t writeHeaders(void *ptr, size_t size,
+static size_t writeHeaders(void *ptr, size_t size,
 				  size_t nmemb, void *stream)
 {
   
@@ -152,7 +152,7 @@ static inline size_t writeHeaders(void *ptr, size_t size,
 
 /* --------------------------------------------------------------------------*/
 
-static inline size_t writeCb(void *ptr, size_t size,
+static size_t writeCb(void *ptr, size_t size,
 					size_t nmemb, void *stream)
 {
     UtilStringBuffer *sb=(UtilStringBuffer*)stream;

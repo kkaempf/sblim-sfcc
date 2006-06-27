@@ -1,3 +1,17 @@
+2006-06-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* cimXmlResp.y: 
+	Bug 1513278: Segfault in property qualifier processing.
+	Fixed erroneous action in the array property production.
+	Added missing setClassQualifiers function.
+	Removed a few shift/reduce conflicts.
+
+	* client.c:
+	Removed the inline qualifier for callback functions.
+
+	* TEST/Makefile.am, TEST/test_qualifiers2.c:
+	Added test code for class qualifiers.
+
 2006-02-28  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* client.c: 

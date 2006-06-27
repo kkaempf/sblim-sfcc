@@ -46,6 +46,7 @@ noinst_PROGRAMS	= test \
                   test_xq \
                   test_cpp \
                   test_qualifiers \
+                  test_qualifiers2 \
                   cimc_test_gc \
                   cimc_test_ec \
                   cimc_test_ecn \
@@ -145,6 +146,10 @@ test_xq_LDADD = ../libcmpisfcc.la
 test_qualifiers_SOURCES = test_qualifiers.c \
                   show.c
 test_qualifiers_LDADD = ../libcmpisfcc.la
+
+test_qualifiers2_SOURCES = test_qualifiers2.c \
+                  show.c
+test_qualifiers2_LDADD = ../libcmpisfcc.la
 
 
 cimc_test_gc_SOURCES = cimcTest_gc.c \

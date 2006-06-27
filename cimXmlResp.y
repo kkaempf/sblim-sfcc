@@ -286,6 +286,38 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
    if (ps) ps->first = ps->last = NULL;
 }
 
+static void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
+{
+   XtokQualifier *nq = NULL,*q = qs ? qs->first : NULL;
+   CMPIValue val;
+   CMPIValueState state;
+   CMPIObjectPath *op;
+   int rc;
+   
+   while (q) {
+      if (q->type & CMPI_ARRAY) {
+               CMPIType type=q->type&~CMPI_ARRAY;
+               CMPIArray *arr = newCMPIArray(0, type, NULL);
+               int i;
+               if (q->array.max) for (i = 0; i < q->array.next; ++i) {
+                  val = str2CMPIValue(type, q->array.values[i], NULL);
+                  CMSetArrayElementAt(arr, i, &val, type);
+                  native_release_CMPIValue(type,&val);
+               }
+               rc = addClassQualifier(cls, q->name, (CMPIValue*)&arr, q->type);
+               native_release_CMPIValue(q->type,(CMPIValue*)&arr);
+      }
+      else {
+         val = str2CMPIValue(q->type, q->value, NULL);
+         rc = addClassQualifier(cls, q->name, &val, q->type);
+         native_release_CMPIValue( q->type,&val);
+      }
+      nq = q->next;
+      q = nq;
+   }
+}
+
+
 static void addProperty(ParserControl *parm, XtokProperties *ps, XtokProperty *p)
 {
    XtokProperty *np;
@@ -486,6 +518,7 @@ static void setError(ParserControl *parm, XtokErrorResp *e)
 
 %token <xtokValueArray>          XTOK_VALUEARRAY
 %type  <xtokValueArray>          valueArray
+%type  <xtokValueArray>          optional_valueArray
 %token <intValue>                ZTOK_VALUEARRAY
 
 %token <intValueReference>       XTOK_VALUEREFERENCE
@@ -765,6 +798,7 @@ classes
     | classes class
     {
        PARM->curClass = native_new_CMPIConstClass($2.className,NULL);
+       setClassQualifiers(PARM->curClass, &PARM->qualifiers);
        setClassProperties(PARM->curClass, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curClass,CMPI_class);
        PARM->curClass = NULL;
@@ -1003,13 +1037,7 @@ instanceData
 */
 
 property
-    : XTOK_PROPERTY ZTOK_PROPERTY
-    {
-       $$.val.value = NULL;
-       $$.val.null = 1;
-       PARM->valueSet=0;
-    }
-    | XTOK_PROPERTY propertyData ZTOK_PROPERTY
+    : XTOK_PROPERTY propertyData ZTOK_PROPERTY
     {
        $$.val = $2;
        $$.val.null= PARM->valueSet==0;
@@ -1023,6 +1051,7 @@ property
     }
     | XTOK_PROPERTYARRAY propertyData ZTOK_PROPERTYARRAY
     {
+       $$.val = $2;
        $$.val.array = PARM->curArray;
        $$.val.null= PARM->valueSet==0;
        memset(&PARM->curArray,0,sizeof(PARM->curArray));
@@ -1054,7 +1083,7 @@ propertyData
        $$.ref.op=PARM->curPath;
        PARM->curPath=NULL;
     }
-    | propertyData XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY
+    | propertyData XTOK_VALUEARRAY optional_valueArray ZTOK_VALUEARRAY
     {
        $$.array = PARM->curArray;
     }
@@ -1075,16 +1104,20 @@ value
     }
 ;
 
-valueArray
+optional_valueArray
     : /* empty */
     {
        memset(&PARM->curArray,0,sizeof(PARM->curArray));
-       $$ = PARM->curArray;
+       $$ = PARM->curArray;       
     }
-    | value
+    | valueArray 
+;
+
+valueArray
+    : value
     {
        PARM->curArray.next = 1;
-       PARM->curArray.max  = 16;
+       PARM->curArray.max = 16;
        PARM->curArray.values = (char**)PARSER_MALLOC(sizeof(char*)*PARM->curArray.max);
        PARM->curArray.values[0] = $1.value;
        PARM->valueSet=1;
@@ -1092,6 +1125,7 @@ valueArray
     }
     | valueArray value
     {
+      
        if (PARM->curArray.next >= PARM->curArray.max) {
           PARM->curArray.max *= 2;
           PARM->curArray.values = (char**)PARSER_REALLOC(PARM->curArray.values, sizeof(char*)*PARM->curArray.max);
@@ -1160,7 +1194,7 @@ qualifier
        $$.value = $2.value;
        PARM->valueSet=0;
     }
-    | XTOK_QUALIFIER XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY ZTOK_QUALIFIER
+    | XTOK_QUALIFIER XTOK_VALUEARRAY optional_valueArray ZTOK_VALUEARRAY ZTOK_QUALIFIER
     {
        $$.type|=CMPI_ARRAY;
        $$.array=PARM->curArray;
