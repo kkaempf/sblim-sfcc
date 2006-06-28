@@ -2399,6 +2399,6 @@ CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
  
    }
 
-
+   CMSetStatus(rc, CMPI_RC_OK);
    return (CMCIClient*)cc;
 }
