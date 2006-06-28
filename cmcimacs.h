@@ -51,10 +51,10 @@
       @param rcp CMPI return code
   */
 inline static  void CMSetStatus(CMPIStatus* st, CMPIrc rcp)
-      { if (rc) { (st)->rc=(rcp); (st)->msg=NULL; }}
+      { if (rc && st) { (st)->rc=(rcp); (st)->msg=NULL; }}
 #else
 #define CMSetStatus(st,rcp) \
-      { (st)->rc=(rcp); (st)->msg=NULL; }
+      { if (st) {(st)->rc=(rcp); (st)->msg=NULL; }}
 #endif
 
 #ifdef CMPI_INLINE

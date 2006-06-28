@@ -51,10 +51,10 @@
       @param rcp cimc return code
   */
 inline static  void CMSetStatus(cimcStatus* st, cimcrc rcp)
-      { if (rc) { (st)->rc=(rcp); (st)->msg=NULL; }}
+      { if (rc && st) { (st)->rc=(rcp); (st)->msg=NULL; }}
 #else
 #define CMSetStatus(st,rcp) \
-      { (st)->rc=(rcp); (st)->msg=NULL; }
+      { if (st){(st)->rc=(rcp); (st)->msg=NULL; }}
 #endif
 
 #ifdef CIMC_INLINE

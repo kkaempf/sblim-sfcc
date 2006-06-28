@@ -3,7 +3,8 @@ Small Footprint CIM Client Library NEWS
 Changes in 1.0.1:
 =================
 Bugs:
-- 1513362: Added setting of status code in function cmciConnect2
+- 1513362: Added setting of status code in function cmciConnect2,
+checking for NULL in CMSetStatus macros
 - 1513278: Fixed segfault in property qualifier processing
 
 Changes in 1.0.0:
