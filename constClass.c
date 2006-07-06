@@ -53,6 +53,7 @@ static CMPIStatus __ccft_release ( CMPIConstClass * ccls )
 
 		free ( cc->classname );
 		propertyFT.release ( cc->props );
+		qualifierFT.release ( cc->qualifiers );
 		free ( cc );
 
 		CMReturn ( CMPI_RC_OK );

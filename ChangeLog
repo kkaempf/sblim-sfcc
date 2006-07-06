@@ -1,3 +1,8 @@
+2006-07-06
+
+	* constclass.c:
+	Bug 1518169: Fixed memory leak in constclass.c
+
 2006-06-28  sschuetz
 
 	* client.c:
