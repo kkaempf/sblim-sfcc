@@ -14,7 +14,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.12 $
+  $Revision: 1.13 $
 */
 
 #include <stdio.h>
@@ -24,7 +24,7 @@
 #include "cmcift.h"
 #include "native.h"
 #include "cimXmlParser.h"
-#include "utilStringBuffer.h"
+#include "utilft.h"
 
 #ifdef DMALLOC
 #include "dmalloc.h"

@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.6 2006/03/06 16:08:05 a3schuur Exp $
+# $Id: Makefile.am,v 1.7 2006/07/17 13:27:16 sschuetz Exp $
 
 LT_CURRENT=0
 LT_REVISION=0
@@ -12,11 +12,9 @@ BUILT_SOURCES = \
 
 noinst_HEADERS = \
 	cimXmlParser.h \
-	genericlist.h \
-	utilStringBuffer.h
+	genericlist.h 
 
 pkginclude_HEADERS = \
-	utilList.h \
 	native.h \
 	cimXmlParser.h \
 	cmcidt.h \
@@ -27,12 +25,20 @@ pkginclude_HEADERS = \
 	cimcdt.h \
 	cimcft2.h \
 	cimcft.h \
-	cimcmacs.h
+	cimcmacs.h \
+	sfcUtil/utilft.h
 	
 pkgincludedir = $(includedir)/CimClientLib
 
 lib_LTLIBRARIES=libcmpisfcc.la \
-   libcimcClient.la 
+   libsfcUtil.la \
+   libcimcClient.la
+
+libsfcUtil_la_SOURCES = \
+	sfcUtil/hashtable.c \
+	sfcUtil/utilFactory.c \
+	sfcUtil/utilHashtable.c \
+	sfcUtil/utilStringBuffer.c
 
 libcimcClient_la_SOURCES = \
    cimcClient.c
@@ -50,16 +56,15 @@ libcmpisfcc_la_SOURCES = \
                    string.c \
                    value.c \
                    client.c \
-                   utilStringBuffer.c \
                    genericlist.c \
                    cimXmlResp.y \
                    cimXmlParser.c
 
-libcmpisfcc_la_LIBADD = -lcurl
+libcmpisfcc_la_LIBADD = -lcurl -lsfcUtil
 libcmpisfcc_la_LDFLAGS = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
 SUBDIRS = . TEST
 
-AM_CPPFLAGS = -I../../ -I$(top_builddir)/src
+AM_CPPFLAGS = -I../../ -I$(top_builddir)/src -IsfcUtil
 
 #@INC_AMINCLUDE@

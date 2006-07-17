@@ -20,7 +20,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.9 $
+  $Revision: 1.10 $
 */
 
 #include <stdio.h>
@@ -30,7 +30,7 @@
 #include "cmcift.h"
 #include "cmcimacs.h"
 #include "native.h"
-#include "utilStringBuffer.h"
+#include "utilft.h"
 
 #ifdef DMALLOC
 #include "dmalloc.h"

@@ -36,7 +36,7 @@
 #ifndef GENERIC_LIST_DEFINED
 #define GENERIC_LIST_DEFINED
 
-#include "utilList.h"
+#include "utilft.h"
 
 typedef struct GLE_struct {
    void *pointer;

@@ -1,0 +1,15 @@
+.cdtproject
+.project
+aclocal.m4
+cimXmlResp.c
+cimXmlResp.h
+config.guess
+config.h.in
+config.sub
+configure
+depcomp
+INSTALL
+install-sh
+ltmain.sh
+Makefile.in
+missing

@@ -1,4 +1,9 @@
-2006-07-06
+2006-07-17	sschuetz
+
+	* hashtable.c, utilFactory.c, utilHashtable.c, utilStringbuffer.c:
+	Moved to sfcUtil, build as shared library now
+
+2006-07-06 sschuetz
 
 	* constclass.c:
 	Bug 1518169: Fixed memory leak in constclass.c

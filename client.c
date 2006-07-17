@@ -21,8 +21,8 @@
  */
 
 #include "cmci.h"
-#include "utilStringBuffer.h"
-#include "utilList.h"
+#include "utilft.h"
+//#include "utilList.h"
 #include "native.h"
 
 #include <stdlib.h>
