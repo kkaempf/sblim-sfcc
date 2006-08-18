@@ -6,6 +6,7 @@ New features:
 - moved some util functions to sfcUtil, build as shared library
 
 Bugs:
+- 1542551: Fixed build problem when libsfcUtil was not available during linking
 - 1518169: Fixed memory leak in constclass.c
 - 1513362: Added setting of status code in function cmciConnect2,
            checking for NULL in CMSetStatus macros

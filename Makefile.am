@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.7 2006/07/17 13:27:16 sschuetz Exp $
+# $Id: Makefile.am,v 1.8 2006/08/18 11:36:17 sschuetz Exp $
 
 LT_CURRENT=0
 LT_REVISION=0
@@ -30,7 +30,8 @@ pkginclude_HEADERS = \
 	
 pkgincludedir = $(includedir)/CimClientLib
 
-lib_LTLIBRARIES=libcmpisfcc.la \
+lib_LTLIBRARIES= \
+   libcmpisfcc.la \
    libsfcUtil.la \
    libcimcClient.la
 
@@ -61,10 +62,11 @@ libcmpisfcc_la_SOURCES = \
                    cimXmlParser.c
 
 libcmpisfcc_la_LIBADD = -lcurl -lsfcUtil
+libcmpisfcc_la_DEPENDENCIES = libsfcUtil.la
 libcmpisfcc_la_LDFLAGS = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
 SUBDIRS = . TEST
 
-AM_CPPFLAGS = -I../../ -I$(top_builddir)/src -IsfcUtil
+AM_CPPFLAGS = -I../../ -I$(top_builddir)/src -I$(srcdir)/sfcUtil
 
 #@INC_AMINCLUDE@

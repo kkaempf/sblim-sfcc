@@ -1,3 +1,8 @@
+2006-08-18	sschuetz
+
+	* Makefile.am
+	Bug 1542551: Fixed build problem when libsfcUtil was not available during linking
+
 2006-07-17	sschuetz
 
 	* hashtable.c, utilFactory.c, utilHashtable.c, utilStringbuffer.c:
