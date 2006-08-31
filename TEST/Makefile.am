@@ -20,7 +20,7 @@ test_native_LDADD = $(OUR_LDADD)
 
 endif
 
-noinst_HEADERS = show.h
+noinst_HEADERS = show.h cimcShow.h
 
 noinst_PROGRAMS	= test \
                   test_an \

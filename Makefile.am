@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.8 2006/08/18 11:36:17 sschuetz Exp $
+# $Id: Makefile.am,v 1.9 2006/08/31 12:19:15 mihajlov Exp $
 
 LT_CURRENT=0
 LT_REVISION=0
@@ -25,9 +25,11 @@ pkginclude_HEADERS = \
 	cimcdt.h \
 	cimcft2.h \
 	cimcft.h \
+	cimcfc.h \
 	cimcmacs.h \
-	sfcUtil/utilft.h
-	
+	sfcUtil/utilft.h \
+	sfcUtil/hashtable.h
+
 pkgincludedir = $(includedir)/CimClientLib
 
 lib_LTLIBRARIES= \
