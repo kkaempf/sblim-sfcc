@@ -25,7 +25,7 @@
 
 #include "show.h"
 
-int main( int argc, char * argv[] )
+int main()
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
@@ -34,7 +34,7 @@ int main( int argc, char * argv[] )
     char 	*cim_host, *cim_host_passwd, *cim_host_userid,
                 *cim_host_cert, *cim_client_cert, *cim_client_key;
 
-    /* Setup a conncetion to the CIMOM */
+    /* Setup a connection to the CIMOM */
     cim_host = getenv("CIM_HOST");
     if (cim_host == NULL)
 	cim_host = "localhost";

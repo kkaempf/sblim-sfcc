@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.9 $
+  $Revision: 1.10 $
 */
 
 #include <stdio.h>
@@ -185,7 +185,7 @@ static CMPIData __ift_getPropertyQualifier ( CMPIInstance * instance,
 	struct native_property *p=propertyFT.getProperty ( i->props, pname );
 
 	if (p) return qualifierFT.getDataQualifier ( p->qualifiers, qname, rc );        
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
 }
 
 static CMPIData __ift_getPropertyQualifierAt ( CMPIInstance * instance, 
@@ -198,7 +198,7 @@ static CMPIData __ift_getPropertyQualifierAt ( CMPIInstance * instance,
 	struct native_property *p=propertyFT.getProperty ( i->props, pname );
 
 	if (p) return qualifierFT.getDataQualifierAt ( p->qualifiers, index, name, rc );
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
 }
 
 static unsigned int __ift_getPropertyQualifierCount ( CMPIInstance * instance, 
@@ -209,7 +209,7 @@ static unsigned int __ift_getPropertyQualifierCount ( CMPIInstance * instance,
 	struct native_property *p=propertyFT.getProperty ( i->props, pname );
   
 	if (p) return qualifierFT.getQualifierCount ( p->qualifiers, rc );
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
 }
 
 
@@ -346,7 +346,7 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 	   if ( tmp1.rc != CMPI_RC_OK ||
 	        tmp2.rc != CMPI_RC_OK ||
 	        tmp3.rc != CMPI_RC_OK ) {
-		   if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_FAILED );
+		   CMSetStatus ( rc, CMPI_RC_ERR_FAILED );
 	   } 
            else {
 	     while ( j-- && ( tmp1.rc == CMPI_RC_OK ) ) {
@@ -361,7 +361,7 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 		}
 
                 
-		if ( rc ) CMSetStatus ( rc, tmp1.rc );
+		CMSetStatus ( rc, tmp1.rc );
 	   }
         }   
 

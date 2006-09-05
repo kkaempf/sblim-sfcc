@@ -150,7 +150,7 @@ static CMPIData __ccft_getPropertyQualifier ( CMPIConstClass * ccls,
 	struct native_property *p=propertyFT.getProperty ( c->props, pname );
 
 	if (p) return qualifierFT.getDataQualifier ( p->qualifiers, qname, rc );        
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
 }
 
 static CMPIData __ccft_getPropertyQualifierAt ( CMPIConstClass * ccls, 
@@ -163,7 +163,7 @@ static CMPIData __ccft_getPropertyQualifierAt ( CMPIConstClass * ccls,
 	struct native_property *p=propertyFT.getProperty ( c->props, pname );
 
 	if (p) return qualifierFT.getDataQualifierAt ( p->qualifiers, index, name, rc );
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
 }
 
 static unsigned int __ccft_getPropertyQualifierCount ( CMPIConstClass * ccls, 
@@ -174,7 +174,7 @@ static unsigned int __ccft_getPropertyQualifierCount ( CMPIConstClass * ccls,
 	struct native_property *p=propertyFT.getProperty ( c->props, pname );
   
 	if (p) return qualifierFT.getQualifierCount ( p->qualifiers, rc );
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
 }
 
 

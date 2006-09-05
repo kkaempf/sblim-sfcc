@@ -68,7 +68,7 @@ static XmlBuffer *newXmlBuffer(const char *s)
    return xb;
 }
 
-static XmlBuffer releaseXmlBuffer(XmlBuffer *xb)
+static void releaseXmlBuffer(XmlBuffer *xb)
 {
     free (xb->base);
     free (xb);
@@ -114,7 +114,6 @@ inline char *nextTag(XmlBuffer * xb)
 
 inline  int nextEquals(const char *n, const char *t, const int l)
 {
-//   int l = strlen(t);
    if (strncmp(n, t, l) == 0) {
       if (!isalnum(*(n + l))) {
          return 1;
@@ -280,28 +279,49 @@ static char *getContent(XmlBuffer * xb)
 
 
 
-typedef struct types {
+typedef struct xmlCmpiType {
    char *str;
    CMPIType type;
-} Types;
+} xmlCmpiType;
 
-static Types types[] = {
+static xmlCmpiType xmlCmpiTypes[] = {
    {"boolean", CMPI_boolean},
-   {"string", CMPI_string},
    {"char16", CMPI_char16},
+   {"real32",  CMPI_real32},
+   {"real64",  CMPI_real64},
    {"uint8", CMPI_uint8},
-   {"sint8", CMPI_sint8},
    {"uint16", CMPI_uint16},
-   {"sint16", CMPI_sint16},
    {"uint32", CMPI_uint32},
-   {"sint32", CMPI_sint32},
    {"uint64", CMPI_uint64},
+   {"sint8",   CMPI_sint8},
+   {"sint16",  CMPI_sint16},
+   {"sint32",  CMPI_sint32},
    {"sint64", CMPI_sint64},
+   {"string",  CMPI_string},
+   {"string",  CMPI_chars},
    {"datetime", CMPI_dateTime},
-   {"real32", CMPI_real32},
-   {"real64", CMPI_real64},
-   {NULL}
+   {"reference", CMPI_ref},
+   {"instance", CMPI_instance}
 };
+
+CMPIType xmlToCmpiType(char *xmlTypeStr)
+{
+    int i;
+    if (xmlTypeStr != NULL)
+        for (i = 0; i < (sizeof(xmlCmpiTypes) / sizeof(xmlCmpiType)); i++)
+            if (strcasecmp(xmlTypeStr, xmlCmpiTypes[i].str) == 0)
+                return xmlCmpiTypes[i].type;
+    return CMPI_null;
+}
+
+char * cmpiToXmlType(CMPIType cmpiType)
+{
+    int i;
+    for (i = 0; i < (sizeof(xmlCmpiTypes) / sizeof(xmlCmpiType)); i++)
+        if (cmpiType == xmlCmpiTypes[i].type)
+            return xmlCmpiTypes[i].str;
+    return NULL;
+}
 
 //static XmlBuffer* xmb;
 
@@ -455,20 +475,11 @@ static int procRetValue(YYSTYPE * lvalp, ParserControl * parm)
       };
       XmlAttr attr[2];
       int i;
-      memset(attr, 2, sizeof(attr));
+      memset(attr, 0, sizeof(attr));
       if (attrsOk(parm->xmb, elm, attr, "RETURNVALUE", ZTOK_RETVALUE)) {
-         lvalp->xtokReturnValue.type = 0;
+         lvalp->xtokReturnValue.type = CMPI_null;
          if (attr[0].attr) {
-            for (i = 0; i < (sizeof(types) / sizeof(Types)); i++) {
-               if (strcasecmp(attr[0].attr, types[i].str) == 0) {
-                  lvalp->xtokReturnValue.type = types[i].type;
-                  break;
-               }
-            }
-            if (lvalp->xtokReturnValue.type==0) {
-               if (strcasecmp(attr[0].attr, "reference") == 0)
-                  lvalp->xtokReturnValue.type = CMPI_ref;
-            }
+            lvalp->xtokReturnValue.type = xmlToCmpiType(attr[0].attr);
          }
          return XTOK_RETVALUE;
       }
@@ -588,18 +599,9 @@ static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "PARAMVALUE")) {
       if (attrsOk(parm->xmb, elm, attr, "PARAMVALUE", ZTOK_PARAMVALUE)) {
          lvalp->xtokParamValue.name = attr[0].attr;
-         lvalp->xtokParamValue.type = 0;
+         lvalp->xtokParamValue.type = CMPI_null;
          if (attr[1].attr) {
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
-               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
-                  lvalp->xtokParamValue.type = types[i].type;
-                  break;
-               }
-            }
-            if (lvalp->xtokParamValue.type==0) {
-               if (strcasecmp(attr[1].attr, "reference") == 0)
-                  lvalp->xtokParamValue.type = CMPI_ref;
-            }
+            lvalp->xtokParamValue.type = xmlToCmpiType(attr[1].attr);
          }
          return XTOK_PARAMVALUE;
       }
@@ -867,14 +869,7 @@ static int procQualifier(YYSTYPE * lvalp, ParserControl * parm)
       if (attrsOk(parm->xmb, elm, attr, "QUALIFIER", ZTOK_QUALIFIER)) {
          memset(&lvalp->xtokQualifier, 0, sizeof(XtokQualifier));
          lvalp->xtokQualifier.name = attr[0].attr;
-         lvalp->xtokQualifier.type = (CMPIType) - 1;
-         if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
-               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
-                  lvalp->xtokQualifier.type = types[i].type;
-                  break;
-               }
-            }
+         lvalp->xtokQualifier.type = xmlToCmpiType(attr[1].attr);
          if (attr[2].attr)
             lvalp->xtokQualifier.propagated = !strcasecmp(attr[2].attr, "true");
          if (attr[3].attr)
@@ -912,14 +907,9 @@ static int procProperty(YYSTYPE * lvalp, ParserControl * parm)
       if (attrsOk(parm->xmb, elm, attr, "PROPERTY", ZTOK_PROPERTY)) {
          memset(&lvalp->xtokProperty, 0, sizeof(XtokProperty));
          lvalp->xtokProperty.name = attr[0].attr;
-         lvalp->xtokProperty.valueType = (CMPIType) - 1;
+         lvalp->xtokProperty.valueType = CMPI_null;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
-               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
-                  lvalp->xtokProperty.valueType = types[i].type;
-                  break;
-               }
-            }
+            lvalp->xtokProperty.valueType = xmlToCmpiType(attr[1].attr);
          lvalp->xtokProperty.classOrigin = attr[2].attr;
          if (attr[3].attr)
             lvalp->xtokProperty.propagated = !strcasecmp(attr[3].attr, "true");
@@ -946,14 +936,9 @@ static int procPropertyArray(YYSTYPE * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "PROPERTY.ARRAY")) {
       if (attrsOk(parm->xmb, elmPA, attr, "PROPERTY.ARRAY", ZTOK_PROPERTYARRAY)) {
          lvalp->xtokProperty.name = attr[0].attr;
-         lvalp->xtokProperty.valueType = (CMPIType) - 1;
+         lvalp->xtokProperty.valueType = CMPI_null;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
-               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
-                  lvalp->xtokProperty.valueType         = types[i].type;
-                  break;
-               }
-            }
+            lvalp->xtokProperty.valueType = xmlToCmpiType(attr[1].attr);
          lvalp->xtokProperty.classOrigin = attr[2].attr;
          if (attr[3].attr)
             lvalp->xtokProperty.propagated = !strcasecmp(attr[3].attr, "true");
@@ -1013,12 +998,7 @@ static int procMethod(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokMethod.name = attr[0].attr;
          lvalp->xtokMethod.type = CMPI_null;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
-               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
-                  lvalp->xtokMethod.type = types[i].type;
-                  break;
-               }
-            }
+            lvalp->xtokMethod.type = xmlToCmpiType(attr[1].attr);
          lvalp->xtokMethod.classOrigin = attr[2].attr;
          if (attr[3].attr)
             lvalp->xtokMethod.propagated = !strcasecmp(attr[3].attr, "true");
@@ -1047,12 +1027,7 @@ static int procParam(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.type = CMPI_null;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
-               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
-                  lvalp->xtokParam.type = types[i].type;
-                  break;
-               }
-            }
+            lvalp->xtokParam.type = xmlToCmpiType(attr[1].attr);
          return XTOK_PARAM;
       }
    }
@@ -1079,13 +1054,7 @@ static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.type = CMPI_null;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
-               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
-                  lvalp->xtokParam.type = types[i].type;
-                  lvalp->xtokParam.type |=CMPI_ARRAY;
-                  break;
-               }
-            }
+            lvalp->xtokParam.type = xmlToCmpiType(attr[1].attr) | CMPI_ARRAY;
          lvalp->xtokParam.arraySize = attr[2].attr;
          return XTOK_PARAMARRAY;
       }
@@ -1197,7 +1166,7 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
       if (next == NULL) {
          return 0;
       }
-//      fprintf(stderr,"--- token: %.32s\n",next);
+//      fprintf(stderr,"--- token: %.32s\n",next); //usefull for debugging
       if (parm->xmb->eTagFound) {
          parm->xmb->eTagFound = 0;
          return parm->xmb->etag;
@@ -1239,11 +1208,14 @@ int yyerror(char *s)
 ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
 {
    ParserControl control;
+   XtokParamValue *outParam=NULL;
+   CMPIArgs *args = NULL;
+   CMPIValue value;
 #if DEBUG
    extern int do_debug;
 
    if (do_debug)
-       fprintf(stderr,"CIMOM response: %s\n", xmlData);
+       fprintf(stderr,"*** CIMOM response: %s\n", xmlData);
 #endif
 
    memset(&control,0,sizeof(control));
@@ -1258,6 +1230,29 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
    control.heap = parser_heap_init();
 
    control.respHdr.rc = yyparse(&control);
+
+   /* Process OUT parameters */
+   outParam = control.paramValues.first;
+
+   if (outParam) { 
+
+       args = newCMPIArgs(NULL);
+
+       while (outParam) {
+
+           value = (outParam->type == CMPI_ref) 
+               ? str2CMPIValue(outParam->type, NULL, &outParam->valueRef)
+               : str2CMPIValue(outParam->type, outParam->value.value, NULL);
+
+           /* Add it to the args list */
+           args->ft->addArg ( args, outParam->name, &value, outParam->type);
+           outParam = outParam->next;
+       }
+       control.respHdr.outArgs = args;
+       /* Note : Freeing of list will be done by
+        * parser_heap_term() routine.
+        */
+   }
 
    parser_heap_term(control.heap);
 

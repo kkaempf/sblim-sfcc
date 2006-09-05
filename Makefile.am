@@ -1,8 +1,16 @@
-# $Id: Makefile.am,v 1.9 2006/08/31 12:19:15 mihajlov Exp $
+# $Id: Makefile.am,v 1.10 2006/09/05 14:54:59 mihajlov Exp $
 
-LT_CURRENT=0
-LT_REVISION=0
-LT_AGE=0
+Libcmpisfcc_CURRENT=0
+Libcmpisfcc_REVISION=0
+Libcmpisfcc_AGE=0
+
+LibsfcUtil_CURRENT=0
+LibsfcUtil_REVISION=0
+LibsfcUtil_AGE=0
+
+LibcimcClient_CURRENT=0
+LibcimcClient_REVISION=0
+LibcimcClient_AGE=0
 
 AM_LFLAGS=-i
 AM_YFLAGS=-d
@@ -23,29 +31,28 @@ pkginclude_HEADERS = \
 	cmcimacs.h \
 	cimcClient.h \
 	cimcdt.h \
-	cimcft2.h \
-	cimcft.h \
 	cimcfc.h \
+	cimcft.h \
+	cimcft2.h \
 	cimcmacs.h \
-	sfcUtil/utilft.h \
-	sfcUtil/hashtable.h
+	sfcUtil/hashtable.h \
+	sfcUtil/utilft.h
 
 pkgincludedir = $(includedir)/CimClientLib
 
-lib_LTLIBRARIES= \
-   libcmpisfcc.la \
-   libsfcUtil.la \
-   libcimcClient.la
+lib_LTLIBRARIES= libsfcUtil.la libcimcClient.la libcmpisfcc.la 
 
 libsfcUtil_la_SOURCES = \
 	sfcUtil/hashtable.c \
 	sfcUtil/utilFactory.c \
 	sfcUtil/utilHashtable.c \
-	sfcUtil/utilStringBuffer.c
+	sfcUtil/utilStringBuffer.c \
+        sfcUtil/libsfcUtil.Versions
 
 libcimcClient_la_SOURCES = \
-   cimcClient.c
-   
+        cimcClient.c \
+        libcimcClient.Versions
+
 libcmpisfcc_la_SOURCES = \
                    args.c \
                    array.c \
@@ -61,11 +68,22 @@ libcmpisfcc_la_SOURCES = \
                    client.c \
                    genericlist.c \
                    cimXmlResp.y \
-                   cimXmlParser.c
+        cimXmlParser.c \
+        libcmpisfcc.Versions
 
 libcmpisfcc_la_LIBADD = -lcurl -lsfcUtil
 libcmpisfcc_la_DEPENDENCIES = libsfcUtil.la
-libcmpisfcc_la_LDFLAGS = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+libcmpisfcc_la_LDFLAGS = \
+       -version-info $(Libcmpisfcc_CURRENT):$(Libcmpisfcc_REVISION):$(Libcmpisfcc_AGE) \
+       -Wl,--version-script,$(srcdir)/libcmpisfcc.Versions
+
+libsfcUtil_la_LDFLAGS = \
+       -version-info $(LibsfcUtil_CURRENT):$(LibsfcUtil_REVISION):$(LibsfcUtil_AGE) \
+       -Wl,--version-script,$(srcdir)/sfcUtil/libsfcUtil.Versions
+
+libcimcClient_la_LDFLAGS = \
+       -version-info $(LibcimcClient_CURRENT):$(LibcimcClient_REVISION):$(LibcimcClient_AGE) \
+       -Wl,--version-script,$(srcdir)/libcimcClient.Versions
 
 SUBDIRS = . TEST
 

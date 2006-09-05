@@ -1,10 +1,14 @@
-AM_CPPFLAGS = -I../../ $(AUTOUNIT_CPP_CFLAGS) -I$(top_builddir)/src -I$(top_srcdir)/src
+AM_CPPFLAGS = \
+	-I../../ \
+	$(MELUNIT_CXX_CFLAGS) \
+	-I$(top_builddir)/src \
+	-I$(top_srcdir)/src
 
-if HAVE_AUTOUNIT_CPP
+if HAVE_MELUNIT_CXX
 
 AM_LDFLAGS = \
 	-L$(top_builddir)/src/lib -lcmpisfcc  \
-	$(AUTOUNIT_CPP_LIBS)
+	$(MELUNIT_CXX_LIBS)
 
 OUR_UNIT_TESTS = \
 	test_native
@@ -37,7 +41,10 @@ noinst_PROGRAMS	= test \
                   test_gc \
                   test_gi \
                   test_gp \
-                  test_im \
+                  test_im1 \
+                  test_im2 \
+                  test_im3 \
+                  test_im4 \
                   test_leak \
                   test_rf \
                   test_rfn \
@@ -52,7 +59,8 @@ noinst_PROGRAMS	= test \
                   cimc_test_ecn \
                   cimc_test_ein \
                   cimc_test_di \
-                  cimc_test_ci
+                  cimc_test_ci \
+		  print-types
 
 test_SOURCES = test.c
 test_LDADD = ../libcmpisfcc.la
@@ -115,9 +123,21 @@ test_gp_SOURCES = test_gp.c \
                   show.c
 test_gp_LDADD = ../libcmpisfcc.la
 
-test_im_SOURCES = test_im.c \
+test_im1_SOURCES = test_im1.c \
                   show.c
-test_im_LDADD = ../libcmpisfcc.la
+test_im1_LDADD = ../libcmpisfcc.la
+
+test_im2_SOURCES = test_im2.c \
+                  show.c
+test_im2_LDADD = ../libcmpisfcc.la
+
+test_im3_SOURCES = test_im3.c \
+                  show.c
+test_im3_LDADD = ../libcmpisfcc.la
+
+test_im4_SOURCES = test_im4.c \
+                  show.c
+test_im4_LDADD = ../libcmpisfcc.la
 
 test_leak_SOURCES = test_leak.c \
                   show.c
@@ -172,9 +192,9 @@ cimc_test_ci_SOURCES = cimcTest_ci.c \
                    cimcShow.c
 cimc_test_ci_LDADD = ../libcimcClient.la
 
-cimc_test_di_SOURCES = cimcTest_di.c \
-                   cimcShow.c
+cimc_test_di_SOURCES = cimcTest_di.c  
 cimc_test_di_LDADD = ../libcimcClient.la
 
+print_types_SOURCES = print-types.c
 
 #@INC_AMINCLUDE@

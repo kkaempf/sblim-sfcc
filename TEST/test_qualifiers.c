@@ -35,46 +35,70 @@ int main( int argc, char * argv[] )
     CMPIData qd;
     int count;
 
-    /* Setup a conncetion to the CIMOM */
+    /* Setup a connection to the CIMOM */
     cim_host = getenv("CIM_HOST");
     if (cim_host == NULL)
+    {
 	cim_host = "localhost";
+    }
+
     cim_host_userid = getenv("CIM_HOST_USERID");
     if (cim_host_userid == NULL)
+    {
 	cim_host_userid = "root";
+    }
+
     cim_host_passwd = getenv("CIM_HOST_PASSWD");
     if (cim_host_passwd == NULL)
+    {
 	cim_host_passwd = "password";
+    }
+
     cc = cmciConnect(cim_host, NULL, "5988",
 			       cim_host_userid, cim_host_passwd, NULL);
    
     /* Test enumInstances() */
     printf("\n----------------------------------------------------------\n");
-    printf("Testing enumInstances() ...\n");
-    objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
-    enumeration = cc->ft->enumInstances(cc, objectpath, CMPI_FLAG_IncludeQualifiers, NULL, &status);
+    printf("Testing enumInstances() with qualifiers...\n");
+    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_AdminDomain", NULL);
+    enumeration = cc->ft->enumInstances(cc, objectpath,
+                                        CMPI_FLAG_IncludeQualifiers,
+                                        NULL, &status);
 
     /* Print the results */
     printf( "enumInstances() rc=%d, msg=%s\n", 
             status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-    if (!status.rc) {
+    if (!status.rc)
+    {
         printf("result(s):\n");
-        while (enumeration->ft->hasNext(enumeration, NULL)) {
+        while (enumeration->ft->hasNext(enumeration, NULL))
+        {
             CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+
             showInstance(data.value.inst);
-            count=data.value.inst->ft->getQualifierCount(data.value.inst,NULL);
+
+            count = data.value.inst->ft->getQualifierCount(
+                data.value.inst,NULL);
+
             fprintf(stderr,"Qualifier count: %d\n",count);
-            qd=data.value.inst->ft->getQualifier(data.value.inst,"Description",NULL);
-            qd=data.value.inst->ft->getPropertyQualifier(data.value.inst,
-               "PrimaryOwnerContact","MaxLen",NULL);
+
+            qd = data.value.inst->ft->getQualifier(
+                data.value.inst, "Description",NULL);
+
+            qd = data.value.inst->ft->getPropertyQualifier(
+                data.value.inst, "NameFormat","ValueMap",NULL);
+
+            showProperty(qd, "NameFormat - ValueMap");
+
             fprintf(stderr,"Cloning\n");
             CMPIInstance *clone=CMClone( data.value.inst,NULL); 
              fprintf(stderr,"Releasing\n");
            CMRelease(clone);  
             
-            qd=data.value.inst->ft->getPropertyQualifier(data.value.inst,
-               "NameFormat","ValueMap",&status);
-            showProperty(qd,"NameFormat - ValueMap"); 
+            qd = data.value.inst->ft->getPropertyQualifier(
+                data.value.inst, "NameFormat","Values",&status);
+
+            showProperty(qd, "NameFormat - Values");
         }
     }
 

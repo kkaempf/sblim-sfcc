@@ -27,7 +27,7 @@
 
 #include "show.h"
 
-int main( int argc, char * argv[] )
+int main()
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
@@ -35,7 +35,7 @@ int main( int argc, char * argv[] )
     CMPIStatus status;
     char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */
+    /* Setup a connection to the CIMOM */
     cim_host = getenv("CIM_HOST");
     if (cim_host == NULL)
 	cim_host = "localhost";
@@ -80,8 +80,8 @@ int main( int argc, char * argv[] )
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
     if (cc) CMRelease(cc);
-    if (status.msg) CMRelease(status.msg);
 
+    if (status.msg) CMRelease(status.msg);
     return 0;
 }
 

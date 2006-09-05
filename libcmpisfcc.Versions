@@ -1,0 +1,22 @@
+CMPISFCC_1.0 {
+    global:
+      cmciConnect;
+      cmciConnect2;
+      native_new_CMPIArgs;
+      native_new_CMPIArray;
+      native_new_CMPIConstClass;
+      native_new_CMPIDateTime;
+      native_new_CMPIDateTime_fromBinary;
+      native_new_CMPIDateTime_fromChars;
+      native_new_CMPIEnumeration;
+      native_new_CMPIInstance;
+      native_new_CMPIString;
+      native_release_CMPIValue;
+      newCMPIObjectPath;
+      newList;
+      newStringBuffer;
+      value2Chars;
+    local:
+      *;
+};
+

@@ -25,7 +25,7 @@
 
 #include "show.h"
 
-int main( int argc, char * argv[] )
+int main()
 {
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
@@ -33,7 +33,7 @@ int main( int argc, char * argv[] )
     CMPIStatus status;
     char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
-    /* Setup a conncetion to the CIMOM */
+    /* Setup a connection to the CIMOM */
     cim_host = getenv("CIM_HOST");
     if (cim_host == NULL)
 	cim_host = "localhost";
@@ -49,7 +49,7 @@ int main( int argc, char * argv[] )
     /* Test enumInstances() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumInstances() ...\n");
-    objectpath = newCMPIObjectPath("root/cimv2", "CIM_Slot", NULL);
+    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
     enumeration = cc->ft->enumInstances(cc, objectpath, 0, NULL, &status);
 
     /* Print the results */

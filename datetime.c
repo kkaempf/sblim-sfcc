@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdio.h>
@@ -43,15 +43,12 @@
  */
 struct native_datetime {
 	CMPIDateTime dt;	/*!< the inheriting data structure  */
-	CMPIUint64 msecs;	/*!< microseconds since 01/01/1970 00:00  */
-	CMPIBoolean interval;	/*!< states if the date-time object is to be
-				  treated as an interval or as absolute time */
+   char cimDt[26];
 };
 
-
-static struct native_datetime * __new_datetime ( CMPIUint64,
-						 CMPIBoolean,
+static struct native_datetime * __new_datetime ( const char *cimDt,
 						 CMPIStatus * );
+
 
 /****************************************************************************/
 
@@ -93,13 +90,105 @@ static CMPIStatus __dtft_release ( CMPIDateTime * dt )
 static CMPIDateTime * __dtft_clone ( CMPIDateTime * dt, CMPIStatus * rc )
 {
 	struct native_datetime * ndt   = (struct native_datetime *) dt;
-	struct native_datetime * new = __new_datetime ( ndt->msecs,
-							ndt->interval,
-							rc );
+	struct native_datetime * new = __new_datetime ( ndt->cimDt, rc );
 
 	return (CMPIDateTime *) new;
 }
 
+static CMPIUint64 chars2bin(const char *string, CMPIStatus * rc)
+{
+   CMPIUint64 msecs,secs;
+   CMPIBoolean interval;
+   char *str;
+
+   str = strdup(string);
+   interval = (str[21] == ':');
+
+// 0000000000111111111122222  
+// 0123456789012345678901234
+// yyyymmddhhmmss mmmmmmsutc 
+// 20050503104354.000000:000
+
+   str[21] = 0;
+   msecs = strtoull(str+15,NULL,10);
+
+   str[14] = 0;
+   secs = strtoull(str+12,NULL,10);
+   str[12] = 0;
+   secs += strtoull(str+10,NULL,10) * 60ULL;
+   str[10] = 0;
+   secs += strtoull(str+8,NULL,10) * 60ULL * 60ULL;
+   str[8] = 0;
+
+   if (interval) {
+      secs += strtoull(str,NULL,10) * 60ULL * 60ULL * 24ULL;
+      msecs=msecs+(secs*1000000ULL);
+   }
+
+   else {
+      struct tm tmp;
+
+      memset(&tmp, 0, sizeof(struct tm));
+      tzset();
+
+      tmp.tm_gmtoff = timezone;
+      tmp.tm_isdst = daylight;
+      tmp.tm_mday = atoi(str + 6);
+      str[6] = 0;
+      tmp.tm_mon = atoi(str + 4) - 1;
+      str[4] = 0;
+      tmp.tm_year = atoi(str) - 1900;
+
+      msecs=msecs+(secs*1000000ULL);
+      msecs += (CMPIUint64) mktime(&tmp) * 1000000ULL;
+   }
+
+   free(str);
+
+   return msecs;
+}
+
+static void bin2chars(CMPIUint64 msecs, CMPIBoolean interval, CMPIStatus * rc, char *str_time)
+{
+   time_t secs = msecs / 1000000ULL;
+   unsigned long usecs = msecs % 1000000ULL;
+
+   if (interval) {
+
+      unsigned long long useconds, seconds, mins, hrs, days;
+      seconds= msecs / 1000000ULL;
+      useconds = msecs % 1000000ULL;
+
+      mins = seconds / 60ULL;
+      seconds %= 60ULL;
+      hrs = mins / 60ULL;
+      mins %= 60ULL;
+      days = hrs / 24ULL;
+      hrs %= 24ULL;
+		
+      sprintf(str_time, "%8.8llu%2.2llu%2.2llu%2.2llu.%6.6llu:000",
+              days, hrs, mins, seconds, useconds);
+   }
+
+   else {
+		struct tm tm_time;
+		char us_utc_time[11];
+
+		if ( localtime_r ( &secs, &tm_time ) == NULL ) {
+         CMSetStatus(rc, CMPI_RC_ERR_FAILED);
+         return;
+		}
+
+		tzset ();
+
+		snprintf ( us_utc_time, 11, "%6.6ld%+4.3ld", 
+			   usecs, ( daylight != 0 ) * 60 - timezone / 60 );
+
+		strftime ( str_time, 26, "%Y%m%d%H%M%S.", &tm_time );
+
+		strcat ( str_time, us_utc_time );
+	}
+}
 
 //! Extracts the binary time from the encapsulated CMPIDateTime object.
 /*!
@@ -111,10 +200,10 @@ static CMPIDateTime * __dtft_clone ( CMPIDateTime * dt, CMPIStatus * rc )
 static CMPIUint64 __dtft_getBinaryFormat ( CMPIDateTime * dt,
 					   CMPIStatus * rc )
 {
-	struct native_datetime * ndt   = (struct native_datetime *) dt;
+    struct native_datetime * ndt   = (struct native_datetime *) dt;
 
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
-	return ndt->msecs;
+    CMSetStatus ( rc, CMPI_RC_OK );
+    return chars2bin(ndt->cimDt,rc);
 }
 
 
@@ -131,51 +220,10 @@ static CMPIUint64 __dtft_getBinaryFormat ( CMPIDateTime * dt,
 static CMPIString * __dtft_getStringFormat ( CMPIDateTime * dt,
 					     CMPIStatus * rc )
 {
-	struct native_datetime * ndt   = (struct native_datetime *) dt;
+    struct native_datetime * ndt   = (struct native_datetime *) dt;
 
-	time_t secs         = ndt->msecs / 1000000;
-        unsigned long usecs = ndt->msecs % 1000000;
-
-	char str_time[26];
-
-
-	if ( ndt->interval ) {
-
-		unsigned long mins, hrs, days;
-
-		mins  = secs / 60;
-		secs %= 60;
-		hrs   = mins / 60;
-		mins %= 60;
-		days  = hrs / 24;
-		hrs  %= 24;
-
-		sprintf ( str_time, "%8.8ld%2.2ld%2.2ld%2.2ld.%6.6ld:000",
-			   days, hrs, mins, secs, usecs );
-		
-	} else {
-
-		struct tm tm_time;
-		char us_utc_time[11];
-
-		if ( localtime_r ( &secs, &tm_time ) == NULL ) {
-
-			if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_FAILED );
-			return NULL;
-		}
-
-		tzset ();
-
-		snprintf ( us_utc_time, 11, "%6.6ld%+4.3ld", 
-			   usecs, ( daylight != 0 ) * 60 - timezone / 60 );
-
-		strftime ( str_time, 26, "%Y%m%d%H%M%S.", &tm_time );
-
-		strcat ( str_time, us_utc_time );
-	}
-
-
-	return native_new_CMPIString ( str_time, rc );
+    CMSetStatus ( rc, CMPI_RC_OK );
+    return native_new_CMPIString(ndt->cimDt, rc);
 }
 
 
@@ -190,8 +238,8 @@ static CMPIBoolean __dtft_isInterval ( CMPIDateTime * dt, CMPIStatus * rc )
 {
 	struct native_datetime * ndt   = (struct native_datetime *) dt;
 
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
-	return ndt->interval;
+    CMSetStatus ( rc, CMPI_RC_OK );
+    return ndt->cimDt[21] == ':' ? 1 : 0;
 }
 
 
@@ -208,8 +256,7 @@ static CMPIBoolean __dtft_isInterval ( CMPIDateTime * dt, CMPIStatus * rc )
 
   \return a fully initialized native_datetime object pointer.
  */
-static struct native_datetime * __new_datetime ( CMPIUint64 msecs,
-						 CMPIBoolean interval,
+static struct native_datetime * __new_datetime ( const char *cimDt,
 						 CMPIStatus * rc )
 {
 	static const CMPIDateTimeFT dtft = {
@@ -226,15 +273,13 @@ static struct native_datetime * __new_datetime ( CMPIUint64 msecs,
 		&dtft
 	};
 
-	struct native_datetime * ndt =
-		(struct native_datetime *) 
+    struct native_datetime * ndt = (struct native_datetime *) 
 		calloc ( 1, sizeof ( struct native_datetime ) );
 
 	ndt->dt        = dt;
-	ndt->msecs     = msecs;
-	ndt->interval  = interval;
+    strcpy(ndt->cimDt, cimDt);
 
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+    CMSetStatus ( rc, CMPI_RC_OK );
 	return ndt;
 }
 
@@ -253,13 +298,16 @@ CMPIDateTime * native_new_CMPIDateTime ( CMPIStatus * rc )
 	struct timeval tv;
 	struct timezone tz;
 	CMPIUint64 msecs;
+    char cimDt[26];
 
 	gettimeofday ( &tv, &tz );
 
 	msecs = (CMPIUint64) 1000000 * (CMPIUint64) tv.tv_sec 
 		+ (CMPIUint64) tv.tv_usec;
 
-	return (CMPIDateTime *) __new_datetime ( msecs, 0, rc );
+    bin2chars(msecs, 0, rc, cimDt);
+
+    return (CMPIDateTime *) __new_datetime ( cimDt, rc );
 }
 
 
@@ -279,7 +327,9 @@ CMPIDateTime * native_new_CMPIDateTime_fromBinary ( CMPIUint64 time,
 						    CMPIBoolean interval,
 						    CMPIStatus * rc )
 {
-	return (CMPIDateTime *) __new_datetime ( time, interval, rc );
+   char cimDt[26];
+   bin2chars(time, interval, rc, cimDt);
+   return (CMPIDateTime *) __new_datetime(cimDt, rc);
 }
 
 
@@ -300,44 +350,13 @@ CMPIDateTime * native_new_CMPIDateTime_fromBinary ( CMPIUint64 time,
 CMPIDateTime * native_new_CMPIDateTime_fromChars ( const char * string,
 						   CMPIStatus * rc )
 {
-	CMPIUint64 msecs;
-	CMPIBoolean interval = ( string[21] == ':' );
-	char * str = strdup ( string );
-
-	str[21] = 0;
-	msecs  = atoll ( str + 15 );
-	str[14] = 0;
-	msecs += atoll ( str + 12 ) * 1000000;
-	str[12] = 0;
-	msecs += atoll ( str + 10 ) * 1000000 * 60;
-	str[10] = 0;
-	msecs += atoll ( str + 8 )  * 1000000 * 60 * 60;
-	str[8]  = 0;
-
-	if ( interval ) {
-
-		msecs += atoll ( str )  * 1000000 * 60 * 60 * 24;
-
-	} else {
-		struct tm tmp;
-
-		memset ( &tmp, 0, sizeof ( struct tm ) );
-		tzset ();
-
-		tmp.tm_gmtoff = timezone;
-		tmp.tm_isdst  = daylight;
-		tmp.tm_mday   = atoi ( str + 6 );
-		str[6] = 0;
-		tmp.tm_mon    = atoi ( str + 4 ) - 1;
-		str[4] = 0;
-		tmp.tm_year   = atoi ( str ) - 1900;
-
-		msecs += (CMPIUint64) mktime ( &tmp ) * 1000000;
+   if (string == NULL || strlen(string)!=25 ||
+       (string[21]!='-' && string[21]!='+' && string[21]!=':')) {
+      CMSetStatus(rc, CMPI_RC_ERR_INVALID_PARAMETER);
+      return NULL;
 	}
 
-	free ( str );
-
-	return (CMPIDateTime *) __new_datetime ( msecs, interval, rc );
+   return (CMPIDateTime *) __new_datetime(string, rc);
 }
 
 

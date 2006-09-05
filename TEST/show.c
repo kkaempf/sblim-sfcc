@@ -33,14 +33,26 @@ void showObjectPath( CMPIObjectPath * objectpath )
    int i;
    char *cv;
 
-   if (namespace && namespace->hdl) printf("namespace=%s\n", (char *)namespace->hdl);
-   if (classname && classname->hdl) printf("classname=%s\n", (char *)classname->hdl);
-   if (numkeys) {
+    if (namespace && namespace->hdl)
+    {
+        printf("namespace=%s\n", (char *)namespace->hdl);
+    }
+
+    if (classname && classname->hdl)
+    {
+        printf("classname=%s\n", (char *)classname->hdl);
+    }
+
+    if (numkeys)
+    {
       printf("keys:\n");
-      for (i=0; i<numkeys; i++) {
+        for (i=0; i<numkeys; i++)
+        {
          CMPIString * keyname;
-         CMPIData data = objectpath->ft->getKeyAt(objectpath, i, &keyname, NULL);
-         printf("\t%s=%s\n", (char *)keyname->hdl, cv=value2Chars(data.type, &data.value)); 
+            CMPIData data = objectpath->ft->getKeyAt(objectpath, i,
+                                                     &keyname, NULL);
+            printf("\t%s=%s\n", (char *)keyname->hdl,
+                   cv=value2Chars(data.type, &data.value));
 	 if(cv) free(cv);
 	 if(keyname) CMRelease(keyname);
       }
@@ -50,26 +62,74 @@ void showObjectPath( CMPIObjectPath * objectpath )
    if (namespace) CMRelease(namespace);
 }
 
+static char *CMPIState_str(CMPIValueState state)
+{
+    char *retval;
+
+    switch (state) {
+    case CMPI_goodValue:
+        retval = "CMPI_goodValue";
+        break;
+
+    case CMPI_nullValue:
+        retval = "CMPI_nullValue";
+        break;
+
+    case CMPI_keyValue:
+        retval = "CMPI_keyValue";
+        break;
+
+    case CMPI_notFound:
+        retval = "CMPI_notFound";
+        break;
+
+    case CMPI_badValue:
+        retval = "CMPI_badValue";
+        break;
+
+    default:
+        retval = "!Unknown CMPIValueState!";
+        break;
+    }
+
+    return retval;
+}
+
 void showProperty( CMPIData data, char *name )
 {
 	 char *valuestr;
-	 if (CMIsArray(data)) {
+    CMPIValueState state = data.state & ~CMPI_keyValue;
+    if (state == CMPI_goodValue)
+    {
+        if (CMIsArray(data))
+        {
 	     CMPIArray *arr   = data.value.array;
 	     CMPIType  eletyp = data.type & ~CMPI_ARRAY;
 	     int j, n;
 	     n = CMGetArrayCount(arr, NULL);
-	     for (j = 0; j < n; ++j) {
+            for (j = 0; j < n; ++j)
+            {
 		CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
 		valuestr = value2Chars(eletyp, &ele.value);
 	        printf("\t%s[%d]=%s\n", name, j, valuestr);
 		free (valuestr);
 	     }
-	 } else {
+        }
+        else
+        {
+            if (state == CMPI_goodValue)
+            {
 	     valuestr = value2Chars(data.type, &data.value);
 	     printf("\t%s=%s\n", name, valuestr);
 	     free (valuestr);
 	 }
 }         
+    }
+    else
+    {
+        printf("\t%s=%d(%s)\n", name, data.state, CMPIState_str(data.state));
+    }
+}
 
 void showInstance( CMPIInstance *instance )
 {
@@ -81,33 +141,57 @@ void showInstance( CMPIInstance *instance )
    int numproperties = instance->ft->getPropertyCount(instance, NULL);
    int i;
 
-   if (objectpathname && objectpathname->hdl) printf("objectpath=%s\n", (char *)objectpathname->hdl);
-   if (namespace && namespace->hdl) printf("namespace=%s\n", (char *)namespace->hdl);
-   if (classname && classname->hdl) printf("classname=%s\n", (char *)classname->hdl);
-   if (numkeys) {
+    if (objectpathname && objectpathname->hdl)
+    {
+        printf("objectpath=%s\n", (char *)objectpathname->hdl);
+    }
+
+    if (namespace && namespace->hdl)
+    {
+        printf("namespace=%s\n", (char *)namespace->hdl);
+    }
+
+    if (classname && classname->hdl)
+    {
+        printf("classname=%s\n", (char *)classname->hdl);
+    }
+
+    if (numkeys)
+    {
       printf("keys:\n");
-      for (i=0; i<numkeys; i++) {
+        for (i=0; i<numkeys; i++)
+        {
          CMPIString * keyname;
-         CMPIData data = objectpath->ft->getKeyAt(objectpath, i, &keyname, NULL);
+            CMPIData data = objectpath->ft->getKeyAt(objectpath, i,
+                                                     &keyname, NULL);
          char *ptr=NULL;
-         printf("\t%s=%s\n", (char *)keyname->hdl, (ptr=value2Chars(data.type, &data.value))); 
+            printf("\t%s=%s\n", (char *)keyname->hdl,
+                   (ptr=value2Chars(data.type, &data.value)));
          free(ptr);
 	 if (keyname) CMRelease(keyname);
       }
    }
    else
+    {
       printf("No keys!\n");
-   if (numproperties) {
+    }
+
+    if (numproperties)
+    {
       printf("properties:\n");
-      for (i=0; i<numproperties; i++) {
+        for (i=0; i<numproperties; i++)
+        {
          CMPIString * propertyname;
-         CMPIData data = instance->ft->getPropertyAt(instance, i, &propertyname, NULL);
+            CMPIData data = instance->ft->getPropertyAt(instance, i,
+                                                        &propertyname, NULL);
          showProperty( data, (char *)propertyname->hdl );
 	 CMRelease(propertyname);
       }
    }
    else
+    {
       printf("No properties!\n");
+    }
 
    if (classname) CMRelease(classname);
    if (namespace) CMRelease(namespace);
@@ -123,14 +207,23 @@ void showClass( CMPIConstClass * class )
    int i;
    char *cv;
 
-   if (classname && classname->hdl) printf("classname=%s\n", (char *)classname->hdl);
-   if (numproperties) {
+    if (classname && classname->hdl)
+    {
+        printf("classname=%s\n", (char *)classname->hdl);
+    }
+
+    if (numproperties)
+    {
       printf("properties:\n");
-      for (i=0; i<numproperties; i++) {
+        for (i=0; i<numproperties; i++)
+        {
          CMPIString * propertyname;
-         CMPIData data = class->ft->getPropertyAt(class, i, &propertyname, NULL);
-         if (data.state==0) {
-            printf("\t%s=%s\n", (char *)propertyname->hdl, cv=value2Chars(data.type, &data.value));
+            CMPIData data = class->ft->getPropertyAt(class, i,
+                                                     &propertyname, NULL);
+            if (data.state==0)
+            {
+                printf("\t%s=%s\n", (char *)propertyname->hdl,
+                       cv=value2Chars(data.type, &data.value));
 	    if(cv) free(cv);	    
 	 }
          else printf("\t%s=NIL\n", (char *)propertyname->hdl);

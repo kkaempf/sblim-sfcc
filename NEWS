@@ -1,12 +1,22 @@
 Small Footprint CIM Client Library NEWS
 
+Changes in 1.1.0:
+=================
+Merged in Changes from David Howell
+
+New features:
+- use version scripts
+- new implementation of datetime
+
+Bugs:
+- xxxxxxx: Fixed memory error with CIMStatus trailer
+
 Changes in 1.0.1:
 =================
 New features:
 - moved some util functions to sfcUtil, build as shared library
 
 Bugs:
-- 1542551: Fixed build problem when libsfcUtil was not available during linking
 - 1518169: Fixed memory leak in constclass.c
 - 1513362: Added setting of status code in function cmciConnect2,
            checking for NULL in CMSetStatus macros

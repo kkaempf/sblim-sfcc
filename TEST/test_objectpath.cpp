@@ -20,7 +20,7 @@
 /** Test the Clp API class.
  */
 
-#include <autounit/autounit++.h>
+#include <melunit/melunit-cxx.h>
 #include <string>
 #include <iostream>
 
@@ -28,7 +28,7 @@
 
 namespace
 {       
-    class test_objectpath: public Autounit::Test
+    class test_objectpath: public Melunit::Test
     {   
         CMPIObjectPath * op1;
         CMPIObjectPath * op2;
@@ -114,7 +114,7 @@ namespace
 
     public:
 
-        test_objectpath(): Autounit::Test("native")
+        test_objectpath(): Melunit::Test("native")
         {
 
 #define REGISTER(name) register_test(#name, &test_objectpath::name)
@@ -124,7 +124,7 @@ namespace
             REGISTER( test_NotEqual );
             REGISTER( test_Equal );
                         
-            Autounit::Suite::instance().register_test(this);
+            Melunit::Suite::instance().register_test(this);
 #undef REGISTER
         }
 

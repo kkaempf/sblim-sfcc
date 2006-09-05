@@ -5,6 +5,7 @@
   This module provides means to clone and release CMPIValues.
 
   (C) Copyright IBM Corp. 2003
+  (C) Copyright Intel Corp. 2006
  
   THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE 
   ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
@@ -14,7 +15,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.13 $
+  $Revision: 1.14 $
 */
 
 #include <stdio.h>
@@ -97,8 +98,10 @@ CMPIValue native_clone_CMPIValue ( CMPIType type,
 {
 	CMPIValue v;
 
+        v.uint64 = 0LL;		/* Necessary, don't delete */
 	if ( type & CMPI_ARRAY ) {
 		CMPIArray *array = val->array;
+                if (array)
 		v.array = CMClone ( array, rc );
 	} 
 	else
@@ -106,40 +109,47 @@ CMPIValue native_clone_CMPIValue ( CMPIType type,
 		switch ( type ) {
 
 		case CMPI_instance:
+                        if (val->inst)
 			v.inst = CMClone ( val->inst, rc );
 			break;
 
 		case CMPI_ref:
+                        if (val->ref)
 			v.ref = CMClone ( val->ref, rc );
 			break;
 
 		case CMPI_args:
+                        if (val->args)
 			v.args = CMClone ( val->args, rc );
 			break;
 
 		case CMPI_enumeration:
+                        if (val->Enum)
 			v.Enum = CMClone ( val->Enum, rc );
 			break;
 
 		case CMPI_string:
+                        if (val->string)
 			v.string = CMClone ( val->string, rc );
 			break;
 
 		case CMPI_chars:
+                        if (val->chars)
 			v.chars = strdup ( val->chars );
-			CMSetStatus ( rc, CMPI_RC_OK );
 			break;
 
 		case CMPI_dateTime:
+                        if (val->dateTime)
 			v.dateTime = CMClone ( val->dateTime, rc );
 			break;
 		}
 
 	} else {
+                if (val)
 		v = *val;
-		CMSetStatus ( rc, CMPI_RC_OK );
 	}
 
+	CMSetStatus ( rc, CMPI_RC_OK );
 	return v;
 }
 
@@ -159,7 +169,7 @@ static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
          break;
 
       case CMPI_ref:
-         return strdup(pathToChars(value->ref, NULL, str, uri));
+         return strdup(value->ref ? pathToChars(value->ref, NULL, str, uri) : "NULL");
 
       case CMPI_args:
          break;
@@ -172,13 +182,15 @@ static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
       case CMPI_booleanString:
       case CMPI_dateTimeString:
       case CMPI_classNameString:
-         if (value->string->hdl) return strdup((char*)value->string->hdl);
-         return strdup("NULL");
+         return strdup(value->string ? (char*)value->string->hdl : "NULL");
 
       case CMPI_dateTime:
+         if (value->dateTime) {
          cStr=CMGetStringFormat(value->dateTime,NULL);
          p = strdup((char *) cStr->hdl);
          CMRelease(cStr);
+         } else
+             p = strdup("NULL");
 	 return p;
       }
 

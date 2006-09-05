@@ -205,6 +205,11 @@ typedef struct xtokInstance {
    XtokQualifiers qualifiers;
 } XtokInstance;
 
+typedef struct xtokInstanceWithPath {
+   XtokInstancePath path;
+   XtokInstance inst;
+} XtokInstanceWithPath;
+
 typedef struct xtokInstanceData {
    XtokProperties properties;
    XtokQualifiers qualifiers;
@@ -214,11 +219,6 @@ typedef struct xtokNamedInstance {
    XtokInstanceName path;
    XtokInstance instance;
 } XtokNamedInstance;
-
-typedef struct xtokObjectWithPath {
-   XtokInstancePath path;
-   XtokInstance instance;
-} XtokObjectWithPath;
 
 typedef struct xtokObjectPath {
    XtokInstancePath path;
@@ -290,6 +290,19 @@ typedef struct xtokClass {
    XtokMethods    methods;
 } XtokClass;
 
+typedef struct xtokClassWithPath {
+   XtokClassPath path;
+   XtokClass cls;
+} XtokClassWithPath;
+
+typedef struct xtokObjectWithPath {
+   union {
+       XtokInstanceWithPath inst;
+       XtokClassWithPath cls;
+   };
+   int type;
+} XtokObjectWithPath;
+
 typedef struct xtokErrorResp {
    char *code;
    char *description;
@@ -312,6 +325,7 @@ typedef struct responseHdr {
    int errCode;
    char *description;
    CMPIArray *rvArray;
+   CMPIArgs *outArgs;
 } ResponseHdr;
 
 

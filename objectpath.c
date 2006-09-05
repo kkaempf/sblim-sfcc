@@ -20,7 +20,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.10 $
+  $Revision: 1.11 $
 */
 
 #include <stdio.h>
@@ -90,7 +90,8 @@ static CMPIObjectPath * __oft_clone ( CMPIObjectPath * cop, CMPIStatus * rc )
 	if ( tmp.rc == CMPI_RC_OK ) {
 		new->keys = propertyFT.clone ( o->keys, rc );
 
-	} else if ( rc ) CMSetStatus ( rc, tmp.rc );
+	} else
+                CMSetStatus ( rc, tmp.rc );
 
 	return (CMPIObjectPath *) new;
 }
@@ -132,7 +133,7 @@ static CMPIStatus __oft_setHostName ( CMPIObjectPath * cop, const char * hn )
 static CMPIString * __oft_getHostName ( CMPIObjectPath * cop,
 					CMPIStatus * rc )
 {
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_ERR_NOT_SUPPORTED );
+	CMSetStatus ( rc, CMPI_RC_ERR_NOT_SUPPORTED );
 	return NULL;
 }
 
@@ -256,7 +257,7 @@ static struct native_cop * __new_empty_cop ( const char * nameSpace,
 	cop->classname = ( classname )? strdup ( classname ): NULL;
 	cop->nameSpace = ( nameSpace )? strdup ( nameSpace ): NULL;
 
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+	CMSetStatus ( rc, CMPI_RC_OK );
 	return cop;
 }
 
@@ -481,38 +482,56 @@ void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop)
             CMPIObjectPath *ref=data.value.ref;           
             sb->ft->appendChars(sb, "<VALUE.REFERENCE><INSTANCEPATH>");
             
-            CMPIString *hn=__oft_getHostName(ref, NULL);;
-            sb->ft->append3Chars(sb,"<NAMESPACEPATH><HOST>",(char*)hn->hdl,"</HOST>");
+            CMPIString *hn = __oft_getHostName(ref, NULL);
+            if (hn != NULL) {
+                sb->ft->append3Chars(sb,"<NAMESPACEPATH><HOST>", hn->hdl, 
+                                                              "</HOST>");
             CMRelease(hn);
+            }
+            else
+                sb->ft->append3Chars(sb,"<NAMESPACEPATH><HOST>", "localhost", 
+                                                                  "</HOST>");
             
-            sb->ft->appendChars(sb, "<VALUE.REFERENCE><INSTANCEPATH><LOCALNAMESPACEPATH>");
+            sb->ft->appendChars(sb, "<VALUE.REFERENCE>"
+                                    "<INSTANCEPATH><LOCALNAMESPACEPATH>");
             CMPIString *nss=__oft_getNameSpace(ref, NULL);
             if (nss && nss->hdl) {
-               char nsc[256];
-               char *ns=(char*)nss->hdl;
-               if (ns) for (s=i=0, m=strlen(ns); i<m; i++,s++) {
-                  if (ns[i]=='/') {
-                     nsc[s]=0;
-                     sb->ft->append3Chars(sb,"<NAMESPACE NAME=\"",nsc,"\"></NAMESPACE>");
-                     s=0;
-                  }
-                  else nsc[s]=ns[i];    
-              } 
-              nsc[s]=0;
-              if (s) sb->ft->append3Chars(sb,"<NAMESPACE NAME=\"",nsc,"\"></NAMESPACE>");
+                char *p1 = (char *)nss->hdl;
+                char *p2;
+                while ((p2 = strchr(p1, '/')) != NULL) {
+                    *p2 = 0;
+                    sb->ft->append3Chars(sb,
+                                       "<NAMESPACE NAME=\"",
+                                       p1,
+                                       "\"></NAMESPACE>");
+                    p1 = p2 + 1;
+                }
+                sb->ft->append3Chars(sb,
+                                    "<NAMESPACE NAME=\"",
+                                    p1,
+                                    "\"></NAMESPACE>");
               CMRelease(nss);
             }   
             
             sb->ft->appendChars(sb,"</LOCALNAMESPACEPATH></NAMESPACEPATH>");
             
             CMPIString *cn=__oft_getClassName(ref, NULL);
-            sb->ft->append3Chars(sb,"<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">");
+            sb->ft->append3Chars(sb,
+                                 "<INSTANCENAME CLASSNAME=\"",
+                                 (char*)cn->hdl,
+                                 "\">");
+            CMRelease(cn);
             state=1;
             continue;
          }
          else {
-            sb->ft->append5Chars(sb,"<KEYVALUE VALUETYPE=\"",keytype2Chars(data.type),"\">",
-                cv=value2Chars(data.type,&data.value),"</KEYVALUE>");
+            cv = value2Chars(data.type,&data.value);
+            sb->ft->append5Chars(sb,
+                                 "<KEYVALUE VALUETYPE=\"",
+                                 keytype2Chars(data.type),
+                                 "\">",
+                                 cv,
+                                 "</KEYVALUE>");
 	    if (cv) free (cv);
             state=0;
          }
@@ -524,9 +543,14 @@ void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop)
             state=0;
          }
          else {
+            cv = value2Chars(data.type,&data.value);
             sb->ft->append3Chars(sb,"<KEYBINDING NAME=\"",(char*)name->hdl,"\">");
-            sb->ft->append5Chars(sb,"<KEYVALUE VALUETYPE=\"",keytype2Chars(data.type),"\">",
-                cv=value2Chars(data.type,&data.value),"</KEYVALUE>");
+            sb->ft->append5Chars(sb,
+                                 "<KEYVALUE VALUETYPE=\"",
+                                 keytype2Chars(data.type),
+                                 "\">",
+                                 cv,
+                                 "</KEYVALUE>");
 	    if (cv) free (cv);
          }
          break;

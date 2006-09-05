@@ -23,7 +23,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdlib.h>
@@ -124,7 +124,7 @@ static CMPIArray * __aft_clone ( CMPIArray * array, CMPIStatus * rc )
       }
    }
 
-   if ( rc ) CMSetStatus ( rc, tmp.rc );
+   CMSetStatus ( rc, tmp.rc );
 
    return (CMPIArray *) new;
 }
@@ -134,7 +134,7 @@ static CMPICount __aft_getSize ( CMPIArray * array, CMPIStatus * rc )
 {
    struct native_array * a = (struct native_array *) array;
 
-   if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+   CMSetStatus ( rc, CMPI_RC_OK );
    return a->size;
 }
 
@@ -143,7 +143,7 @@ static CMPIType __aft_getSimpleType ( CMPIArray * array, CMPIStatus * rc )
 {
    struct native_array * a = (struct native_array *) array;
 
-   if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+   CMSetStatus ( rc, CMPI_RC_OK );
    return a->type;
 }
 
@@ -158,7 +158,7 @@ static CMPIData __aft_getElementAt ( CMPIArray * array, CMPICount index, CMPISta
       result.value = a->data[index].value;
    }
 
-   if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+   CMSetStatus ( rc, CMPI_RC_OK );
    return result;
 }
 
@@ -250,7 +250,7 @@ static struct native_array * __new_empty_array ( CMPICount size, CMPIType type,
 
    __make_NULL ( array, 0, array->max - 1, 0 );
 
-   if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+   CMSetStatus ( rc, CMPI_RC_OK );
    return array;
 }
 

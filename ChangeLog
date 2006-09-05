@@ -1,7 +1,17 @@
-2006-08-18	sschuetz
+2006-09-05  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
-	* Makefile.am
-	Bug 1542551: Fixed build problem when libsfcUtil was not available during linking
+	* client.c: 
+	Fixed a double memory release error, occuring when a CIMStatus trailer
+	is sent back by the server.
+
+2006-08-22  dhowell1
+
+	* cimXmlParser.c, cimXmlParser.h, cimXmlResp.y, client.c, cmcimacs.h,
+        * datetime.c, enumeration.c, instance.c, Makefile.am, objectpath.c,
+        * value.c,
+	* libcmpisfcc.Versions, libsfcUtil.Versions, libcimcClient.Versions
+
+        Merged Intel changes with 08/17/06 CVS tip.
 
 2006-07-17	sschuetz
 

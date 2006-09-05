@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.4 2006/08/31 12:35:16 mihajlov Exp $
+# $Id: Makefile.am,v 1.5 2006/09/05 14:55:00 mihajlov Exp $
 
 docdir=$(datadir)/doc/$(PACKAGE)-$(VERSION)
 

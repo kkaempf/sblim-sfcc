@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 */
 
 #include <stdio.h>
@@ -162,10 +162,7 @@ static CMPIData __getDataQualifier ( struct native_qualifier * qual,
 {
 	struct native_qualifier * p = __getQualifier ( qual, name );
 
-	if ( rc ) CMSetStatus ( rc,
-				( p )?
-				CMPI_RC_OK:
-				CMPI_RC_ERR_FAILED );
+	CMSetStatus( rc, ( p ) ? CMPI_RC_OK : CMPI_RC_ERR_FAILED );
 
 	return __convert2CMPIData ( p, NULL );
 }
@@ -190,10 +187,7 @@ static CMPIData __getDataQualifierAt ( struct native_qualifier * qual,
 {
 	struct native_qualifier * p = __getQualifierAt ( qual, pos );
 
-	if ( rc ) CMSetStatus ( rc,
-				( p )?
-				CMPI_RC_OK:
-				CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus( rc, ( p ) ? CMPI_RC_OK : CMPI_RC_ERR_NO_SUCH_PROPERTY );
 
 	return __convert2CMPIData ( p, qualname );
 }
@@ -204,7 +198,7 @@ static CMPICount __getQualifierCount ( struct native_qualifier * qual,
 {
 	CMPICount c = 0;
 
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+	CMSetStatus ( rc, CMPI_RC_OK );
 
 	while ( qual != NULL ) {
 		c++;
@@ -234,8 +228,7 @@ static struct native_qualifier * __clone ( struct native_qualifier * qual,
 	CMPIStatus tmp;
 
 	if ( qual == NULL ) {
-
-		if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+		CMSetStatus ( rc, CMPI_RC_OK );
 		return NULL;
 	}
 

@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.10 $
+  $Revision: 1.11 $
 */
 
 #include <stdio.h>
@@ -154,10 +154,7 @@ static CMPIData __getDataProperty ( struct native_property * prop,
 {
 	struct native_property * p = __getProperty ( prop, name );
 
-	if ( rc ) CMSetStatus ( rc,
-				( p )?
-				CMPI_RC_OK:
-				CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus( rc, ( p ) ? CMPI_RC_OK : CMPI_RC_ERR_NO_SUCH_PROPERTY );
 
 	return __convert2CMPIData ( p, NULL );
 }
@@ -168,10 +165,7 @@ static struct native_qualifier *__getDataPropertyQualifiers ( struct native_prop
 {
 	struct native_property * p = __getProperty ( prop, name );
 
-	if ( rc ) CMSetStatus ( rc,
-				( p )?
-				CMPI_RC_OK:
-				CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus( rc, ( p ) ? CMPI_RC_OK : CMPI_RC_ERR_NO_SUCH_PROPERTY );
 
 	return p ? p->qualifiers : NULL;
 }
@@ -196,10 +190,7 @@ static CMPIData __getDataPropertyAt ( struct native_property * prop,
 {
 	struct native_property * p = __getPropertyAt ( prop, pos );
 
-	if ( rc ) CMSetStatus ( rc,
-				( p )?
-				CMPI_RC_OK:
-				CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMSetStatus ( rc, ( p ) ? CMPI_RC_OK : CMPI_RC_ERR_NO_SUCH_PROPERTY );
 
 	return __convert2CMPIData ( p, propname );
 }
@@ -210,7 +201,7 @@ static CMPICount __getPropertyCount ( struct native_property * prop,
 {
 	CMPICount c = 0;
 
-	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+	CMSetStatus ( rc, CMPI_RC_OK );
 
 	while ( prop != NULL ) {
 		c++;
@@ -242,7 +233,7 @@ static struct native_property * __clone ( struct native_property * prop,
 
 	if ( prop == NULL ) {
 
-		if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
+		CMSetStatus ( rc, CMPI_RC_OK );
 		return NULL;
 	}
 
