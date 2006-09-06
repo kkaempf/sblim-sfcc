@@ -1,3 +1,11 @@
+2006-09-06  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* client.c: 
+	Removed the inline qualifier for callback functions (again).
+
+	* cimXmlResp:
+	Remove shift/reduce conflict.
+	
 2006-09-05  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* client.c: 
@@ -7,8 +15,8 @@
 2006-08-22  dhowell1
 
 	* cimXmlParser.c, cimXmlParser.h, cimXmlResp.y, client.c, cmcimacs.h,
-        * datetime.c, enumeration.c, instance.c, Makefile.am, objectpath.c,
-        * value.c,
+        datetime.c, enumeration.c, instance.c, Makefile.am, objectpath.c,
+        value.c,
 	* libcmpisfcc.Versions, libsfcUtil.Versions, libcimcClient.Versions
 
         Merged Intel changes with 08/17/06 CVS tip.

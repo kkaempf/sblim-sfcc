@@ -699,9 +699,6 @@ methodResp
     : XTOK_METHODRESP errorResp ZTOK_METHODRESP
     {
     }
-    | XTOK_METHODRESP ReturnValue ZTOK_METHODRESP
-    {
-    }
     | XTOK_METHODRESP ReturnValue paramValues ZTOK_METHODRESP
     {
     }
@@ -829,7 +826,9 @@ ReturnValue
 ;
 
 paramValues
-    : /* empty */
+    : /* empty */ 
+    {
+    }  
     | paramValue paramValues
     {
         addParamValue(PARM, &PARM->paramValues, &($1));
@@ -1119,13 +1118,7 @@ instanceData
 */
 
 property
-    : XTOK_PROPERTY ZTOK_PROPERTY
-    {
-       $$.val.value = NULL;
-       $$.val.null = 1;
-       PARM->valueSet=0;
-    }
-    | XTOK_PROPERTY propertyData ZTOK_PROPERTY
+    : XTOK_PROPERTY propertyData ZTOK_PROPERTY
     {
        $$.val = $2;
        $$.val.null= PARM->valueSet==0;
@@ -1153,6 +1146,7 @@ propertyData
       /*$$.null = 1;*/
        if (PARM->PQs == 0)
           memset(&$$.qualifiers,0,sizeof($$.qualifiers)); 
+       PARM->valueSet=0;
     }
     | propertyData qualifier
     {
