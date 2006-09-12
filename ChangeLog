@@ -1,3 +1,9 @@
+2006-09-12  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* client.c, configure.ac: 
+	Conditionalized generation of "TE: Trailer" header in support of
+	older curl versions.
+
 2006-09-06  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* client.c: 

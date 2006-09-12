@@ -8,6 +8,13 @@ AC_CONFIG_HEADER([config.h])
 
 AM_INIT_AUTOMAKE
 
+AC_ARG_ENABLE(http-chunking,
+	[AC_HELP_STRING([--disable-http-chunking],
+		[disable http chunking support. May be necessary for older CURL versions.])],
+	[enable_http_chunking=$enableval],
+	[enable_http_chunking="yes"]
+	)	
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_LIBTOOL
@@ -40,6 +47,11 @@ AC_CHECK_FUNCS([gettimeofday localtime_r memset strcasecmp strdup strncasecmp st
 
 # MELUNIT
 AM_CONDITIONAL(HAVE_MELUNIT_CXX,[test 0 = 1 ])
+
+if test $enable_http_chunking != yes 
+then
+   AC_DEFINE(HAVE_HTTP_CHUNKING,1,[Indication support enabled.])
+fi
 
 AC_CONFIG_FILES([Makefile TEST/Makefile])
 AC_OUTPUT

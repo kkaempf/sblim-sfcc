@@ -7,6 +7,7 @@ Merged in Changes from David Howell
 New features:
 - use version scripts
 - new implementation of datetime
+- conditional TE: Trailer 
 
 Bugs:
 - xxxxxxx: Fixed memory error with CIMStatus trailer

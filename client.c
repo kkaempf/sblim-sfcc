@@ -20,6 +20,8 @@
  *
  */
 
+#include "config.h"
+
 #include "cmci.h"
 #include "utilft.h"
 #include "native.h"
@@ -400,7 +402,9 @@ static void initializeHeaders(CMCIConnection *con)
 	"Expect:",
 	"CIMProtocolVersion: 1.0",
 	"CIMOperation: MethodCall",
+#ifdef HAVE_HTTP_CHUNKING
 	"TE: trailers",
+#endif
 	NULL
     };
     unsigned int i;
