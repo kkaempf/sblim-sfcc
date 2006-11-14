@@ -1,5 +1,10 @@
 Small Footprint CIM Client Library NEWS
 
+Changes in 1.1.1:
+=================
+Bugs:
+- 1596171: Fixed incorrect timeout assertion when system clock changes
+
 Changes in 1.1.0:
 =================
 Merged in Changes from David Howell

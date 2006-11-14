@@ -130,6 +130,15 @@ struct _ClientEnc {
    CMCIConnection     *connection;
 };
 
+#define MAX_PLAUSIBLE_PROGRESS 30
+#define MAX_PROGRESS_FIXUPS    10
+
+struct _TimeoutControl {
+  time_t   mTimestampStart;
+  time_t   mTimestampLast;
+  unsigned mFixups;
+};
+
 struct _CMCIConnection {
     CMCIConnectionFT *ft;        
     CURL *mHandle;               // The handle to the curl object
@@ -139,6 +148,7 @@ struct _CMCIConnection {
     UtilStringBuffer *mUserPass; // The username/password used in authentication
     UtilStringBuffer *mResponse; // Used to store the HTTP response
     CMPIStatus        mStatus;   // returned request status (via HTTP trailers)               
+    struct _TimeoutControl mTimeout; /* Used for timeout control */
 };
 
 /* --------------------------------------------------------------------------*/
@@ -223,6 +233,42 @@ static size_t writeCb(void *ptr, size_t size,
 }
 
 
+static int checkProgress(void *data,
+			 double total,
+			 double actual,
+			 double ign1,
+			 double ign2)
+{
+  struct _TimeoutControl * timeout;
+
+  timeout = (struct _TimeoutControl*)data;
+  time_t timestampNow = time(NULL);
+  
+  /* we received everything and don't care about timeouts */
+  if (total == actual) {
+    return 0;
+  }
+  if (timeout->mFixups > MAX_PROGRESS_FIXUPS) {
+    /* to many fixups occured -> fail */
+    return 1;
+  }
+  if (timeout->mTimestampStart == 0 || 
+      timeout->mTimestampStart > timestampNow ||
+      timestampNow - timeout->mTimestampLast > MAX_PLAUSIBLE_PROGRESS ) {
+    /* need to fix up - either first call or system time changed */
+    timeout->mFixups += 1;
+    timeout->mTimestampStart = timestampNow;
+    timeout->mTimestampLast = timestampNow;
+    return 0;
+  }
+  if (timestampNow - timeout->mTimestampStart < CIMSERVER_TIMEOUT) {
+    timeout->mTimestampLast = timestampNow;
+    return 0; 
+  } else {
+    return 1;
+  }
+}
+
 
 /* --------------------------------------------------------------------------*/
 
@@ -290,8 +336,13 @@ static char* genRequest(ClientEnc *cle, const char *op,
    curl_easy_setopt(con->mHandle, CURLOPT_URL,
 				  con->mUri->ft->getCharPtr(con->mUri));
 
-   /* Disable progress output */
-   curl_easy_setopt(con->mHandle, CURLOPT_NOPROGRESS, 1);
+   /* Enable progress checking */
+   curl_easy_setopt(con->mHandle, CURLOPT_NOPROGRESS, 0);
+   
+   /* Reset timeout control */
+   con->mTimeout.mTimestampStart = 0;
+   con->mTimeout.mTimestampLast = 0;
+   con->mTimeout.mFixups = 0;
 
    /* This will be a HTTP post */
    curl_easy_setopt(con->mHandle, CURLOPT_POST, 1);
@@ -318,9 +369,13 @@ static char* genRequest(ClientEnc *cle, const char *op,
    /* initialize status */
    CMSetStatus(&con->mStatus,CMPI_RC_OK);
 
-   /* Setup timeouts for cimserver operations */
+   /* Setup connect timeouts for cimserver operations */
    curl_easy_setopt(con->mHandle, CURLOPT_NOSIGNAL, 1);
-   curl_easy_setopt(con->mHandle, CURLOPT_TIMEOUT, CIMSERVER_TIMEOUT);
+   curl_easy_setopt(con->mHandle, CURLOPT_CONNECTTIMEOUT, CIMSERVER_TIMEOUT);
+
+   /* setup callback for client timeout calculations */
+   curl_easy_setopt(con->mHandle, CURLOPT_PROGRESSFUNCTION, checkProgress);
+   curl_easy_setopt(con->mHandle, CURLOPT_PROGRESSDATA, &con->mTimeout);
 
    // Initialize default headers
    con->ft->initializeHeaders(con);
@@ -377,6 +432,11 @@ char *getResponse(CMCIConnection *con, CMPIObjectPath *cop)
 
     rv = curl_easy_perform(con->mHandle);
 
+    /* indicate timeout error for aborted by progess handler */
+    if (rv == CURLE_ABORTED_BY_CALLBACK) {
+      rv = CURLE_OPERATION_TIMEOUTED;
+    }
+
     if (rv) {
         long responseCode = -1;
         // Use CURLINFO_HTTP_CODE instead of CURLINFO_RESPONSE_CODE
@@ -388,7 +448,7 @@ char *getResponse(CMCIConnection *con, CMPIObjectPath *cop)
 
     if (con->mResponse->ft->getSize(con->mResponse) == 0)
         return strdup("No data received from server");
-
+    
     return NULL;
 }
 
