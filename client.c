@@ -2164,6 +2164,7 @@ CMPIData invokeMethod(
            out->ft->addArg( out, CMGetCharPtr(cn), &data.value, data.type);
            CMRelease(cn);
        }
+       CMRelease(rh.outArgs);
    }
 
    /* Set good status and return */

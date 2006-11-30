@@ -1246,6 +1246,7 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
 
            /* Add it to the args list */
            args->ft->addArg ( args, outParam->name, &value, outParam->type);
+	   native_release_CMPIValue(outParam->type,&value);
            outParam = outParam->next;
        }
        control.respHdr.outArgs = args;

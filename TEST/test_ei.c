@@ -49,7 +49,9 @@ int main()
     /* Test enumInstances() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumInstances() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
+    //    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
+    /* more general case: all managed elements of root/cimv2 */
+    objectpath = newCMPIObjectPath("root/cimv2", "CIM_ManagedElement", NULL);
     enumeration = cc->ft->enumInstances(cc, objectpath, 0, NULL, &status);
 
     /* Print the results */
@@ -65,6 +67,7 @@ int main()
 
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
+    if (status.msg) CMRelease(status.msg);
     if (cc) CMRelease(cc);
     
     return 0;

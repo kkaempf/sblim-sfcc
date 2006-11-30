@@ -144,8 +144,6 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
          break;
       case typeProperty_Array:
          type = p->valueType;
-         CMPIArray *arr  = NULL;
-         arr = newCMPIArray(0, type, &status);
          if (p->val.array.next > 0) {
             CMPIArray *arr = newCMPIArray(0, type, &status);
             if (p->val.array.max > 0) {

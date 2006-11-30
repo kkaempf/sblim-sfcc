@@ -45,6 +45,7 @@ noinst_PROGRAMS	= test \
                   test_im2 \
                   test_im3 \
                   test_im4 \
+                  test_imos \
                   test_leak \
                   test_rf \
                   test_rfn \
@@ -138,6 +139,10 @@ test_im3_LDADD = ../libcmpisfcc.la
 test_im4_SOURCES = test_im4.c \
                   show.c
 test_im4_LDADD = ../libcmpisfcc.la
+
+test_imos_SOURCES = test_imos.c \
+                  show.c
+test_imos_LDADD = ../libcmpisfcc.la
 
 test_leak_SOURCES = test_leak.c \
                   show.c
