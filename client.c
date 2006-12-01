@@ -253,7 +253,7 @@ static int checkProgress(void *data,
     return 1;
   }
   if (timeout->mTimestampStart == 0 || 
-      timeout->mTimestampStart > timestampNow ||
+      timeout->mTimestampLast > timestampNow ||
       timestampNow - timeout->mTimestampLast > MAX_PLAUSIBLE_PROGRESS ) {
     /* need to fix up - either first call or system time changed */
     timeout->mFixups += 1;
