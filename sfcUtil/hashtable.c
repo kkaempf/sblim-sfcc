@@ -36,8 +36,6 @@
 
 #define NEW(x) ((x *) malloc(sizeof(x)))
 
-extern void *HashTableCreate(long numOfBuckets);
-
 static int pointercmp(const void *pointer1, const void *pointer2);
 static unsigned long pointerHashFunction(const void *pointer);
 static int isProbablePrime(long number);
