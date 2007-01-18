@@ -1240,9 +1240,10 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
 
        while (outParam) {
 
-           value = (outParam->type == CMPI_ref) 
+           /*value = (outParam->type == CMPI_ref) 
                ? str2CMPIValue(outParam->type, NULL, &outParam->valueRef)
-               : str2CMPIValue(outParam->type, outParam->value.value, NULL);
+               : str2CMPIValue(outParam->type, outParam->value.value, NULL);*/
+           value = str2CMPIValue(outParam->type, outParam->value.value, &outParam->valueRef);
 
            /* Add it to the args list */
            args->ft->addArg ( args, outParam->name, &value, outParam->type);

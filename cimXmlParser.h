@@ -149,6 +149,11 @@ typedef struct xtokValueReference {
    CMPIObjectPath *op;
 } XtokValueReference;
 
+typedef struct xtokValueRefArray {
+   int max,next;
+   XtokValueReference *values;
+} XtokValueRefArray;
+
 typedef struct xtokKeyBinding {
    char *name, *value, *type;
    XtokValueReference ref;

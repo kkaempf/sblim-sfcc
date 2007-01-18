@@ -1,3 +1,8 @@
+2007-01-18  Sven Schuetz
+
+	* array.c, cimXmlParser.c, client.c, value.c, cimXmlParser.h
+	Fixed 1637057: Arrays not yet supported as function arguments
+
 2007-01-18  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-119.boeblingen.de.ibm.com>
 
 	* cimXmlResp.y: 
@@ -113,4 +118,3 @@
 
 	* cimXmlParser.c: Inproving user time performance by about 30% as
 	measured with time command.
-

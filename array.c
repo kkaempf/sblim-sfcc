@@ -23,7 +23,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 */
 
 #include <stdlib.h>
@@ -174,12 +174,16 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
       
    if ( index < a->size ) {
       CMPIValue v;
+      v.string=NULL;
 
       if ( type == CMPI_chars && a->type == CMPI_string ) {
-
-         v.string = native_new_CMPIString ( val->chars, NULL );
-         type = CMPI_string;
-         val  = &v;
+	 if (val) {
+	     v.string = native_new_CMPIString ( (char *) val->chars, NULL );
+	     type = CMPI_string;
+	     val  = &v;
+	 } else {
+	     type = CMPI_null;
+	 }         
       }
 
       if ( opt || type == a->type ) {
@@ -189,6 +193,8 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
          a->data[index].state = 0;
 	 a->data[index].value = (opt) ? 
 			 *val : native_clone_CMPIValue ( type, val, &rc );
+         if(v.string)
+         	CMRelease(v.string);
          return rc;
       }
 

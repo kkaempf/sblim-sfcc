@@ -633,7 +633,13 @@ static void addXmlValue(UtilStringBuffer *sb,
         return;
     }
     
-    sb->ft->append3Chars(sb, "<", ContainerTag, arrayStr);
+    if(strcasecmp(ContainerTag, "PARAMVALUE")) {
+    	sb->ft->append3Chars(sb, "<", ContainerTag, arrayStr);
+    }
+    else {
+    	sb->ft->appendChars(sb, "<");
+    	sb->ft->appendChars(sb, ContainerTag);
+    }
     sb->ft->append3Chars(sb, " NAME=\"", ValueName, "\"");
     if (xmlTypeStr)
         sb->ft->append5Chars(sb, " ", ContainerType, "=\"", xmlTypeStr, "\"");
@@ -669,7 +675,13 @@ static void addXmlValue(UtilStringBuffer *sb,
         sb->ft->append3Chars(sb, "<VALUE>", cv, "</VALUE>\n");
         free(cv);
     }
-    sb->ft->append5Chars(sb, "</", ContainerTag, arrayStr, ">", "\n");
+    if(strcasecmp(ContainerTag, "PARAMVALUE")) {
+    	sb->ft->append5Chars(sb, "</", ContainerTag, arrayStr, ">", "\n");
+    }
+    else {
+    	sb->ft->append3Chars(sb, "</", ContainerTag, ">");
+    	sb->ft->appendChars(sb, "\n");
+    }    
 }
 
 /* --------------------------------------------------------------------------*/

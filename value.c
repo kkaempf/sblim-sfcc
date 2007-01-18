@@ -15,7 +15,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.14 $
+  $Revision: 1.15 $
 */
 
 #include <stdio.h>
@@ -361,6 +361,33 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
    if (type==0) {
       type=guessType(val);
    }
+   
+   if (type & CMPI_ARRAY) {
+     /* array type received -- needs special handling */
+     int i, max;
+     CMPIValue v;
+     XtokValueArray *arr = (XtokValueArray*)ref;
+     XtokValueRefArray *refarr = (XtokValueRefArray*)arr;
+     max=arr->next;
+     if ((type & CMPI_ref) == CMPI_ref) {
+       t = CMPI_ref;
+     } else if (type & ~CMPI_ARRAY) {
+       t = type & ~CMPI_ARRAY;
+     } else {
+       /* the guess type can go wrong */
+       t = guessType(arr->values[0]);
+     }
+     /* build an array by looping thru the elements */
+     value.array = native_new_CMPIArray(max,t,NULL);
+     if (value.array != NULL) {
+       for (i=0; i<max; i++) {
+	 v = str2CMPIValue(t, arr->values[i], refarr->values+i);
+	 CMSetArrayElementAt(value.array, i, &v, t);
+	 native_release_CMPIValue(t, &v); 
+       }
+       return value;
+     }
+   }   
    
    switch (type) {
    case CMPI_char16:
