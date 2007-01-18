@@ -6,6 +6,7 @@ Bugs:
 - 1596171: Fixed incorrect timeout assertion when system clock changes
 - 1604433: Fixed memory leaks
 - 1610514: Aligned sfcc/sfcb libsfcUtil
+- 1636714: Fixed parser rule for method responses
 
 Changes in 1.1.0:
 =================

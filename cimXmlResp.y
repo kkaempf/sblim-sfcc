@@ -700,7 +700,7 @@ methodResp
     | XTOK_METHODRESP ReturnValue paramValues ZTOK_METHODRESP
     {
     }
-    | XTOK_METHODRESP ZTOK_METHODRESP
+    | XTOK_METHODRESP paramValues ZTOK_METHODRESP
     {
     }
 ;

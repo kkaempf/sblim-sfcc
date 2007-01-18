@@ -1,3 +1,9 @@
+2007-01-18  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-119.boeblingen.de.ibm.com>
+
+	* cimXmlResp.y: 
+	Fixed 1636714: removed incorrect rquirement for RETURNVALUE tag
+	in method responses.
+
 2006-12-06  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* sfcUtil/hashtable.c, sfcUtil/libsfcUtil.Versions:
