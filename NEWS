@@ -1,10 +1,5 @@
 Small Footprint CIM Client Library NEWS
 
-Changes in 1.1.2:
-=================
-Bugs:
--1637057: Fixed Arrays not yet supported as function arguments
-
 Changes in 1.1.1:
 =================
 Bugs:
@@ -12,6 +7,7 @@ Bugs:
 - 1604433: Fixed memory leaks
 - 1610514: Aligned sfcc/sfcb libsfcUtil
 - 1636714: Fixed parser rule for method responses
+- 1637057: Fixed Arrays not yet supported as function arguments
 
 Changes in 1.1.0:
 =================
