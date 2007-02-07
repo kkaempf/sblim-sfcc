@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(sblim-sfcc, 1.1.1, sblim-devel@lists.sourceforge.net)
-AC_CONFIG_SRCDIR([args.c])
+AC_INIT(sblim-sfcc, 2.0.0preview1, sblim-devel@lists.sourceforge.net)
+AC_CONFIG_SRCDIR([cimc/cimcclient.c])
 AC_CONFIG_HEADER([config.h])
 
 AM_INIT_AUTOMAKE

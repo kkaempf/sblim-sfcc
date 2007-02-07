@@ -1,4 +1,5 @@
 AM_CPPFLAGS = \
+	-I$(srcdir)/../frontend/sfcc
 	-I../../ \
 	$(MELUNIT_CXX_CFLAGS) \
 	-I$(top_builddir)/src \
@@ -24,7 +25,7 @@ test_native_LDADD = $(OUR_LDADD)
 
 endif
 
-noinst_HEADERS = show.h cimcShow.h
+noinst_HEADERS = show.h
 
 noinst_PROGRAMS	= test \
                   test_an \
@@ -55,15 +56,9 @@ noinst_PROGRAMS	= test \
                   test_cpp \
                   test_qualifiers \
                   test_qualifiers2 \
-                  cimc_test_gc \
-                  cimc_test_ec \
-                  cimc_test_ecn \
-                  cimc_test_ein \
-                  cimc_test_di \
-                  cimc_test_ci \
 		  print-types
 
-test_SOURCES = test.c
+test_SOURCES = test.c show.c
 test_LDADD = ../libcmpisfcc.la
 
 test_cpp_SOURCES = test_cpp.cpp
@@ -177,28 +172,6 @@ test_qualifiers2_SOURCES = test_qualifiers2.c \
 test_qualifiers2_LDADD = ../libcmpisfcc.la
 
 
-cimc_test_gc_SOURCES = cimcTest_gc.c \
-                   cimcShow.c
-cimc_test_gc_LDADD = ../libcimcClient.la
-
-cimc_test_ecn_SOURCES = cimcTest_ecn.c \
-                   cimcShow.c
-cimc_test_ecn_LDADD = ../libcimcClient.la
-
-cimc_test_ec_SOURCES = cimcTest_ec.c \
-                   cimcShow.c
-cimc_test_ec_LDADD = ../libcimcClient.la
-
-cimc_test_ein_SOURCES = cimcTest_ein.c \
-                   cimcShow.c
-cimc_test_ein_LDADD = ../libcimcClient.la
-
-cimc_test_ci_SOURCES = cimcTest_ci.c \
-                   cimcShow.c
-cimc_test_ci_LDADD = ../libcimcClient.la
-
-cimc_test_di_SOURCES = cimcTest_di.c  
-cimc_test_di_LDADD = ../libcimcClient.la
 
 print_types_SOURCES = print-types.c
 

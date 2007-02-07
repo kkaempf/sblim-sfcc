@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for setProperty() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for setProperty() library API. 
  */
 #include <cmci.h>
 #include <native.h>

@@ -1,92 +1,109 @@
-# $Id: Makefile.am,v 1.10 2006/09/05 14:54:59 mihajlov Exp $
+# $Id: Makefile.am,v 1.11 2007/02/07 14:24:40 mihajlov Exp $
 
-Libcmpisfcc_CURRENT=0
+Libcimcclient_CURRENT=0
+Libcimcclient_REVISION=0
+Libcimcclient_AGE=0
+
+LibcimcClientXML_CURRENT=0
+LibcimcClientXML_REVISION=0
+LibcimcClientXML_AGE=0
+
+Libcmpisfcc_CURRENT=1
 Libcmpisfcc_REVISION=0
 Libcmpisfcc_AGE=0
 
-LibsfcUtil_CURRENT=0
+LibsfcUtil_CURRENT=1
 LibsfcUtil_REVISION=0
-LibsfcUtil_AGE=0
-
-LibcimcClient_CURRENT=0
-LibcimcClient_REVISION=0
-LibcimcClient_AGE=0
+LibsfcUtil_AGE=1
 
 AM_LFLAGS=-i
 AM_YFLAGS=-d
 
 BUILT_SOURCES = \
-	cimXmlResp.h
+	cimXmlResp.h cimXmlResp.c
 
 noinst_HEADERS = \
-	cimXmlParser.h \
-	genericlist.h 
+	backend/cimxml/cimXmlParser.h \
+	backend/cimxml/genericlist.h \
+	backend/cimxml/sfcUtil/hashtable.h \
+	backend/cimxml/sfcUtil/utilft.h
 
-pkginclude_HEADERS = \
-	native.h \
-	cimXmlParser.h \
-	cmcidt.h \
-	cmcift.h \
-	cmci.h \
-	cmcimacs.h \
-	cimcClient.h \
-	cimcdt.h \
-	cimcfc.h \
-	cimcft.h \
-	cimcft2.h \
-	cimcmacs.h \
-	sfcUtil/hashtable.h \
-	sfcUtil/utilft.h
+cimcinclude_HEADERS = \
+	cimc/cimc.h \
+	cimc/cimcdt.h \
+	cimc/cimcft.h 
 
-pkgincludedir = $(includedir)/CimClientLib
+legacyinclude_HEADERS = \
+	frontend/sfcc/native.h \
+	frontend/sfcc/cmcidt.h \
+	frontend/sfcc/cmcift.h \
+	frontend/sfcc/cmci.h \
+	frontend/sfcc/cmcimacs.h 
 
-lib_LTLIBRARIES= libsfcUtil.la libcimcClient.la libcmpisfcc.la 
+legacyincludedir = $(includedir)/CimClientLib
+cimcincludedir = $(includedir)/cimc
+
+lib_LTLIBRARIES= libcimcclient.la libcmpisfcc.la \
+	libsfcUtil.la libcimcClientXML.la 
+
+libcimcclient_la_SOURCES = \
+                   cimc/cimcclient.c \
+		   cimc/libcimcclient.Versions
 
 libsfcUtil_la_SOURCES = \
-	sfcUtil/hashtable.c \
-	sfcUtil/utilFactory.c \
-	sfcUtil/utilHashtable.c \
-	sfcUtil/utilStringBuffer.c \
-        sfcUtil/libsfcUtil.Versions
+	backend/cimxml/sfcUtil/hashtable.c \
+	backend/cimxml/sfcUtil/utilFactory.c \
+	backend/cimxml/sfcUtil/utilHashtable.c \
+	backend/cimxml/sfcUtil/utilStringBuffer.c \
+        backend/cimxml/sfcUtil/libsfcUtil.Versions
 
-libcimcClient_la_SOURCES = \
-        cimcClient.c \
-        libcimcClient.Versions
 
 libcmpisfcc_la_SOURCES = \
-                   args.c \
-                   array.c \
-                   datetime.c \
-                   enumeration.c \
-                   instance.c \
-                   constClass.c \
-                   objectpath.c \
-                   property.c \
-                   qualifier.c \
-                   string.c \
-                   value.c \
-                   client.c \
-                   genericlist.c \
-                   cimXmlResp.y \
-        cimXmlParser.c \
-        libcmpisfcc.Versions
+                   frontend/sfcc/sfcclient.c \
+		   frontend/sfcc/libcmpisfcc.Versions
 
-libcmpisfcc_la_LIBADD = -lcurl -lsfcUtil
-libcmpisfcc_la_DEPENDENCIES = libsfcUtil.la
+libcimcClientXML_la_SOURCES = \
+                   backend/cimxml/args.c \
+                   backend/cimxml/array.c \
+                   backend/cimxml/datetime.c \
+                   backend/cimxml/enumeration.c \
+                   backend/cimxml/instance.c \
+                   backend/cimxml/constClass.c \
+                   backend/cimxml/objectpath.c \
+                   backend/cimxml/property.c \
+                   backend/cimxml/qualifier.c \
+                   backend/cimxml/string.c \
+                   backend/cimxml/value.c \
+                   backend/cimxml/client.c \
+                   backend/cimxml/genericlist.c \
+                   backend/cimxml/cimXmlResp.y \
+	           backend/cimxml/cimXmlParser.c \
+		   backend/cimxml/libcimcClientXML.Versions
+
+libcimcclient_la_LDFLAGS = \
+       -version-info $(Libcimcclient_CURRENT):$(Libcimcclient_REVISION):$(Libcimcclient_AGE) \
+       -Wl,--version-script,$(srcdir)/cimc/libcimcclient.Versions
+
+libcmpisfcc_la_CPPFLAGS = -I$(srcdir)/cimc -I$(srcdir)/backend/cimxml -I$(srcdir)/frontend/sfcc
+libcmpisfcc_la_LIBADD = -lcimcclient
+libcmpisfcc_la_DEPENDENCIES = libcimcclient.la
 libcmpisfcc_la_LDFLAGS = \
        -version-info $(Libcmpisfcc_CURRENT):$(Libcmpisfcc_REVISION):$(Libcmpisfcc_AGE) \
-       -Wl,--version-script,$(srcdir)/libcmpisfcc.Versions
+       -Wl,--version-script,$(srcdir)/frontend/sfcc/libcmpisfcc.Versions
+
+libcimcClientXML_la_CPPFLAGS = -I$(srcdir)/backend/cimxml/sfcUtil -I$(srcdir)/backend/cimxml  -I$(srcdir)/frontend/sfcc -I$(srcdir)/cimc
+libcimcClientXML_la_LIBADD = -lcurl -lsfcUtil
+libcimcClientXML_la_DEPENDENCIES = libsfcUtil.la
+libcimcClientXML_la_LDFLAGS = \
+       -version-info $(LibcimcClientXML_CURRENT):$(LibcimcClientXML_REVISION):$(LibcimcClientXML_AGE) \
+       -Wl,--version-script,$(srcdir)/backend/cimxml/libcimcClientXML.Versions
 
 libsfcUtil_la_LDFLAGS = \
        -version-info $(LibsfcUtil_CURRENT):$(LibsfcUtil_REVISION):$(LibsfcUtil_AGE) \
-       -Wl,--version-script,$(srcdir)/sfcUtil/libsfcUtil.Versions
+       -Wl,--version-script,$(srcdir)/backend/cimxml/sfcUtil/libsfcUtil.Versions
 
-libcimcClient_la_LDFLAGS = \
-       -version-info $(LibcimcClient_CURRENT):$(LibcimcClient_REVISION):$(LibcimcClient_AGE) \
-       -Wl,--version-script,$(srcdir)/libcimcClient.Versions
+
 
 SUBDIRS = . TEST
-
-AM_CPPFLAGS = -I../../ -I$(top_builddir)/src -I$(srcdir)/sfcUtil
 
 #@INC_AMINCLUDE@

@@ -1,0 +1,11 @@
+
+*** Still Experimental ***
+
+CVS Instructions:
+-----------------
+If you checkout from CVS run autoconfiscate.sh to prepare for building.
+
+To build:
+	# make
+	# make install
+

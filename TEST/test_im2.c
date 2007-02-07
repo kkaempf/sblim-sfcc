@@ -33,7 +33,7 @@ int main()
     CMPIArgs		* args; 
     char 		*cim_host, *cim_host_passwd, *cim_host_userid;
     CMPIData		retval;
-    CMPIUint32		arg_uint32;
+    CMPIValue		arg;
 
     /* Setup a connection to the CIMOM */
     cim_host = getenv("CIM_HOST");
@@ -60,8 +60,8 @@ int main()
     printf("+++T1:passing IN uint32_t argument\n");
 
     args = newCMPIArgs(NULL);
-    arg_uint32 = 65535;
-    args->ft->addArg(args, "Property_uint32", &arg_uint32, CMPI_uint32);
+    arg.uint32 = 65535;
+    args->ft->addArg(args, "Property_uint32", &arg, CMPI_uint32);
 
     retval = cc->ft->invokeMethod(
         cc, objectpath, "Method_uint32_in", args, NULL, &status);

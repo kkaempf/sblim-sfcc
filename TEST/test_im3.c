@@ -33,7 +33,7 @@ int main()
     CMPIArgs		* args; 
     char 		*cim_host, *cim_host_passwd, *cim_host_userid;
     CMPIData		retval;
-    CMPISint16		arg_int16;
+    CMPIValue		arg;
 
     /* Setup a connection to the CIMOM */
     cim_host = getenv("CIM_HOST");
@@ -60,8 +60,8 @@ int main()
     printf("+++T1:passing IN int16_t argument\n");
 
     args = newCMPIArgs(NULL);
-    arg_int16 = 65535;
-    args->ft->addArg(args, "Property_int16", &arg_int16, CMPI_sint16);
+    arg.sint16 = 65535;
+    args->ft->addArg(args, "Property_int16", &arg, CMPI_sint16);
 
     retval = cc->ft->invokeMethod(
         cc, objectpath, "Method_sint16_in", args, NULL, &status);

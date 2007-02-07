@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for associatorNames() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for associatorNames() library API. 
  */
 #include <cmci.h>
 #include <native.h>
@@ -30,7 +28,7 @@ int main()
     CMCIClient *cc;
     CMPIObjectPath * objectpath;
     CMPIEnumeration * enumeration;
-    CMPIStatus status;
+    CMPIStatus status = {CMPI_RC_OK, NULL};
     char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
     /* Setup a conncetion to the CIMOM */
@@ -74,8 +72,8 @@ int main()
 
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
 
     return 0;
 }

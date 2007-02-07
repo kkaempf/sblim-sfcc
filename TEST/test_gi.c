@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for getInstance() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for getInstance() library API. 
  */
 #include <cmci.h>
 #include <native.h>
@@ -49,9 +47,9 @@ int main()
     /* Test getInstance() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing getInstance() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_MAPAdminDomain", NULL);
-    CMAddKey(objectpath, "CreationClassName", "IICM_MAPAdminDomain", CMPI_chars);
-    CMAddKey(objectpath, "Name", "admin1", CMPI_chars);
+    objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+    CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+    CMAddKey(objectpath, "Name", "localhost.localdomain", CMPI_chars);
     instance = cc->ft->getInstance(cc, objectpath, 0, NULL, &status);
 
     /* Print the results */
@@ -64,8 +62,8 @@ int main()
 
     if (instance) CMRelease(instance);
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
     
     return 0;
 }

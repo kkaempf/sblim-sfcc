@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for emnumerateInstances() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for emnumerateInstances() library API.
  */
 #include <cmci.h>
 #include <native.h>
@@ -69,8 +67,8 @@ int main()
 
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
     
     return 0;
 }

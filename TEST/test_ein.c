@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for enumInstanceNames() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for enumInstanceNames() library API.
  */
 #include <cmci.h>
 #include <native.h>
@@ -32,6 +30,7 @@ int main()
     CMPIEnumeration	* enumeration;
     CMPIStatus		status;
     char		*cim_host, *cim_host_passwd, *cim_host_userid;
+    int i;
 
     /* Setup a connection to the CIMOM */
     cim_host = getenv("CIM_HOST");
@@ -49,10 +48,12 @@ int main()
     /* Test enumInstanceNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumInstanceNames() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_PhysicalPackage", NULL);
+    //    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_PhysicalPackage", NULL);
+    objectpath = newCMPIObjectPath("root/cimv2", "CIM_Process", NULL);
 
+
+    for (i=0; i< 10; i++) {
     enumeration = cc->ft->enumInstanceNames(cc, objectpath, &status);
-
     /* Print the results */
     printf( "enumInstanceNames() rc=%d, msg=%s\n", 
             status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
@@ -62,6 +63,7 @@ int main()
             CMPIData data = enumeration->ft->getNext(enumeration, NULL);
             showObjectPath(data.value.ref);
         }
+    }
     }
 
     if (enumeration) CMRelease(enumeration);

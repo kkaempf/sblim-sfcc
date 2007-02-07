@@ -1,16 +1,123 @@
+sfcc - Small Footprint CIM Client Library
+=========================================
+
+The small footprint CIM client library is a C API allowing client applications
+to interface with CIM implementations (e.g. CIM servers). Due to it's small
+memory and disk footprint it is well-suited for embedded environments.
+
+Version 1
+---------
+
+The initial version of sfcc is based on concepts of the Common Manageability
+Programming Interface (CMPI) defined by the Open Group. A client program
+using version 1 of sfcc usually needs to include the following headers or
+a subset thereof and link against libcmpisfcc.so:
+
+  - cmci.h
+  - cmcidt.h
+  - cmcift.h
+  - cmcimacs.h
+  - native.h
+
+Version 2
+---------
+
+The current version of sfcc has undergone some structural changes in order
+to support different backend implementations, like local communication to
+a CIM server or even direct provider calls. 
+For this purpose a three-layer architecture has been chosen, consisting of
+a frontend layer, the core CIM C API and a backend layer.
+
+The core CIM C API which in fact is also an application binary interface (ABI)
+just offers two functions: NewCIMCEnv and ReleaseCIMCEnv.
+These are used to establish or to remove a CIM client environment which can
+be used to connect to a CIM server and perform CIM operations against
+that connection.
+A CIM client environment needs to be implemented by a backend which is a
+shared library offering a defined entry point with a name like
+ _Create_<backend>_Env
+which is used to return a pointer to a CIMCEnv structure containing a function
+pointer table exposing the services supported by the backend. This is very
+similar to the way a CMPI provider is implemented.
+
+Currently sfcc ships with a CIM XML backend which should be the most common
+protocol for CIM-based client-server communication. The sfcb CIM server is
+about to offer an efficient local connection backend soon. The effort to
+write a backend for a CIM server is roughly comparable to the effort of
+writing a CMPI provider adapter/manager.
+
+While it's possible to write programs directly against the core CIM C API,
+it's likely that this will not be appropriate for everybody. Therefore
+it's possible to add frontend APIs (aka language bindings) on top of the 
+core CIM C API. Currently there's one frontend in sfcc v2: the v1 
+compatibility library.
+
+Compatibility
+-------------
+
+There's a number of reasons why the original sfcc API is not well suited to 
+serve as the core CIM C API.
+Most problematic is that the object creation functions are not implemented
+via function pointer tables but with fixed entry points which would
+add overhead and complication for backend implementations. 
+The core CIM C API groups these functions in the CIMCEnv function pointer 
+table.
+Another, more cosmetic issue, is that the original sfcc implementation
+in fact uses modified CMPI headers which disallows to mix provider and
+client code in the same executable. The new core CIM C API headers have 
+their own declarations prefixed with CIMC (instead of CMPI or CMCI).
+
+Compatibility with version 1 is ensured via a frontend implementation.
+This allows old applications to take advantage of new backends without
+the need to rewrite them. 
+There are however some restrictions to keep in mind:
+
+A. Removed Functions
+Some functions have been removed from the set of public functions, as they
+are considered internal stuff, which shouldn't be of concern to clients.
+These are:
+      native_release_CMPIValue
+      newList
+      newStringBuffer
+      value2Chars
+As consequence of this it was necessary to re-version the library which
+will require a re-linking of your application.
+
+B. Feature Freeze
+The version 1 sfcc API is frozen: new features like support for large
+volume results via iterator won't be backported.
+
+
+Backend Selection
+-----------------
+
+The proper way to select the backend is via the NewCIMCEnv call. The first
+argument is used to construct the backend library name and the entry point.
+I.e.
+
+CIMCEnv ce = NewCIMCEnv("XML",0,&rc,&msg);
+
+will load the shared library libcimcClientXML.so, locate the
+function _Create_XML_Env and call it to establish the environment. 
+This example sets up the CIM XML environment.
+
 CVS Instructions:
 -----------------
 If you checkout from CVS run autoconfiscate.sh to prepare for building.
 
 To build:
+	# configure
 	# make
 	# make install
 
 	These make the test cases under TEST as well.
 
-	# make CFLAGS='-DDEBUG'
+	# configure CPPFLAGS='-DDEBUG'
 
 	Builds a version of the library with debug output enabled.
 
-	Note that to pass the tests the test instance MOF and CIM schema
-	2.10 will need to be installed in root/iicmv1.
+	Note that to pass the tests it is necessary to install the following
+	provider packages from the SBLIM project 
+	http://sourceforge.net/projects/sblim
+	- sblim-cmpi-base (available in tar.bz2 format)
+	- cmpi-tests (currently available 

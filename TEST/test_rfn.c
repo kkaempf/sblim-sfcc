@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for referenceNames() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for referenceNames() library API. 
  */
 #include <cmci.h>
 #include <native.h>
@@ -49,9 +47,9 @@ int main()
     /* Test referenceNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing referenceNames() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_Slot", NULL);
-    CMAddKey(objectpath, "CreationClassName", "CIM_Slot", CMPI_chars);
-    CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000007", CMPI_chars);
+    objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+    CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+    CMAddKey(objectpath, "Name", "localhost.localdomain", CMPI_chars);
     enumeration = cc->ft->referenceNames(cc, objectpath, NULL, NULL, &status);
 
     /* Print the results */
@@ -68,8 +66,8 @@ int main()
  
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
 
     return 0;
 }

@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for associators() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for associators() library API.
  */
 #include <cmci.h>
 #include <native.h>
@@ -49,13 +47,13 @@ int main()
     /* Test associators() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing associators() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_MAPAdminDomain", NULL);
+    objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
 
-    CMAddKey(objectpath, "CreationClassName", "IICM_MAPAdminDomain", CMPI_chars);
-    CMAddKey(objectpath, "Name", "admin1", CMPI_chars);
+    CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+    CMAddKey(objectpath, "Name", "localhost.localdomain", CMPI_chars);
 
     enumeration = cc->ft->associators(cc, objectpath, 
-                          "CIM_SystemComponent", NULL, NULL, NULL, 0, NULL, &status);
+                          NULL, NULL, NULL, NULL, 0, NULL, &status);
 
     /* Print the results */
     printf("associators() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
@@ -70,8 +68,8 @@ int main()
 
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
 
   
     return 0;

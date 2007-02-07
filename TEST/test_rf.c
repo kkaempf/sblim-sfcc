@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for references() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for references() library API. 
  */
 #include <cmci.h>
 #include <native.h>
@@ -50,11 +48,11 @@ int main()
     printf("\n----------------------------------------------------------\n");
     printf("--> Testing references() ...\n");
 
-    objectpath = newCMPIObjectPath("root/iicmv1", "IICM_MAPAdminDomain", NULL);
+    objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
 
     printf( "--> Adding keys to object path\n" );
-    CMAddKey(objectpath, "CreationClassName", "IICM_MAPAdminDomain", CMPI_chars);
-    CMAddKey(objectpath, "Name", "admin1", CMPI_chars);
+    CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+    CMAddKey(objectpath, "Name", "localhost.localdomain", CMPI_chars);
 
     printf( "--> Enumerating Instances\n" );
     enumeration = cc->ft->references(cc, objectpath, NULL, NULL, 0, NULL, &status);
@@ -75,8 +73,8 @@ int main()
 
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
   
     return 0;
 }

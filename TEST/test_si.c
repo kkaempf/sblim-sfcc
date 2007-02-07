@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for setInstance() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for setInstance() library API. 
  */
 #include <cmci.h>
 #include <native.h>
@@ -31,6 +29,7 @@ int main()
     CMPIObjectPath * objectpath;
     CMPIInstance * instance;
     CMPIStatus status;
+    CMPIValue  yesValue;
     char 	*cim_host, *cim_host_passwd, *cim_host_userid;
 
     /* Setup a connection to the CIMOM */
@@ -55,8 +54,8 @@ int main()
     instance = newCMPIInstance(objectpath, NULL);
     CMSetProperty(instance, "Username", "bestorga", CMPI_chars);
     CMSetProperty(instance, "Classname", "foobar", CMPI_chars);
-    int yes = 1;
-    CMSetProperty(instance, "Query", (CMPIValue *)&yes, CMPI_boolean);
+    yesValue.boolean = 1;
+    CMSetProperty(instance, "Query", &yesValue, CMPI_boolean);
 
     status = cc->ft->setInstance(cc, objectpath, instance, 0, NULL);
 
@@ -66,8 +65,8 @@ int main()
 
     if (instance) CMRelease(instance);
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
 
     return 0;
 }

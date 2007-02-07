@@ -20,8 +20,9 @@
 #include <cmci.h>
 #include <native.h>
 #include <unistd.h>
+#include <string.h>
 
-static char * _HOSTNAME = "bestorga.ibm.com";
+static char * _HOSTNAME;
 
 extern char *value2Chars(CMPIType type, CMPIValue * value);
 
@@ -38,8 +39,11 @@ static void showObjectPath( CMPIObjectPath * objectpath )
       printf("keys:\n");
       for (i=0; i<numkeys; i++) {
          CMPIString * keyname;
+	 char       * str=NULL;
          CMPIData data = objectpath->ft->getKeyAt(objectpath, i, &keyname, NULL);
-         printf("\t%s=%s\n", (char *)keyname->hdl, value2Chars(data.type, &data.value)); 
+         printf("\t%s=%s\n", (char *)keyname->hdl, str = value2Chars(data.type, &data.value)); 
+	 if (keyname) CMRelease(keyname);
+	 if (str) free(str);
       }
    }
 
@@ -64,8 +68,11 @@ static void showInstance( CMPIInstance *instance )
       printf("properties:\n");
       for (i=0; i<numproperties; i++) {
          CMPIString * propertyname;
+	 char * str = NULL;
          CMPIData data = instance->ft->getPropertyAt(instance, i, &propertyname, NULL);
-         printf("\t%s=%s\n", (char *)propertyname->hdl, value2Chars(data.type, &data.value));
+         printf("\t%s=%s\n", (char *)propertyname->hdl, str=value2Chars(data.type, &data.value));
+	 if (propertyname) CMRelease(propertyname);
+	 if (str) free(str);
       }
    }
 
@@ -87,10 +94,13 @@ static void showClass( CMPIConstClass * class )
       printf("properties:\n");
       for (i=0; i<numproperties; i++) {
          CMPIString * propertyname;
+	 char * str=NULL;
          CMPIData data = class->ft->getPropertyAt(class, i, &propertyname, NULL);
          if (data.state==0)
-            printf("\t%s=%s\n", (char *)propertyname->hdl, value2Chars(data.type, &data.value));
+            printf("\t%s=%s\n", (char *)propertyname->hdl, str=value2Chars(data.type, &data.value));
          else printf("\t%s=NIL\n", (char *)propertyname->hdl);
+	 if (propertyname) CMRelease(propertyname);
+	 if (str) free(str);
       }
    }
 
@@ -101,11 +111,12 @@ static void showClass( CMPIConstClass * class )
 int main( int argc, char * argv[] )
 {
    CMCIClient *cc;
-   CMPIObjectPath * objectpath;
+   CMPIObjectPath * objectpath, * objectpath2;
    CMPIInstance * instance;
    CMPIEnumeration * enumeration;
    CMPIConstClass * class;
    CMPIStatus status;
+   CMPIValue yesValue;
    char hostName[512];
 
    /* Setup a conncetion to the CIMOM */   
@@ -132,6 +143,7 @@ int main( int argc, char * argv[] )
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -152,6 +164,7 @@ int main( int argc, char * argv[] )
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -169,6 +182,7 @@ int main( int argc, char * argv[] )
       }
       if (class) CMRelease(class);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -209,6 +223,7 @@ int main( int argc, char * argv[] )
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -228,6 +243,7 @@ int main( int argc, char * argv[] )
       }
       if (instance) CMRelease(instance);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -239,7 +255,9 @@ int main( int argc, char * argv[] )
       CMSetProperty(instance, "Username", "bestorga", CMPI_chars);
       CMSetProperty(instance, "Classname", "foobar", CMPI_chars);
 
-      objectpath = cc->ft->createInstance(cc, objectpath, instance, &status);
+      objectpath2 = cc->ft->createInstance(cc, objectpath, instance, &status);
+      CMRelease(objectpath);
+      objectpath = objectpath2;
                                                                                                                 
       /* Print the results */
       printf("createInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
@@ -249,6 +267,7 @@ int main( int argc, char * argv[] )
       }
       if (instance) CMRelease(instance);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -261,8 +280,8 @@ int main( int argc, char * argv[] )
       instance = newCMPIInstance(objectpath, NULL);
       CMSetProperty(instance, "Username", "bestorga", CMPI_chars);
       CMSetProperty(instance, "Classname", "foobar", CMPI_chars);
-      int yes = 1;
-      CMSetProperty(instance, "Query", (CMPIValue *)&yes, CMPI_boolean);
+      yesValue.boolean = 1;
+      CMSetProperty(instance, "Query", &yesValue, CMPI_boolean);
                                                                                                                 
       status = cc->ft->setInstance(cc, objectpath, instance, 0, NULL);
                                                                                                                 
@@ -270,6 +289,7 @@ int main( int argc, char * argv[] )
       printf("setInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
       if (instance) CMRelease(instance);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -284,8 +304,8 @@ int main( int argc, char * argv[] )
                                                                                                                 
       /* Print the results */
       printf("deleteInstance() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-      if (instance) CMRelease(instance);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -308,6 +328,7 @@ int main( int argc, char * argv[] )
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -330,6 +351,7 @@ int main( int argc, char * argv[] )
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -352,6 +374,7 @@ int main( int argc, char * argv[] )
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -374,6 +397,7 @@ int main( int argc, char * argv[] )
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -391,8 +415,8 @@ int main( int argc, char * argv[] )
          printf("result(s):\n");
          printf("PrimaryOwnerName=%s\n", (char*)(data.value.string)->hdl);
       }
-      if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
    if (1) {
@@ -404,12 +428,13 @@ int main( int argc, char * argv[] )
       CMAddKey(objectpath, "Name", _HOSTNAME, CMPI_chars);
       CMPIValue value;
       value.string = newCMPIString("Gareth Bestor", NULL);
-      status = cc->ft->setProperty(cc, objectpath, "PrimaryOwnerName", &value, CMPI_chars);
+      status = cc->ft->setProperty(cc, objectpath, "PrimaryOwnerName", &value, CMPI_string);
 
       /* Print the results */
       printf("setProperty() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-      if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
+      if (value.string) CMRelease(value.string);
    }
 
    if (1) {
@@ -431,8 +456,10 @@ int main( int argc, char * argv[] )
          printf("result(s):\n");
          printf("PrimaryOwnerName=%s\n", (char*)(data.value.string)->hdl);
       }
-      if (enumeration) CMRelease(enumeration);
+      if (argsin) CMRelease(argsin);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
+      if (value.string) CMRelease(value.string);
    }
 
    if (1) {
@@ -454,7 +481,11 @@ int main( int argc, char * argv[] )
       }
       if (enumeration) CMRelease(enumeration);
       if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
    }
 
+   if (cc) CMRelease(cc);
+   if (_HOSTNAME) free(_HOSTNAME);
+   
    return 0;
 }

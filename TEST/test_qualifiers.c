@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for enumInstances() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for enumInstances() library API. 
  */
 #include <cmci.h>
 #include <native.h>
@@ -60,7 +58,7 @@ int main( int argc, char * argv[] )
     /* Test enumInstances() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumInstances() with qualifiers...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_AdminDomain", NULL);
+    objectpath = newCMPIObjectPath("root/cimv2", "CIM_ComputerSystem", NULL);
     enumeration = cc->ft->enumInstances(cc, objectpath,
                                         CMPI_FLAG_IncludeQualifiers,
                                         NULL, &status);

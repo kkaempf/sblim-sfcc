@@ -15,13 +15,12 @@
  *
  * Description:
  *
- *  Test for associatorNames() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for associatorNames() library API.
  */
 #include <cmci.h>
 #include <native.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <curl/curl.h>
 
@@ -53,12 +52,12 @@ int main()
     printf("\n----------------------------------------------------------\n");
     printf("Testing associatorNames() ...\n");
 
-    objectpath = newCMPIObjectPath( "root/iicmv1", "CIM_Slot", NULL);
-    CMAddKey(objectpath, "CreationClassName", "CIM_Slot", CMPI_chars);
-    CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000004", CMPI_chars);
+    objectpath = newCMPIObjectPath( "root/cimv2", "Linux_ComputerSystem", NULL);
+    CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+    CMAddKey(objectpath, "Name", "localhost.localdomain", CMPI_chars);
     enumeration = cc->ft->associatorNames( cc, 
         objectpath,                     // The parent object?
-        "CIM_PackageInSlot",            // assocClass
+        "CIM_RunningOS",            // assocClass
         NULL,                           // resultClass
         NULL,                           // role
         NULL,                           // resultRole
@@ -79,9 +78,9 @@ int main()
 
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
+    if (status.msg) CMRelease(status.msg);
     if (cc) CMRelease(cc);
 
-    if (status.msg) CMRelease(status.msg);
     return 0;
 }
 

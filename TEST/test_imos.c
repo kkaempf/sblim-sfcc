@@ -72,10 +72,12 @@ int main()
             status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
 
     outval=CMGetArg(outargs,"out",NULL);
-    if (outval.value.chars) {
+    if (!status.rc) {
+      if (outval.value.chars) {
         char *cv = value2Chars(outval.type,&(outval.value));
         printf("result(s):\n\tout value:%s\n", cv);
         if (cv != NULL) free(cv);    
+      }
     }
 
     if (args) CMRelease(args);

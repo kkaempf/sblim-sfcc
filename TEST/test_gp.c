@@ -15,9 +15,7 @@
  *
  * Description:
  *
- *  Test for getProperty() library API. Note that this test case
- *  requires that the CIM schema 2.10 final and the test instance MOF
- *  be installed in root/iicmv1. For more information see library README.
+ *  Test for getProperty() library API. 
  */
 #include <cmci.h>
 #include <native.h>
@@ -49,9 +47,9 @@ int main()
     /* Test getProperty() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing getProperty() ...\n");
-    objectpath = newCMPIObjectPath("root/iicmv1", "CIM_PhysicalPackage", NULL);
-    CMAddKey(objectpath, "CreationClassName", "CIM_PhysicalPackage", CMPI_chars);
-    CMAddKey(objectpath, "Tag", "IBM Asset Tag:0000001", CMPI_chars);
+    objectpath = newCMPIObjectPath("root/cimv2", "Linux_ComputerSystem", NULL);
+    CMAddKey(objectpath, "CreationClassName", "Linux_ComputerSystem", CMPI_chars);
+    CMAddKey(objectpath, "Name", "localhost.localdomain", CMPI_chars);
 
     data = cc->ft->getProperty(cc, objectpath, "ElementName", &status);
     /* Print the results */
@@ -61,7 +59,7 @@ int main()
     {
         printf("result(s):\n");
         printf("ElementName=%s\n", (char*)(data.value.string)->hdl);
-	native_release_CMPIValue(data.type,&data.value);
+	/*	native_release_CMPIValue(data.type,&data.value);*/
     }
 
     data = cc->ft->getProperty(cc, objectpath, "Width", &status);
@@ -72,12 +70,12 @@ int main()
     {
         printf("result(s):\n");
         printf("Width=%s\n", (char*)(data.value.string)->hdl);
-	native_release_CMPIValue(data.type,&data.value);
+	/*	native_release_CMPIValue(data.type,&data.value);*/
     }
 
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
   
     return 0;
 }
