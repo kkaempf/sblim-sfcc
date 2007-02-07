@@ -1,3 +1,8 @@
+2007-02-07  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* configure.ac, Makefile.am: 
+	Feature 1654428: remove libsfcUtil from sfcc
+
 2007-01-18  Sven Schuetz
 
 	* array.c, cimXmlParser.c, client.c, value.c, cimXmlParser.h

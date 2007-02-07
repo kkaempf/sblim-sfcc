@@ -34,7 +34,7 @@ AC_HEADER_TIME
 AC_STRUCT_TM
 
 # Checks for libraries
-AC_CHECK_LIB(curl,curl_easy_init)
+AC_CHECK_LIB(curl,curl_easy_init,[LIBCURL=-lcurl],[AC_MSG_ERROR([Could not find required libcurl])])
 
 # Checks for library functions.
 AC_FUNC_ALLOCA
