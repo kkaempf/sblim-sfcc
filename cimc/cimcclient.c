@@ -1,6 +1,6 @@
 
 /*
- * $Id: cimcclient.c,v 1.1 2007/02/07 14:25:17 mihajlov Exp $
+ * $Id: cimcclient.c,v 1.2 2007/02/07 18:09:58 mihajlov Exp $
  *
  * © Copyright IBM Corp. 2007
  *
@@ -62,9 +62,9 @@ CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
        *rc=0;
        *msg=NULL;
        rv = init(id,options,rc,msg); 
+       rv->hdl=library;
      }
    }
-   rv->hdl=library;
    return rv;
 }
 

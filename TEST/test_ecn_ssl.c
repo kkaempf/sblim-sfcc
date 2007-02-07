@@ -54,7 +54,7 @@ int main()
     /* Test enumClassNames() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing enumClassNames() ...\n");   
-    objectpath = newCMPIObjectPath("root/iicmv1", NULL, NULL);
+    objectpath = newCMPIObjectPath("root/cimv2", NULL, NULL);
     enumeration = cc->ft->enumClassNames(cc, objectpath, 0, &status);
 
     /* Print the results */
