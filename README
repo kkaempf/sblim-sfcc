@@ -79,7 +79,6 @@ These are:
       native_release_CMPIValue
       newList
       newStringBuffer
-      value2Chars
 As consequence of this it was necessary to re-version the library which
 will require a re-linking of your application.
 

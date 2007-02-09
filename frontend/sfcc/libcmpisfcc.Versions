@@ -10,6 +10,7 @@ CMPISFCC_2.0 {
       native_new_CMPIInstance;
       native_new_CMPIString;
       newCMPIObjectPath;
+      value2Chars;
     local:
       *;
 };
