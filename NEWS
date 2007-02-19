@@ -9,6 +9,7 @@ development of additional language frontends (bindings).
 New Features
 - 1654163: Restructure for pluggable backends
 - 1654428: Removed obsolete libsfcUtil
+- 1663663: Supplied spec file for RPM build
 
 Changes in 1.1.1:
 =================

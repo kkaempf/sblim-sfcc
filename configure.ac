@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(sblim-sfcc, 2.0.0preview1, sblim-devel@lists.sourceforge.net)
+AC_INIT(sblim-sfcc, 1.99.preview1, sblim-devel@lists.sourceforge.net)
 AC_CONFIG_SRCDIR([cimc/cimcclient.c])
 AC_CONFIG_HEADER([config.h])
 
@@ -53,5 +53,5 @@ then
    AC_DEFINE(HAVE_HTTP_CHUNKING,1,[Indication support enabled.])
 fi
 
-AC_CONFIG_FILES([Makefile TEST/Makefile])
+AC_CONFIG_FILES([Makefile sfcc.spec TEST/Makefile])
 AC_OUTPUT

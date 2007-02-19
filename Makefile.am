@@ -1,4 +1,6 @@
-# $Id: Makefile.am,v 1.12 2007/02/07 18:16:50 mihajlov Exp $
+# $Id: Makefile.am,v 1.13 2007/02/19 17:22:13 mihajlov Exp $
+
+docdir=$(datadir)/doc/sfcc-$(VERSION)
 
 Libcimcclient_CURRENT=0
 Libcimcclient_REVISION=0
@@ -17,6 +19,33 @@ AM_YFLAGS=-d
 
 BUILT_SOURCES = \
 	cimXmlResp.h cimXmlResp.c
+
+dist_man_MANS = man/man3/CMCIClient.3 man/man3/CMCIClientFT.associatorNames.3 \
+	man/man3/CMCIClientFT.associators.3 \
+	man/man3/CMCIClientFT.createInstance.3 \
+	man/man3/CMCIClientFT.deleteInstance.3 \
+	man/man3/CMCIClientFT.enumClasses.3 \
+	man/man3/CMCIClientFT.enumClassNames.3 \
+	man/man3/CMCIClientFT.enumInstanceNames.3 \
+	man/man3/CMCIClientFT.enumInstances.3 \
+	man/man3/CMCIClientFT.execQuery.3 \
+	man/man3/CMCIClientFT.getClass.3 \
+	man/man3/CMCIClientFT.getInstance.3 \
+	man/man3/CMCIClientFT.getProperty.3 \
+	man/man3/CMCIClientFT.invokeMethod.3 \
+	man/man3/CMCIClientFT.referenceNames.3 \
+	man/man3/CMCIClientFT.references.3 \
+	man/man3/CMCIClientFT.setInstance.3 \
+	man/man3/CMCIClientFT.setProperty.3 \
+	man/man3/cmciConnect.3 man/man3/CMPIArgs.3 \
+	man/man3/CMPIDateTime.3 man/man3/CMPIEnumeration.3 \
+	man/man3/CMPIInstance.3 man/man3/CMPIObjectPath.3 \
+	man/man3/CMPIStatus.3 man/man3/CMPIString.3 \
+	man/man3/CMPIValue.3
+
+dist_doc_DATA = README AUTHORS COPYING
+
+EXTRA_DIST=sfcc.spec
 
 noinst_HEADERS = \
 	backend/cimxml/cimXmlParser.h \
