@@ -1,5 +1,5 @@
 #
-# $Id: sfcc.spec.in,v 1.1 2007/02/19 17:22:14 mihajlov Exp $
+# $Id: sfcc.spec.in,v 1.2 2007/02/27 14:07:00 mihajlov Exp $
 #
 # Package spec for @PACKAGE@
 #
@@ -14,7 +14,7 @@ Group: Systems Management/Base
 License: EPL
 URL: http://www.sblim.org
 Source0: ftp://dl.sourceforge.net/pub/s/sb/sblim/%{name}-%{version}.tar.bz2
-BuildRequires: curl-devel
+BuildRequires: curl-devel gcc-c++
 Requires: curl
 
 %Description
