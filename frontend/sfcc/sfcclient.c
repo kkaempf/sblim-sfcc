@@ -48,12 +48,15 @@ static CMPIStatus cmciRelease(CMCIClient* cc)
   CMPIStatus rc = {CMPI_RC_OK, NULL};
   pthread_mutex_lock(&ConnectionControl.ccMux);
   if (cc) {
-    cc->ft->release = ConnectionControl.ccRelease;
-    cc->ft->release(cc);
+    ConnectionControl.ccRelease(cc);
   }
   if (ConnectionControl.ccCount > 0) {
     if (--ConnectionControl.ccCount == 0) {
+      /* restore client release function */
+      cc->ft->release = ConnectionControl.ccRelease;
       ReleaseCIMCEnv(ConnectionControl.ccEnv);
+      ConnectionControl.ccEnv = NULL;
+      ConnectionControl.ccRelease = NULL;
     }
   }
   pthread_mutex_unlock(&ConnectionControl.ccMux);
@@ -72,9 +75,9 @@ CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
 			 const char * certFile, const char * keyFile,
 			 CMPIStatus *rc)
 {  
-  CMCIClient     *cc;
+  CMCIClient     *cc = NULL;
   char           *msg;
-  int             retc;
+  int             retc = 0;
   char           *client;
 
   pthread_mutex_lock(&ConnectionControl.ccMux);
@@ -95,7 +98,9 @@ CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
     ConnectionControl.ccCount += 1;
     cc = (CMCIClient*)ConnectionControl.ccEnv->ft->connect2(ConnectionControl.ccEnv,hn,scheme,port,user,pwd,verifyMode,trustStore,certFile,keyFile,(CIMCStatus*)rc);
     if (cc) {
-      ConnectionControl.ccRelease = cc->ft->release;
+      if (ConnectionControl.ccRelease == NULL) {
+	ConnectionControl.ccRelease = cc->ft->release;
+      }
       cc->ft->release=cmciRelease;
     }
   }

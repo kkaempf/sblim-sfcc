@@ -11,6 +11,9 @@ New Features
 - 1654428: Removed obsolete libsfcUtil
 - 1663663: Supplied spec file for RPM build
 
+Bugs:
+- 1670019: Fixed connection failures on second parallel connection
+
 Changes in 1.1.1:
 =================
 Bugs:

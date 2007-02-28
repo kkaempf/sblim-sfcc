@@ -1,3 +1,10 @@
+2007-02-28  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* frontend/sfcc/sfcclient.c: 
+	Fixed 1670019: connection failures on second parallel connection
+	Uninitialized variables and a deadlock situation didn't allow
+	to run more than on connection at a given point in time.
+
 2007-02-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* sfcc.spec.in, configure.ac: 
