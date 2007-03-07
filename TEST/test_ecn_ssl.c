@@ -71,8 +71,8 @@ int main()
 
     if (enumeration) CMRelease(enumeration);
     if (objectpath) CMRelease(objectpath);
-    if (cc) CMRelease(cc);
     if (status.msg) CMRelease(status.msg);
+    if (cc) CMRelease(cc);
     
     return 0;
 }

@@ -20,7 +20,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -310,11 +310,11 @@ int sameCMPIObjectPath (const CMPIObjectPath *cop1, const CMPIObjectPath *cop2)
    char *cv1, *cv2;
 
    /* Check if name spaces are the same */
-   if (strcmp(ncop1->nameSpace, ncop2->nameSpace) != 0)
+   if (strcasecmp(ncop1->nameSpace, ncop2->nameSpace) != 0)
       return 0;
 
    /* Check if classnames are the same */
-   if (strcmp(ncop1->classname, ncop2->classname) != 0)
+   if (strcasecmp(ncop1->classname, ncop2->classname) != 0)
       return 0;
 
    /* Check if the key count is the same */

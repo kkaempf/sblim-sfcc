@@ -1,3 +1,12 @@
+2007-03-07  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* backend/cimxml/instance.c, backend/cimxml/objectpath.c,
+	backend/cimxml/property.c, backend/cimxml/qualifier.c: 
+	Fixed 1675554: case sensitive comparisons
+
+	* TEST/show.c, TEST/test_ecn_ssl.c, TEST/test_gc.c:
+	Updated test programs, partially related to 1675554.
+
 2007-02-28  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* frontend/sfcc/sfcclient.c: 

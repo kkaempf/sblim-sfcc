@@ -13,6 +13,7 @@ New Features
 
 Bugs:
 - 1670019: Fixed connection failures on second parallel connection
+- 1675554: Fixed case sensitive comparisons
 
 Changes in 1.1.1:
 =================

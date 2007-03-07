@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -74,7 +74,7 @@ static int __contained_list ( char ** list, const char * name )
 	if ( list ) {
 
 		while ( *list )
-			if ( strcmp ( *list++, name ) == 0 ) return 1;
+			if ( strcasecmp ( *list++, name ) == 0 ) return 1;
 	}
 	return 0;
 }

@@ -216,20 +216,28 @@ void showClass( CMPIConstClass * class )
       printf("properties:\n");
         for (i=0; i<numproperties; i++)
         {
-         CMPIString * propertyname;
-            CMPIData data = class->ft->getPropertyAt(class, i,
-                                                     &propertyname, NULL);
-            if (data.state==0)
+	  CMPIString * propertyname;
+	  CMPIData data = class->ft->getPropertyAt(class, i,
+						   &propertyname, NULL);
+	  if (propertyname) {
+	    CMPIData data = class->ft->getPropertyQualifier(class,(char *)propertyname->hdl,"KEY",NULL);
+	    if (data.state != CMPI_nullValue && data.value.boolean) {
+	      printf ("[KEY]");
+	    }
+	  }
+	  if (data.state==0)
             {
-                printf("\t%s=%s\n", (char *)propertyname->hdl,
-                       cv=value2Chars(data.type, &data.value));
-	    if(cv) free(cv);	    
-	 }
-         else printf("\t%s=NIL\n", (char *)propertyname->hdl);
-	 if (propertyname) CMRelease(propertyname);
-      }
-   }
-
-   if (classname) CMRelease(classname);
+	      printf("\t%s=%s\n", (char *)propertyname->hdl,
+		     cv=value2Chars(data.type, &data.value));
+	      if(cv) free(cv);	    
+	    }
+	  else printf("\t%s=NIL\n", (char *)propertyname->hdl);
+	  if (propertyname) {
+	    CMRelease(propertyname);
+	  }
+	}
+    }
+    
+    if (classname) CMRelease(classname);
 }
 

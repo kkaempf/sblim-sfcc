@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -106,7 +106,7 @@ static int __addQualifier ( struct native_qualifier ** qual,
       return 0;
    }
    
-   return ( strcmp ( (*qual)->name, name ) == 0 ||
+   return ( strcasecmp ( (*qual)->name, name ) == 0 ||
           __addQualifier ( &( (*qual)->next ), name, type, state, value ) );
 }
 
@@ -123,7 +123,7 @@ static int __setQualifier ( struct native_qualifier * qual,
 
    if ( qual == NULL ) return -1;
 
-   if ( strcmp ( qual->name, name ) == 0 ) {
+   if ( strcasecmp ( qual->name, name ) == 0 ) {
 
       if ( ! ( qual->state & CMPI_nullValue ) )
          native_release_CMPIValue ( qual->type, &qual->value );
@@ -151,7 +151,7 @@ static struct native_qualifier * __getQualifier ( struct native_qualifier * qual
 	if ( ! qual || ! name ) {
 		return NULL;
 	}
-	return ( strcmp ( qual->name, name ) == 0 )?
+	return ( strcasecmp ( qual->name, name ) == 0 )?
 		qual: __getQualifier ( qual->next, name );
 }
 

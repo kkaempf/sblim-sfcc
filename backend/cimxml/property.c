@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -98,7 +98,7 @@ static int __addProperty ( struct native_property ** prop,
       return 0;
    }
    
-   return ( strcmp ( (*prop)->name, name ) == 0 ||
+   return ( strcasecmp ( (*prop)->name, name ) == 0 ||
           __addProperty ( &( (*prop)->next ), name, type, state, value ) );
 }
 
@@ -115,7 +115,7 @@ static int __setProperty ( struct native_property * prop,
    
    if ( prop == NULL ) return -1;
 
-   if ( strcmp ( prop->name, name ) == 0 ) {
+   if ( strcasecmp ( prop->name, name ) == 0 ) {
 
       if ( ! ( prop->state & CMPI_nullValue ) )
          native_release_CMPIValue ( prop->type, &prop->value );
@@ -143,7 +143,7 @@ static struct native_property * __getProperty ( struct native_property * prop,
 	if ( ! prop || ! name ) {
 		return NULL;
 	}
-	return ( strcmp ( prop->name, name ) == 0 )?
+	return ( strcasecmp ( prop->name, name ) == 0 )?
 		prop: __getProperty ( prop->next, name );
 }
 

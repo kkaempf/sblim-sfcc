@@ -48,7 +48,7 @@ int main()
     printf("\n----------------------------------------------------------\n");
     printf("Testing getClass() ...\n");
     objectpath = newCMPIObjectPath("root/cimv2", "CIM_OperatingSystem", NULL);
-    class = cc->ft->getClass(cc, objectpath, 0, NULL, &status);
+    class = cc->ft->getClass(cc, objectpath, CMPI_FLAG_IncludeQualifiers, NULL, &status);
 
     /* Print the results */
     printf( "getClass() rc=%d, msg=%s\n", 
