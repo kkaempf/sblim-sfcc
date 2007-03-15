@@ -20,6 +20,7 @@
 #include <cmci.h>
 #include <native.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "show.h"
 
@@ -42,12 +43,17 @@ int main()
     if (cim_host_passwd == NULL)
 	cim_host_passwd = "password";
     cc = cmciConnect(cim_host, NULL, "5988",
-			       cim_host_userid, cim_host_passwd, NULL);
+			       cim_host_userid, cim_host_passwd, &status);
+
+    if (cc == NULL || status.rc != CMPI_RC_OK) {
+      fprintf (stderr, "Connect failed: client handle = %x, status.rc = %d\n", cc, status.rc);
+      return -1;
+    }
 
     /* Test getClass() */
     printf("\n----------------------------------------------------------\n");
     printf("Testing getClass() ...\n");
-    objectpath = newCMPIObjectPath("root/cimv2", "CIM_OperatingSystem", NULL);
+    objectpath = newCMPIObjectPath("root/cimv2", "CIM_ComputerSystem", NULL);
     class = cc->ft->getClass(cc, objectpath, CMPI_FLAG_IncludeQualifiers, NULL, &status);
 
     /* Print the results */

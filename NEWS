@@ -14,6 +14,8 @@ New Features
 Bugs:
 - 1670019: Fixed connection failures on second parallel connection
 - 1675554: Fixed case sensitive comparisons
+- 1681489: Fixed connection release failures
+- 1681487: Fixed incompatible constclass function table
 
 Changes in 1.1.1:
 =================

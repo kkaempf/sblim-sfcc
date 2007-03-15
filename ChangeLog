@@ -1,3 +1,13 @@
+2007-03-15  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* cimc/cimcft.h, TEST/test_gc.c, TEST/test_qualifiers.c: 
+	Fixed 1681487: sfcc cimc constclass definition incompatible with cmci
+	constclass definition, adjusted function table.
+
+	* frontend/sfcc/sfcclient.c: 
+	Fixed 1681489: sfcc connection release function restore leads to 
+	failures.
+
 2007-03-07  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* backend/cimxml/instance.c, backend/cimxml/objectpath.c,

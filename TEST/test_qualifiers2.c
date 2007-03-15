@@ -70,6 +70,8 @@ int main( int argc, char * argv[] )
              fprintf(stderr,"Releasing\n");
            CMRelease(clone);  
             
+	   count=data.value.cls->ft->getPropertyQualifierCount(data.value.cls,"NameFormat",NULL);
+            fprintf(stderr,"Property Qualifier count(NameFormat): %d\n",count);
             qd=data.value.cls->ft->getPropertyQualifier(data.value.cls,
                "NameFormat","ValueMap",&status);
             showProperty(qd,"NameFormat - ValueMap"); 

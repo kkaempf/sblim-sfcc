@@ -1,6 +1,6 @@
 
 /*
- * $Id: cimcft.h,v 1.1 2007/02/07 14:25:18 mihajlov Exp $
+ * $Id: cimcft.h,v 1.2 2007/03/15 14:16:01 mihajlov Exp $
  *
  * © Copyright IBM Corp. 2007
  *
@@ -46,7 +46,6 @@ extern "C" {
     CIMCStatus(*release) (CIMCClass * cc);
     CIMCClass *(*clone) (CIMCClass * cc, CIMCStatus * rc); 
     CIMCString *(*getClassName)(CIMCClass* cc, CIMCStatus * rc);
-    CIMCString *(*getSuperClassName)(CIMCClass* cc, CIMCStatus * rc);
    
     CIMCData (*getProperty) (CIMCClass * cc, const char *prop, CIMCStatus * rc);
     CIMCData (*getPropertyAt) (CIMCClass * cc, CIMCCount i,
