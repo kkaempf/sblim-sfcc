@@ -53,7 +53,7 @@ static CMPIStatus cmciRelease(CMCIClient* cc)
   if (ConnectionControl.ccCount > 0) {
     if (--ConnectionControl.ccCount == 0) {
       /* restore client release function */
-      cc->ft->release = ConnectionControl.ccRelease;
+      //      cc->ft->release = ConnectionControl.ccRelease;
       ReleaseCIMCEnv(ConnectionControl.ccEnv);
       ConnectionControl.ccEnv = NULL;
       ConnectionControl.ccRelease = NULL;
