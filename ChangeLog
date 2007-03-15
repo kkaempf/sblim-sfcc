@@ -1,5 +1,8 @@
 2007-03-15  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
+	* frontend/sfcc/sfcclient.c:
+	Fixed 1681555: sfcc backend selection via "scheme" parameter
+
 	* cimc/cimcft.h, TEST/test_gc.c, TEST/test_qualifiers.c: 
 	Fixed 1681487: sfcc cimc constclass definition incompatible with cmci
 	constclass definition, adjusted function table.

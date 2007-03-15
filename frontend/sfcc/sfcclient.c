@@ -84,7 +84,11 @@ CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
   if (ConnectionControl.ccCount == 0) {
     client = getenv("SFCC_CLIENT");
     if (client == NULL) {
-      client = DefaultClient;
+      if (scheme == NULL || strncasecmp(scheme,"http",4) == 0) {
+	client = DefaultClient;
+      } else {
+	client = scheme;
+      }
     }
     ConnectionControl.ccEnv = NewCIMCEnv(client,0,&retc, &msg);
   }
