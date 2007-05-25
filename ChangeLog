@@ -1,3 +1,8 @@
+2007-05-24  Adrian Schuur
+
+	* objectpath.c:
+	Fixed 1722381 sfcc fails on getInstance for associations
+
 2007-03-15  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* frontend/sfcc/sfcclient.c:

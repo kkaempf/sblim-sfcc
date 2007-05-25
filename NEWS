@@ -1,5 +1,10 @@
 Small Footprint CIM Client Library NEWS
 
+Changes in 2.0.1:
+=================
+Bugs:
+- 1722381 sfcc fails on getInstance for associations
+
 Changes in 2.0.0:
 =================
 Major restructuring in order to support alternative
