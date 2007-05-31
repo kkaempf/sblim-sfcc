@@ -242,6 +242,9 @@ static void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
       nq = q->next;
       q = nq;
    }
+   if (qs) {
+      qs->first = qs->last = NULL;
+   }
 }
 
 static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
@@ -347,6 +350,9 @@ static void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
       }
       nq = q->next;
       q = nq;
+   }
+   if (qs) {
+      qs->first = qs->last = NULL;
    }
 }
 
