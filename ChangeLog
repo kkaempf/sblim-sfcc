@@ -1,3 +1,9 @@
+2007-06-20  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* backend/cimxml/client.c: 
+	Fixed 1740368: memory can be corrupted when long string properties are
+	being set, due to static buffer usage.
+
 2007-05-31  Adrian Schuur
 
 	* cimXmlResp.y:

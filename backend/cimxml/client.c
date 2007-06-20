@@ -560,23 +560,40 @@ char * XmlToAsciiStr(char *XmlStr)
 
 char * AsciiToXmlStr(char *AsciiStr)
 {
-    char *Ap, XmlStr[4096], *Xp = &XmlStr[0];
+    char *Ap;
+    char *XmlStr; 
+    int  Xlen;
     int  i;
-    for (Ap = AsciiStr; *Ap != '\0'; Ap++)
-    {
-        for (i = 0; i < SizeofXmlEscapes; ++i)
-            if (*Ap == XmlEscapes[i].XmlAscii)
-                break;
-        if (i < SizeofXmlEscapes)
-        {
-            memcpy(Xp, XmlEscapes[i].XmlEscape, XmlEscapes[i].XmlEscapeSize);
-            Xp += XmlEscapes[i].XmlEscapeSize;
-        }
-        else
-            *Xp++ = *Ap;
+    size_t buflen;
+    if (AsciiStr) {
+      buflen = strlen(AsciiStr) + 1;
+      XmlStr = malloc(buflen);
     }
-    *Xp = '\0';
-    return strdup(XmlStr);
+    if (XmlStr) {
+      Xlen = 0;
+      for (Ap = AsciiStr; *Ap != '\0'; Ap++)
+	{
+	  for (i = 0; i < SizeofXmlEscapes; ++i)
+            if (*Ap == XmlEscapes[i].XmlAscii)
+	      break;
+	  if (i < SizeofXmlEscapes)
+	    {
+	      if (buflen - Xlen <= XmlEscapes[i].XmlEscapeSize) {
+		buflen = 2 * buflen;
+		XmlStr = realloc(XmlStr,buflen);
+		if (XmlStr == NULL) {
+		  break;
+		}
+	      }
+	      memcpy(XmlStr + Xlen, XmlEscapes[i].XmlEscape, XmlEscapes[i].XmlEscapeSize);
+	      Xlen += XmlEscapes[i].XmlEscapeSize;
+	    }
+	  else
+            XmlStr[Xlen++] = *Ap;
+	}
+      XmlStr[Xlen] = '\0';
+    }
+    return XmlStr;
 }
 
 /*--------------------------------------------------------------------------*/
