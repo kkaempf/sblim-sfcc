@@ -6,6 +6,7 @@ Bugs:
 - 1740368 Fixed memory corruption on long string properties
 - 1722381 sfcc fails on getInstance for associations
 - 1726113 Parser not clearing qualifier cache
+- 1737254 sfcc can segfault when setting null values
 
 Changes in 2.0.0:
 =================

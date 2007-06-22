@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -127,7 +127,7 @@ static int __setProperty ( struct native_property * prop,
       }
 
       else { 
-         if ( type != CMPI_null ) 
+         if ( type != CMPI_null && value != NULL) 
              prop->value = native_clone_CMPIValue ( type, value, &rc );
          else prop->state = CMPI_nullValue;
       }
