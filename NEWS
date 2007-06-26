@@ -7,6 +7,7 @@ Bugs:
 - 1722381 sfcc fails on getInstance for associations
 - 1726113 Parser not clearing qualifier cache
 - 1737254 sfcc can segfault when setting null values
+- 1743362 Fixed segfaults on 64-bit systems
 
 Changes in 2.0.0:
 =================

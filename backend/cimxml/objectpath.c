@@ -20,7 +20,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 */
 
 #include <stdio.h>
@@ -36,6 +36,7 @@
 #include "dmalloc.h"
 #endif
 
+extern void *newList();
 extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str,
 								 int uri);
 void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop);
