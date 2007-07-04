@@ -1,3 +1,9 @@
+2007-07-04  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* backend/cimxml/client.c: 
+	Fixed 1745279: sfcc does not support complex array types as IN args.
+	Datatypes CMPI_refA and CMPI_instanceA were not handled properly.
+
 2007-06-26  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* backend/cimxml/objectpath.c: 

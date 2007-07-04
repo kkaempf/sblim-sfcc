@@ -788,6 +788,36 @@ static void addXmlPropertyListParam(UtilStringBuffer *sb, char** properties)
 
 /* --------------------------------------------------------------------------*/
 
+static void addXmlReference(UtilStringBuffer *sb,
+			    CMPIObjectPath * cop)
+{
+  CMPIString * name;
+
+  sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
+  sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
+  sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
+  name = cop->ft->getHostname(cop, NULL);
+  sb->ft->append3Chars(sb, "<HOST>",
+		       name != NULL ? 
+		       (char *)name->hdl : "localhost",
+		       "</HOST>\n");
+  if (name != NULL)
+    CMRelease(name);
+  addXmlNamespace(sb, cop);
+  sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
+
+  name = cop->ft->getClassName(cop, NULL);
+  sb->ft->append3Chars(sb, "<INSTANCENAME CLASSNAME=\"",
+		       (char*)name->hdl, "\">\n");
+  CMRelease(name);
+  pathToXml(sb, cop);
+  sb->ft->appendChars(sb,"</INSTANCENAME>\n");
+  sb->ft->appendChars(sb,"</INSTANCEPATH>\n");
+  sb->ft->appendChars(sb,"</VALUE.REFERENCE>\n");
+}
+
+/* --------------------------------------------------------------------------*/
+
 static void addXmlNamedInstance(UtilStringBuffer *sb,
                                 CMPIObjectPath * cop, CMPIInstance * inst)
 {
@@ -2098,42 +2128,41 @@ CMPIData invokeMethod(
                                           argname->hdl, argdata);
              break;
          case CMPI_instance:	/* TODO: UNTESTED */
-             if (argdata.type & CMPI_ARRAY)
-                 goto not_supported;
              sb->ft->append3Chars(sb, "<PARAMVALUE NAME=\"",
                                       argname->hdl,
                                       "\" PARAMTYPE=\"instance\">\n");
-             addXmlNamedInstance(sb, NULL, argdata.value.inst);
-      sb->ft->appendChars(sb,"</PARAMVALUE>\n");
+	     if (argdata.type & CMPI_ARRAY) {
+	       int i;
+	       int n = CMGetArrayCount(argdata.value.array, NULL);
+	       sb->ft->appendChars(sb, "<VALUE.ARRAY>\n");	       
+	       for (i=0; i < n; i++) {
+		 CMPIData instel = 
+		   CMGetArrayElementAt(argdata.value.array,i,NULL);
+		 addXmlNamedInstance(sb, NULL, instel.value.inst);
+	       }
+	       sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");	       
+	     } else {
+	       addXmlNamedInstance(sb, NULL, argdata.value.inst);
+	     }
+	     sb->ft->appendChars(sb,"</PARAMVALUE>\n");
              break;
          case CMPI_ref:
-             if (argdata.type & CMPI_ARRAY)
-                 goto not_supported;
-             argcop = argdata.value.ref;
              sb->ft->append3Chars(sb, "<PARAMVALUE NAME=\"",
                                       argname->hdl,
                                       "\" PARAMTYPE=\"reference\">\n");
-             sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
-             sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
-             sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
-             name = argcop->ft->getHostname(argcop, NULL);
-             sb->ft->append3Chars(sb, "<HOST>",
-                                  name != NULL ? 
-                                     (char *)name->hdl : "localhost",
-                                  "</HOST>\n");
-             if (name != NULL)
-                 CMRelease(name);
-             addXmlNamespace(sb, argcop);
-             sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
-
-             name = argcop->ft->getClassName(argcop, NULL);
-             sb->ft->append3Chars(sb, "<INSTANCENAME CLASSNAME=\"",
-			    (char*)name->hdl, "\">\n");
-             CMRelease(name);
-             pathToXml(sb, argcop);
-             sb->ft->appendChars(sb,"</INSTANCENAME>\n");
-             sb->ft->appendChars(sb,"</INSTANCEPATH>\n");
-             sb->ft->appendChars(sb,"</VALUE.REFERENCE>\n");
+	     if (argdata.type & CMPI_ARRAY) {
+	       int i;
+	       int n = CMGetArrayCount(argdata.value.array, NULL);
+	       sb->ft->appendChars(sb, "<VALUE.ARRAY>\n");	       
+	       for (i=0; i < n; i++) {
+		 CMPIData refel = 
+		   CMGetArrayElementAt(argdata.value.array,i,NULL);
+		 addXmlReference(sb,refel.value.ref);
+	       }
+	       sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");	       
+	     } else {
+	       addXmlReference(sb,argdata.value.ref);
+	     }
              sb->ft->appendChars(sb,"</PARAMVALUE>\n");
              break;
          default:
