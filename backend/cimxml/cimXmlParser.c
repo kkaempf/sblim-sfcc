@@ -1099,14 +1099,14 @@ static int procParamRefArray(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PARAMETER.REFARRAY")) {
       attr[1].attr = NULL;
-      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.REFARRAY", ZTOK_PARAM)) {
+      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.REFARRAY", ZTOK_PARAMREFARRAY)) {
          memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
          lvalp->xtokParam.pType = ZTOK_PARAMREFARRAY;
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.refClass = attr[1].attr;
          lvalp->xtokParam.arraySize = attr[2].attr;
          lvalp->xtokParam.type = CMPI_refA;
-         return XTOK_PARAM;
+         return XTOK_PARAMREFARRAY;
       }
    }
    return 0;

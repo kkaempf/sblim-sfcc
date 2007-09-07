@@ -1073,6 +1073,17 @@ methodData
        addParam(PARM,&($$.params),&$2);
        PARM->MPQs = 0;
     }
+    | methodData XTOK_PARAMREFARRAY parameter ZTOK_PARAMREFARRAY
+    {
+       if (PARM->MPs == 0)
+          memset(&$$.params,0,sizeof($$.params));
+       PARM->MPs++;
+       if (PARM->MPQs)
+          $2.qualifiers = $3.qualifiers;
+       else memset(&$2.qualifiers,0,sizeof($2.qualifiers));
+       addParam(PARM,&($$.params),&$2);
+       PARM->MPQs = 0;
+    }
 ;
 
 parameter
