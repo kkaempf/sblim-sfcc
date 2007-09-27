@@ -5,6 +5,7 @@ Changes in 2.0.2:
 Bugs:
 - 1745279 Fixed handling of complex array IN arguments
 - 1777906 Fixed issue with the SFCC xml parsing code
+- 1803867 invokeMethod test now works correctly
 
 Changes in 2.0.1:
 =================
