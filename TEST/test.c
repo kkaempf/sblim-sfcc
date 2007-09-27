@@ -293,6 +293,31 @@ int main( int argc, char * argv[] )
    }
 
    if (1) {
+      /* Test invokeMethod() */
+      printf("\n----------------------------------------------------------\n");
+      printf("Testing invokeMethod() ...\n");
+      objectpath = newCMPIObjectPath("root/cimv2", "CWS_Authorization", NULL);
+      CMAddKey(objectpath, "Username", "bestorga", CMPI_chars);
+      CMAddKey(objectpath, "Classname", "foobar", CMPI_chars);
+      CMPIArgs * argsin = newCMPIArgs(NULL);
+      CMPIValue value;
+      value.string = newCMPIString("Query", NULL);
+      argsin->ft->addArg(argsin, "operation", &value, CMPI_string);
+      CMPIData data = cc->ft->invokeMethod(cc, objectpath, "IsAuthorized", argsin, NULL, &status);
+                                                                                                                
+      /* Print the results */
+      printf("invokeMethod() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+      if (!status.rc) {
+         printf("result(s):\n");
+         printf("User 'bestorga' IsAuthorized? %s\n", value2Chars(data.type, &data.value));
+      }
+      if (argsin) CMRelease(argsin);
+      if (objectpath) CMRelease(objectpath);
+      if (status.msg) CMRelease(status.msg);
+      if (value.string) CMRelease(value.string);
+   }
+
+   if (1) {
       /* Test deleteInstance() */
       printf("\n----------------------------------------------------------\n");
       printf("Testing deleteInstance() ...\n");
@@ -432,31 +457,6 @@ int main( int argc, char * argv[] )
 
       /* Print the results */
       printf("setProperty() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-      if (objectpath) CMRelease(objectpath);
-      if (status.msg) CMRelease(status.msg);
-      if (value.string) CMRelease(value.string);
-   }
-
-   if (1) {
-      /* Test invokeMethod() */
-      printf("\n----------------------------------------------------------\n");
-      printf("Testing invokeMethod() ...\n");
-      objectpath = newCMPIObjectPath("root/cimv2", "CWS_Authorization", NULL);
-      CMAddKey(objectpath, "Username", "bestorga", CMPI_chars);
-      CMAddKey(objectpath, "Classname", "CIM_OperatingSystem", CMPI_chars);
-      CMPIArgs * argsin = newCMPIArgs(NULL);
-      CMPIValue value;
-      value.string = newCMPIString("Query", NULL);
-      argsin->ft->addArg(argsin, "operation", &value, CMPI_string);
-      CMPIData data = cc->ft->invokeMethod(cc, objectpath, "IsAuthorized", argsin, NULL, &status);
-                                                                                                                
-      /* Print the results */
-      printf("getProperty() rc=%d, msg=%s\n", status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-      if (!status.rc) {
-         printf("result(s):\n");
-         printf("PrimaryOwnerName=%s\n", (char*)(data.value.string)->hdl);
-      }
-      if (argsin) CMRelease(argsin);
       if (objectpath) CMRelease(objectpath);
       if (status.msg) CMRelease(status.msg);
       if (value.string) CMRelease(value.string);
