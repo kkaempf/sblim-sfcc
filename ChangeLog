@@ -1,6 +1,6 @@
 2007-09-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
-	* TEST/test.c
+	* TEST/test.c:
 	invokeMethod test now works correctly
 
 2007-06-20  Sven Schuetz <sven@de.ibm.com>
