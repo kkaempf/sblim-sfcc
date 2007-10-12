@@ -49,6 +49,7 @@
 void list2StringBuffer(UtilStringBuffer *sb, UtilList *ul, char *sep);
 char *getResponse(CMCIConnection *con, CMPIObjectPath *cop);
 CMCIConnection *initConnection(CMCIClientData *cld);
+static void addXmlReference(UtilStringBuffer *sb, CMPIObjectPath * cop);
 
 extern UtilList *getNameSpaceComponents(CMPIObjectPath * cop);
 extern void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop);
@@ -660,7 +661,7 @@ static void addXmlValue(UtilStringBuffer *sb,
     	sb->ft->appendChars(sb, ContainerTag);
     }
     sb->ft->append3Chars(sb, " NAME=\"", ValueName, "\"");
-    if (xmlTypeStr)
+    if (ContainerType && xmlTypeStr)
         sb->ft->append5Chars(sb, " ", ContainerType, "=\"", xmlTypeStr, "\"");
     sb->ft->appendChars(sb, ">\n");
     if (isArray)
@@ -682,7 +683,11 @@ static void addXmlValue(UtilStringBuffer *sb,
         }
         sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");
     }
-    else
+    else if (data.type == CMPI_ref)
+    {
+        addXmlReference(sb, data.value.ref);
+    }
+    else 
     {
         cv = value2Chars(valtyp, &(data.value));
         if (valtyp == CMPI_string || valtyp == CMPI_chars)
@@ -719,6 +724,24 @@ static void addXmlNamespace(UtilStringBuffer *sb, CMPIObjectPath *cop)
    CMRelease(nsc);
 }
 
+/* --------------------------------------------------------------------------*/
+
+static void addXmlNamespacePath(UtilStringBuffer *sb, CMPIObjectPath *cop)
+{
+  CMPIString * hn;
+  
+  hn = cop->ft->getHostname(cop, NULL);
+  
+  sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
+  sb->ft->append3Chars(sb, "<HOST>",
+               (hn != NULL && hn->hdl != NULL) ? 
+               (char *)hn->hdl : "localhost",
+               "</HOST>\n");
+  if (hn != NULL)
+    CMRelease(hn);
+  addXmlNamespace(sb, cop);
+  sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
+}
 /* --------------------------------------------------------------------------*/
 
 static void addXmlObjectName(UtilStringBuffer *sb, CMPIObjectPath *cop,
@@ -791,32 +814,79 @@ static void addXmlPropertyListParam(UtilStringBuffer *sb, char** properties)
 static void addXmlReference(UtilStringBuffer *sb,
 			    CMPIObjectPath * cop)
 {
-  CMPIString * name;
+  CMPIString  *hn, *ns, *name;
+
+  hn = cop->ft->getHostname(cop, NULL);
+  ns = cop->ft->getNameSpace(cop, NULL);
 
   sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
-  sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
-  sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
-  name = cop->ft->getHostname(cop, NULL);
-  sb->ft->append3Chars(sb, "<HOST>",
-		       name != NULL ? 
-		       (char *)name->hdl : "localhost",
-		       "</HOST>\n");
-  if (name != NULL)
-    CMRelease(name);
-  addXmlNamespace(sb, cop);
-  sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
-
+  
+  if(hn && hn->hdl && ns && ns->hdl) {
+    sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
+    addXmlNamespacePath(sb, cop);
+  }
+  else if(ns && ns->hdl) {
+    sb->ft->appendChars(sb, "<LOCALINSTANCEPATH>\n");
+    addXmlNamespace(sb, cop);
+  }
+  
   name = cop->ft->getClassName(cop, NULL);
-  sb->ft->append3Chars(sb, "<INSTANCENAME CLASSNAME=\"",
-		       (char*)name->hdl, "\">\n");
+  sb->ft->append3Chars(sb, "<INSTANCENAME CLASSNAME=\"", (char*)name->hdl, "\">\n");
   CMRelease(name);
   pathToXml(sb, cop);
   sb->ft->appendChars(sb,"</INSTANCENAME>\n");
-  sb->ft->appendChars(sb,"</INSTANCEPATH>\n");
+  
+  if(hn && hn->hdl && ns && ns->hdl) {
+    sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
+  }
+  else if(ns && ns->hdl) {
+    sb->ft->appendChars(sb, "</LOCALINSTANCEPATH>\n");
+  }
+  
   sb->ft->appendChars(sb,"</VALUE.REFERENCE>\n");
+  
+  if(hn) {
+    CMRelease(hn);
+  }
+  if(ns) {
+    CMRelease(ns);
+  }
 }
 
 /* --------------------------------------------------------------------------*/
+
+static void addXmlInstance(UtilStringBuffer *sb,
+                                CMPIObjectPath * cop, CMPIInstance * inst)
+{
+   CMPIString       * cn;
+   int		      i;
+   int                numproperties = inst->ft->getPropertyCount(inst, NULL);
+   CMPIData	      propertydata;
+   CMPIString	    * propertyname;
+
+   if (cop == NULL)
+       cop = inst->ft->getObjectPath(inst, NULL);
+
+   cn  = cop->ft->getClassName(cop, NULL);
+
+   /* Add the instance */
+   sb->ft->append3Chars(sb,"<INSTANCE CLASSNAME=\"", (char*)cn->hdl, "\">\n");
+   CMRelease(cn);
+
+   for (i = 0; i < numproperties; i++)
+   {
+      propertydata = inst->ft->getPropertyAt(inst, i, &propertyname, NULL);
+      if(propertydata.type == CMPI_ref) {
+          addXmlValue(sb, "PROPERTY.REFERENCE", NULL, propertyname->hdl, propertydata);
+      }
+      else {
+          addXmlValue(sb, "PROPERTY", "TYPE", propertyname->hdl, propertydata);
+      }
+
+      if(propertyname) CMRelease(propertyname);
+   }
+   sb->ft->appendChars(sb,"</INSTANCE>\n");
+}
 
 static void addXmlNamedInstance(UtilStringBuffer *sb,
                                 CMPIObjectPath * cop, CMPIInstance * inst)
@@ -841,17 +911,7 @@ static void addXmlNamedInstance(UtilStringBuffer *sb,
    sb->ft->appendChars(sb,"</INSTANCENAME>\n");
 
    /* Add the instance */
-   sb->ft->append3Chars(sb,"<INSTANCE CLASSNAME=\"", (char*)cn->hdl, "\">\n");
-   CMRelease(cn);
-
-   for (i = 0; i < numproperties; i++)
-   {
-      propertydata = inst->ft->getPropertyAt(inst, i, &propertyname, NULL);
-      addXmlValue(sb, "PROPERTY", "TYPE", propertyname->hdl,
-                                              propertydata);
-      if(propertyname) CMRelease(propertyname);
-   }
-   sb->ft->appendChars(sb,"</INSTANCE>\n");
+   addXmlInstance(sb, cop, inst);
 
    sb->ft->appendChars(sb,"</VALUE.NAMEDINSTANCE>\n");
 }
@@ -1120,20 +1180,9 @@ static CMPIObjectPath * createInstance(
 
    addXmlNamespace(sb, cop);
 
-   classname = cop->ft->getClassName(cop, NULL);
-   sb->ft->append3Chars(sb, "<IPARAMVALUE NAME=\"NewInstance\">\n"
-			    "<INSTANCE CLASSNAME=\"",
-			    (char *)classname->hdl, "\">\n");
-   CMRelease(classname);
-
-   /* Add all the instance properties */
-   for (i=0; i<numproperties; i++) {
-      propertydata = inst->ft->getPropertyAt(inst, i, &propertyname, NULL);
-      addXmlValue(sb, "PROPERTY", "TYPE", propertyname->hdl, propertydata);
-      if (propertyname) CMRelease(propertyname);
-   }
-
-   sb->ft->appendChars(sb,"</INSTANCE>\n</IPARAMVALUE>\n");
+   sb->ft->appendChars(sb, "<IPARAMVALUE NAME=\"NewInstance\">\n");
+   addXmlInstance(sb, cop, inst);
+   sb->ft->appendChars(sb,"</IPARAMVALUE>\n");
    sb->ft->appendChars(sb,"</IMETHODCALL>\n");
    addXmlFooter(sb);
 

@@ -1,5 +1,11 @@
 Small Footprint CIM Client Library NEWS
 
+Changes in 2.0.3:
+=================
+
+Bugs:
+- 1810017 Fixed sfcc generates incorrect XML for complex properties
+
 Changes in 2.0.2:
 =================
 Bugs:
