@@ -1,6 +1,6 @@
 
 /*
- * $Id: cimc.h,v 1.1 2007/02/07 14:25:17 mihajlov Exp $
+ * $Id: cimc.h,v 1.2 2007/10/31 16:51:32 sschuetz Exp $
  *
  * © Copyright IBM Corp. 2007
  *
@@ -396,6 +396,9 @@ extern "C" {
       (CIMCEnv *ce, CIMCUint64 binTime, CIMCBoolean interval, CIMCStatus* rc);
     CIMCDateTime* (*newDateTimeFromChars)
       (CIMCEnv *ce, const char *utcTime, CIMCStatus* rc);
+    CIMCIndicationListener* (*newIndicationListener)
+      (CIMCEnv *ce, int sslMode, int *portNumber, char **socketName, 
+       void (*fp) (CIMCInstance *indInstance), CIMCStatus* rc);
   } CIMCEnvFT;
 
   struct _CIMCEnv {

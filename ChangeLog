@@ -1,3 +1,8 @@
+2007-10-31  Sven Schuetz <sven@de.ibm.com>
+
+	* cimc/cimcdt.h, cimc/cimcft.h, cimc/cimc.h:
+	Implemented 1820015: prepare for indication support
+
 2007-10-12  Sven Schuetz <sven@de.ibm.com>
 
 	* backend/cimxml/client.c:
