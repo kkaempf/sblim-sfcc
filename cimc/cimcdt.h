@@ -1,6 +1,6 @@
 
 /*
- * $Id: cimcdt.h,v 1.2 2007/10/31 16:51:32 sschuetz Exp $
+ * $Id: cimcdt.h,v 1.3 2007/12/21 15:04:06 sschuetz Exp $
  *
  * © Copyright IBM Corp. 2007
  *
@@ -58,17 +58,15 @@ extern "C" {
   struct _CIMCString;
   struct _CIMCDateTime;
   struct _CIMCClass;
-  struct _CIMCIndicationListener;
    
-  typedef struct _CIMCInstance           CIMCInstance;
-  typedef struct _CIMCObjectPath         CIMCObjectPath;
-  typedef struct _CIMCArgs               CIMCArgs;
-  typedef struct _CIMCEnumeration        CIMCEnumeration;
-  typedef struct _CIMCArray              CIMCArray;
-  typedef struct _CIMCString             CIMCString;
-  typedef struct _CIMCDateTime           CIMCDateTime;
-  typedef struct _CIMCClass              CIMCClass;
-  typedef struct _CIMCIndicationListener CIMCIndicationListener;
+  typedef struct _CIMCInstance       CIMCInstance;
+  typedef struct _CIMCObjectPath     CIMCObjectPath;
+  typedef struct _CIMCArgs           CIMCArgs;
+  typedef struct _CIMCEnumeration    CIMCEnumeration;
+  typedef struct _CIMCArray          CIMCArray;
+  typedef struct _CIMCString         CIMCString;
+  typedef struct _CIMCDateTime       CIMCDateTime;
+  typedef struct _CIMCClass          CIMCClass;
 
   struct _CIMCInstanceFT;
   struct _CIMCObjectPathFT;
@@ -77,16 +75,14 @@ extern "C" {
   struct _CIMCArrayFT;
   struct _CIMCStringFT;
   struct _CIMCDateTimeFT;
-  struct _CIMCIndicationListenerFT;
 
-  typedef struct _CIMCInstanceFT           CIMCInstanceFT;
-  typedef struct _CIMCObjectPathFT         CIMCObjectPathFT;
-  typedef struct _CIMCArgsFT               CIMCArgsFT;
-  typedef struct _CIMCEnumerationFT        CIMCEnumerationFT;
-  typedef struct _CIMCArrayFT              CIMCArrayFT;
-  typedef struct _CIMCStringFT             CIMCStringFT;
-  typedef struct _CIMCDateTimeFT           CIMCDateTimeFT;
-  typedef struct _CIMCIndicationListenerFT CIMCIndicationListenerFT;
+  typedef struct _CIMCInstanceFT      CIMCInstanceFT;
+  typedef struct _CIMCObjectPathFT    CIMCObjectPathFT;
+  typedef struct _CIMCArgsFT          CIMCArgsFT;
+  typedef struct _CIMCEnumerationFT   CIMCEnumerationFT;
+  typedef struct _CIMCArrayFT         CIMCArrayFT;
+  typedef struct _CIMCStringFT        CIMCStringFT;
+  typedef struct _CIMCDateTimeFT      CIMCDateTimeFT;
 
 
   typedef unsigned char              CIMCBoolean;

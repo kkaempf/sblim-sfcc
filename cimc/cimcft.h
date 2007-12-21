@@ -1,6 +1,6 @@
 
 /*
- * $Id: cimcft.h,v 1.3 2007/10/31 16:51:32 sschuetz Exp $
+ * $Id: cimcft.h,v 1.4 2007/12/21 15:04:06 sschuetz Exp $
  *
  * © Copyright IBM Corp. 2007
  *
@@ -694,58 +694,7 @@ extern "C" {
       (CIMCDateTime* dt, CIMCStatus* rc);
   };
 
-  /** This structure represents the indication listener object.
-   */
-  struct _CIMCIndicationListener {
 
-    /** Opaque pointer to MB specific implementation data.
-     */
-    void *hdl;
-
-    /** Pointer to the indication listener Function Table.
-     */
-    CIMCIndicationListenerFT* ft;
-  };
-
-
-  /** This structure is a table of pointers providing access to indication
-      listener support sevices.
-  */
-  struct _CIMCIndicationListenerFT {
-
-    /** Function table version
-     */
-    int ftVersion;
-
-    /** The indication listener object will not be used any further and may 
-        be freed by CIMC run time system.
-	@param il pointer to this indication listener
-	@return Service return status.
-    */
-    CIMCStatus (*release)
-      (CIMCIndicationListener* il);
-
-    /** Create an independent copy of this indication listener object. The
-	resulting object must be released explicitly.
-	@param il pointer to this indication listener
-	@param rc Output: Service return status (suppressed when NULL).
-	@return Pointer to copied indication listener object.
-    */
-    CIMCIndicationListener* (*clone)
-      (CIMCIndicationListener* il, CIMCStatus* rc);
-
-    /** Start listening.
-	@param il pointer to this indication listener.
-    */
-    CIMCStatus (*start)
-      (CIMCIndicationListener* il);
-      
-    /** Stop listening.
-    @param il pointer to this indication listener.
-    */
-    CIMCStatus (*stop)
-      (CIMCIndicationListener* il);      
-  };
 #ifdef __cplusplus
 };
 #endif
