@@ -1,3 +1,8 @@
+2008-01-02  Sven Schuetz <sven@de.ibm.com>
+
+	* backend/cimxml/cimXmlResp.y:
+	Fixed 1793132: sfcc reports incorrect namespace for associators operation
+
 2007-10-31  Sven Schuetz <sven@de.ibm.com>
 
 	* cimc/cimcdt.h, cimc/cimcft.h, cimc/cimc.h:

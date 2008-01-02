@@ -905,7 +905,7 @@ objectsWithPath
        {
        if (PARM->curPath) CMRelease(PARM->curPath);
            createPath(&(PARM->curPath),&($2.inst.path.instanceName));
-       CMSetNameSpace(PARM->curPath,PARM->da_nameSpace);
+       CMSetNameSpace(PARM->curPath,$2.inst.path.path.nameSpacePath);
        PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
        setInstProperties(PARM->curInstance, &PARM->properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
