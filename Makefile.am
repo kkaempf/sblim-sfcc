@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.13 2007/02/19 17:22:13 mihajlov Exp $
+# $Id: Makefile.am,v 1.14 2008/01/09 09:57:09 sschuetz Exp $
 
 docdir=$(datadir)/doc/sfcc-$(VERSION)
 
@@ -50,6 +50,8 @@ EXTRA_DIST=sfcc.spec
 noinst_HEADERS = \
 	backend/cimxml/cimXmlParser.h \
 	backend/cimxml/genericlist.h \
+	backend/cimxml/grammar.h \
+	backend/cimxml/parserUtil.h \
 	backend/cimxml/sfcUtil/hashtable.h \
 	backend/cimxml/sfcUtil/utilft.h
 
@@ -93,7 +95,8 @@ libcimcClientXML_la_SOURCES = \
                    backend/cimxml/value.c \
                    backend/cimxml/client.c \
                    backend/cimxml/genericlist.c \
-                   backend/cimxml/cimXmlResp.y \
+                   backend/cimxml/grammar.c \
+                   backend/cimxml/parserUtil.c \
 	           backend/cimxml/cimXmlParser.c \
 		   backend/cimxml/sfcUtil/hashtable.c \
 	   	   backend/cimxml/sfcUtil/utilFactory.c \

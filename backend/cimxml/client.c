@@ -2,8 +2,8 @@
 /*
  * client.c
  *
- * (C) Copyright IBM Corp. 2005
- * (C) Copyright Intel Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
+ * © Copyright Intel Corp. 2005
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE

@@ -4,8 +4,8 @@
 
   This module provides means to clone and release CMPIValues.
 
-  (C) Copyright IBM Corp. 2003
-  (C) Copyright Intel Corp. 2006
+  © Copyright IBM Corp. 2003, 2007
+  © Copyright Intel Corp. 2006
  
   THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE 
   ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
@@ -15,7 +15,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -294,16 +294,16 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
          
          switch(ref->type) {
          case typeValRef_InstancePath: 
-            in=&ref->instancePath.instanceName;
-            hn=ref->instancePath.path.host.host;
-            ns=ref->instancePath.path.nameSpacePath;
+            in=&ref->data.instancePath.instanceName;
+            hn=ref->data.instancePath.path.host.host;
+            ns=ref->data.instancePath.path.nameSpacePath.value;
             break;   
          case typeValRef_InstanceName: 
-            in=&ref->instanceName;
+            in=&ref->data.instanceName;
             break;   
          case typeValRef_LocalInstancePath:
-            in = &ref->localInstancePath.instanceName;
-            ns = ref->localInstancePath.path;
+            in = &ref->data.localInstancePath.instanceName;
+            ns = ref->data.localInstancePath.path.value;
             break;
          default:
 //            mlogf(M_ERROR,M_SHOW,"%s(%d): unexpected reference type %d %x\n", __FILE__, __LINE__, 
@@ -316,13 +316,14 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
          op=newCMPIObjectPath(ns,cn,NULL);
          CMSetHostname(op,hn);
 
-         for (i = 0, m = in->bindings.next; i < m; i++) {
+         XtokKeyBinding *b;
+         for (b = in->bindings.first; b; b = b->next) {
             valp = getKeyValueTypePtr(
-               in->bindings.keyBindings[i].type,
-               in->bindings.keyBindings[i].value,
-               &in->bindings.keyBindings[i].ref,
+               b->type,
+               b->val.keyValue.value,
+               &b->val.ref,
                &v, &type);
-            CMAddKey(op,in->bindings.keyBindings[i].name,valp,type);
+            CMAddKey(op,b->name,valp,type);
          }
          *typ = CMPI_ref;
          val->ref=op;

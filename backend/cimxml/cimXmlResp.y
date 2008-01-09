@@ -86,26 +86,27 @@ static inline int isBoolean(CMPIData data)
    return -1;
 }
 
-static void createPath(CMPIObjectPath **op, XtokInstanceName *p)
+void createPath(CMPIObjectPath **op, XtokInstanceName *p)
 {
    int i;
    CMPIValue val,*valp;
    CMPIType type;
+   XtokKeyBinding *b;
 
    *op = newCMPIObjectPath(NULL, p->className, NULL);
-   for (i = 0; i < p->bindings.next; i++) {
-      valp = getKeyValueTypePtr(p->bindings.keyBindings[i].type,
-                                p->bindings.keyBindings[i].value,
-                                &p->bindings.keyBindings[i].ref,
-                                &val, &type);
-      CMAddKey(*op, p->bindings.keyBindings[i].name, valp, type);
+   for (b = p->bindings.first; b; b = b->next) {
+      valp = getKeyValueTypePtr(b->type,
+     				          b->val.keyValue.value,
+  				              &b->val.ref,
+							  &val, &type);
+      CMAddKey(*op, b->name, valp, type);
       if (type == CMPI_ref) {
 	CMRelease(valp->ref);
       }
    }
 }
 
-static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
+void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
 {
    XtokProperty *np = NULL,*p = ps ? ps->first : NULL;
    CMPIValue val;
@@ -138,9 +139,9 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
          }
          break;
       case typeProperty_Reference: 
-         op=p->val.ref.op;
-         CMSetProperty(ci, p->name, &op, CMPI_ref);
-	 CMRelease(op);
+         val=str2CMPIValue(CMPI_ref, NULL, &p->val.ref);//p->val.ref.op;
+         CMSetProperty(ci, p->name, &val.ref, CMPI_ref);
+	 CMRelease(val.ref);
          break;
       case typeProperty_Array:
          type = p->valueType;
@@ -183,9 +184,9 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
                arr = newCMPIArray(0, type, NULL);
                type  = q->type & ~CMPI_ARRAY;
                int i;
-               if (q->array.max) {
-                   for (i = 0; i < q->array.next; ++i) {
-                  val = str2CMPIValue(type, q->array.values[i], NULL);
+               if (q->data.array.max) {
+                   for (i = 0; i < q->data.array.next; ++i) {
+                  val = str2CMPIValue(type, q->data.array.values[i], NULL);
                   CMSetArrayElementAt(arr, i, &val, type);
                   native_release_CMPIValue(type,&val);
                }
@@ -195,7 +196,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
                native_release_CMPIValue(q->type,(CMPIValue*)&arr);
             }
             else {
-               val = str2CMPIValue(q->type, q->value, NULL);
+               val = str2CMPIValue(q->type, q->data.value.value, NULL);
                rc= addInstPropertyQualifier(ci, p->name, q->name, &val, q->type);
                native_release_CMPIValue(q->type,&val);
             }   
@@ -213,7 +214,7 @@ static void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
       ps->first = ps->last =  NULL;
 }
 
-static void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
+void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
 {
    XtokQualifier *nq = NULL,*q = qs ? qs->first : NULL;
    CMPIValue val;
@@ -224,9 +225,9 @@ static void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
                CMPIType type=q->type&~CMPI_ARRAY;
                CMPIArray *arr = newCMPIArray(0, type, NULL);
                int i;
-          if (q->array.max) {
-              for (i = 0; i < q->array.next; ++i) {
-                  val = str2CMPIValue(type, q->array.values[i], NULL);
+          if (q->data.array.max) {
+              for (i = 0; i < q->data.array.next; ++i) {
+                  val = str2CMPIValue(type, q->data.array.values[i], NULL);
                   CMSetArrayElementAt(arr, i, &val, type);
                   native_release_CMPIValue(type,&val);
                }
@@ -235,7 +236,7 @@ static void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
       }
       }
       else {
-         val = str2CMPIValue(q->type, q->value, NULL);
+         val = str2CMPIValue(q->type, q->data.value.value, NULL);
          rc = addInstQualifier(ci, q->name, &val, q->type);
          native_release_CMPIValue( q->type,&val);
       }
@@ -247,7 +248,7 @@ static void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
    }
 }
 
-static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
+void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
 {
    XtokProperty *np = NULL,*p = ps ? ps->first : NULL;
    CMPIValue val;
@@ -280,9 +281,9 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
             CMPIType type=q->type&~CMPI_ARRAY;
             arr = newCMPIArray(0, type, NULL);
             int i;
-            if (q->array.max) {
-                for (i = 0; i < q->array.next; ++i) {
-               val = str2CMPIValue(type, q->array.values[i], NULL);
+            if (q->data.array.max) {
+                for (i = 0; i < q->data.array.next; ++i) {
+               val = str2CMPIValue(type, q->data.array.values[i], NULL);
                CMSetArrayElementAt(arr, i, &val, type);
                native_release_CMPIValue(type,&val);
             }
@@ -292,7 +293,7 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
             native_release_CMPIValue(q->type,(CMPIValue*)&arr);
          }
          else {
-            val = str2CMPIValue(q->type, q->value, NULL);
+            val = str2CMPIValue(q->type, q->data.value.value, NULL);
             rc= addClassPropertyQualifier(cls, p->name, q->name, &val, q->type);
             native_release_CMPIValue(q->type,&val);
          }   
@@ -306,7 +307,7 @@ static void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
    if (ps) ps->first = ps->last = NULL;
 }
 
-static void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
+void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
 {
    XtokQualifier *nq = NULL,*q = qs ? qs->first : NULL;
    CMPIValue val;
@@ -317,9 +318,9 @@ static void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
                CMPIType type=q->type&~CMPI_ARRAY;
                CMPIArray *arr = newCMPIArray(0, type, NULL);
                int i;
-          if (q->array.max > 0) {
-              for (i = 0; i < q->array.next; ++i) {
-                   char *valStr = q->array.values[i];
+          if (q->data.array.max > 0) {
+              for (i = 0; i < q->data.array.next; ++i) {
+                   char *valStr = q->data.array.values[i];
                    if (type == CMPI_string || type == CMPI_chars)
                    {
                        char *charsStr = XmlToAsciiStr(valStr);
@@ -336,7 +337,7 @@ static void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
       }
       }
       else {
-          char *valStr = q->value;
+          char *valStr = q->data.value.value;
           if (q->type == CMPI_string || q->type == CMPI_chars)
           {
               char *charsStr = XmlToAsciiStr(valStr);
@@ -357,7 +358,7 @@ static void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
 }
 
 
-static void addProperty(ParserControl *parm, XtokProperties *ps, XtokProperty *p)
+void addProperty(ParserControl *parm, XtokProperties *ps, XtokProperty *p)
 {
    XtokProperty *np;
    np = (XtokProperty*)PARSER_MALLOC(sizeof(XtokProperty));
@@ -368,7 +369,7 @@ static void addProperty(ParserControl *parm, XtokProperties *ps, XtokProperty *p
    ps->last = np;
 }
 
-static void addParamValue(ParserControl *parm, XtokParamValues *vs, XtokParamValue *v)
+void addParamValue(ParserControl *parm, XtokParamValues *vs, XtokParamValue *v)
 {
    XtokParamValue *nv;
    nv = (XtokParamValue*)PARSER_MALLOC(sizeof(XtokParamValue));
@@ -381,7 +382,18 @@ static void addParamValue(ParserControl *parm, XtokParamValues *vs, XtokParamVal
    vs->last = nv;
 }
 
-static void addQualifier(ParserControl *parm, XtokQualifiers *qs, XtokQualifier *q)
+void addKeyBinding(ParserControl *parm, XtokKeyBindings *ks, XtokKeyBinding *k)
+{
+   XtokKeyBinding *nk;
+   nk = (XtokKeyBinding*)PARSER_MALLOC(sizeof(XtokKeyBinding));
+   memcpy(nk, k, sizeof(XtokKeyBinding));
+   nk->next = NULL;
+   if (ks->last) ks->last->next = nk;
+   else ks->first = nk;
+   ks->last = nk;
+}
+
+void addQualifier(ParserControl *parm, XtokQualifiers *qs, XtokQualifier *q)
 {
    XtokQualifier *nq;
    nq = (XtokQualifier*)PARSER_MALLOC(sizeof(XtokQualifier));
@@ -392,9 +404,8 @@ static void addQualifier(ParserControl *parm, XtokQualifiers *qs, XtokQualifier 
    qs->last = nq;
 }
 
-static void addMethod(ParserControl *parm, XtokMethods *ms, XtokMethod *m)
+void addMethod(ParserControl *parm, XtokMethods *ms, XtokMethod *m)
 {
-#if 0	/* TODO: Reactivate when setMethod is implemented */
    XtokMethod *nm;
    nm = (XtokMethod*)PARSER_MALLOC(sizeof(XtokMethod));
    memcpy(nm, m, sizeof(XtokMethod));
@@ -404,12 +415,10 @@ static void addMethod(ParserControl *parm, XtokMethods *ms, XtokMethod *m)
    else
       ms->first = nm;
    ms->last = nm;
-#endif
 }
 
-static void addParam(ParserControl *parm, XtokParams *ps, XtokParam *p)
+void addParam(ParserControl *parm, XtokParams *ps, XtokParam *p)
 {
-#if 0	/* TODO: Reactivate when setParam is implemented */
    XtokParam *np;
    np = (XtokParam*)PARSER_MALLOC(sizeof(XtokParam));
    memcpy(np, p, sizeof(XtokParam));
@@ -419,10 +428,9 @@ static void addParam(ParserControl *parm, XtokParams *ps, XtokParam *p)
    else
       ps->first = np;
    ps->last = np;
-#endif
 }
 
-static void setError(ParserControl *parm, XtokErrorResp *e)
+void setError(ParserControl *parm, XtokErrorResp *e)
 {
 #if DEBUG
    if (do_debug)
@@ -449,14 +457,14 @@ static void setError(ParserControl *parm, XtokErrorResp *e)
 {
    int                           intValue;
    char                          boolValue;
-   char*                         className;
+   XtokClassName                 xtokClassName;
    void*                         tokCim;
 
    XtokMessage                   xtokMessage;
    XtokErrorResp                 xtokErrorResp;
 
    XtokNameSpace                 xtokNameSpace;
-   char*                         xtokLocalNameSpacePath;
+   XtokLocalNameSpacePath        xtokLocalNameSpacePath;
    XtokNameSpacePath             xtokNameSpacePath;
    XtokHost                      xtokHost;
    XtokInstancePath              xtokInstancePath;
@@ -466,15 +474,21 @@ static void setError(ParserControl *parm, XtokErrorResp *e)
    XtokValue                     xtokValue;
    XtokValueArray                xtokValueArray;
    XtokValueReference            xtokValueReference;
+   XtokValueReferenceData        xtokValueReferenceData;
    XtokObjectWithPath            xtokObjectWithPath;
+   XtokObjectWithPathData        xtokObjectWithPathData;
+   XtokClassWithPath             xtokClassWithPath;
+   XtokInstanceWithPath          xtokInstanceWithPath;
    XtokObjectPath                xtokObjectPath;
    XtokInstanceName              xtokInstanceName;
    XtokKeyBinding                xtokKeyBinding;
+   XtokKeyBindingContent         xtokKeyBindingContent;
    XtokKeyBindings               xtokKeyBindings;
    XtokKeyValue                  xtokKeyValue;
 
    XtokClass                     xtokClass;
    XtokInstance                  xtokInstance;
+   XtokInstanceData              xtokInstanceData;
    XtokNamedInstance             xtokNamedInstance;
 
    XtokProperty                  xtokProperty;
@@ -483,6 +497,7 @@ static void setError(ParserControl *parm, XtokErrorResp *e)
    XtokMethod                    xtokMethod;
    XtokMethodData                xtokMethodData;
    XtokQualifier                 xtokQualifier;
+   XtokQualifierData             xtokQualifierData;
 
    XtokParamValues               xtokParamValues;
    XtokParamValue                xtokParamValue;
@@ -505,6 +520,15 @@ static void setError(ParserControl *parm, XtokErrorResp *e)
 
 %token <intValue>                XTOK_SIMPLERSP
 %token <intValue>                ZTOK_SIMPLERSP
+
+%token <intValue>                XTOK_SIMPLEEXPREQ
+%token <intValue>                ZTOK_SIMPLEEXPREQ
+
+%token <intValue>                XTOK_EXPORTINDICATION
+%token <intValue>                ZTOK_EXPMETHODCALL
+
+%token <intValue>                XTOK_EP_INSTANCE
+%token <intValue>                ZTOK_EXPPARAMVALUE
 
 %token <intValue>                XTOK_IMETHODRESP
 %token <intValue>                ZTOK_IMETHODRESP
@@ -560,9 +584,9 @@ static void setError(ParserControl *parm, XtokErrorResp *e)
 %type  <xtokValueReference>      valueReference
 %token <intValue>                ZTOK_VALUEREFERENCE
 
-%token <className>               XTOK_CLASSNAME
+%token <xtokClassName>           XTOK_CLASSNAME
 %token <intValue>                ZTOK_CLASSNAME
-%type  <className>               className
+%type  <xtokClassName>           className
 
 %token <xtokInstanceName>        XTOK_INSTANCENAME
 %token <intValue>                ZTOK_INSTANCENAME
@@ -676,6 +700,9 @@ message
     : XTOK_MESSAGE simpleResp ZTOK_MESSAGE
     {
     }
+    | XTOK_MESSAGE simpleExpReq ZTOK_MESSAGE
+    {
+    }    
 ;
 
 simpleResp
@@ -685,6 +712,18 @@ simpleResp
     | XTOK_SIMPLERSP iMethodResp ZTOK_SIMPLERSP
     {
     }
+;
+
+simpleExpReq
+    : XTOK_SIMPLEEXPREQ expMethodCall ZTOK_SIMPLEEXPREQ
+    {
+    }
+;
+
+expMethodCall
+	: XTOK_EXPORTINDICATION exportIndication ZTOK_EXPMETHODCALL
+	{
+	}
 ;
 
 iMethodResp
@@ -829,6 +868,15 @@ ReturnValue
     }
 ;
 
+exportIndication
+	: /* empty */
+	{
+	}
+	| XTOK_EP_INSTANCE instance ZTOK_EXPPARAMVALUE
+	{
+
+	}
+
 paramValues
     : /* empty */ 
     {
@@ -879,11 +927,11 @@ instances
     {
        PARM->curInstance = native_new_CMPIInstance(NULL,NULL);
        setInstNsAndCn(PARM->curInstance,PARM->da_nameSpace,$2.className);
-       setInstQualifiers(PARM->curInstance, &PARM->qualifiers);
-       setInstProperties(PARM->curInstance, &PARM->properties);
+       setInstQualifiers(PARM->curInstance, &$2.qualifiers);
+       setInstProperties(PARM->curInstance, &$2.properties);
        simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
        PARM->curInstance = NULL;
-       PARM->Qs = PARM->Ps = 0;
+       //PARM->Qs = PARM->Ps = 0;
     }
 ;
 
@@ -904,7 +952,7 @@ objectsWithPath
        if ($2.type == 0)
        {
        if (PARM->curPath) CMRelease(PARM->curPath);
-           createPath(&(PARM->curPath),&($2.inst.path.instanceName));
+           createPath(&(PARM->curPath),&($2.object.inst.path.instanceName));
        CMSetNameSpace(PARM->curPath,$2.inst.path.path.nameSpacePath);
        PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
        setInstProperties(PARM->curInstance, &PARM->properties);
@@ -916,7 +964,7 @@ objectsWithPath
     }
        else
        {
-           PARM->curClass = native_new_CMPIConstClass($2.cls.cls.className,NULL);
+           PARM->curClass = native_new_CMPIConstClass($2.object.cls.cls.className,NULL);
            setClassProperties(PARM->curClass, &PARM->properties);
            simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curClass,CMPI_class);
            PARM->curClass = NULL;
@@ -930,16 +978,14 @@ namedInstances
     : /* empty */
     | namedInstances namedInstance
     {
-       if (PARM->curPath) CMRelease(PARM->curPath);
-       createPath(&(PARM->curPath),&($2.path));
-       PARM->curInstance = native_new_CMPIInstance(PARM->curPath,NULL);
-       setInstQualifiers(PARM->curInstance, &PARM->qualifiers);
-       setInstProperties(PARM->curInstance, &PARM->properties);
-       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&PARM->curInstance,CMPI_instance);
-       PARM->curInstance = NULL;
-       CMRelease(PARM->curPath);
-       PARM->curPath = NULL;
-       PARM->Qs = PARM->Ps = 0;
+       CMPIObjectPath *path;
+       CMPIInstance *inst;
+       createPath(&path,&($2.path));
+       inst = native_new_CMPIInstance(path,NULL);
+       setInstQualifiers(inst, &$2.instance.qualifiers);
+       setInstProperties(inst, &$2.instance.properties);
+       simpleArrayAdd(PARM->respHdr.rvArray,(CMPIValue*)&inst,CMPI_instance);
+       CMRelease(path);
     }
 ;
 
@@ -965,14 +1011,14 @@ namedInstance
 objectWithPath
     : XTOK_VALUEOBJECTWITHPATH instancePath instance ZTOK_VALUEOBJECTWITHPATH
     {
-       $$.inst.path = $2;
-       $$.inst.inst = $3;
+       $$.object.inst.path = $2;
+       $$.object.inst.inst = $3;
        $$.type = 0;
     }
     | XTOK_VALUEOBJECTWITHPATH classPath class ZTOK_VALUEOBJECTWITHPATH
     {
-       $$.cls.path = $2;
-       $$.cls.cls = $3;
+       $$.object.cls.path = $2;
+       $$.object.cls.cls = $3;
        $$.type = 1;
     }
 ;
@@ -1105,25 +1151,28 @@ parameter
 instance
     : XTOK_INSTANCE instanceData ZTOK_INSTANCE
     {
-       if (PARM->Qs) $$.qualifiers = PARM->qualifiers;
-       else memset(&$$.qualifiers, 0, sizeof($$.qualifiers));
-       if (PARM->Ps) $$.properties = PARM->properties;
-       else memset(&$$.properties, 0, sizeof($$.properties));
+       if($2.qualifiers.first)
+          $$.qualifiers=$2.qualifiers;
+       else memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       
+       if($2.properties.first)
+          $$.properties=$2.properties;
+       else memset(&$$.properties,0,sizeof($$.properties)); 
     }
 ;
 
 instanceData
-    : /* empty */ {;}
+    : /* empty */
+    {
+       memset(&$$, 0, sizeof($$));
+    }
     | instanceData qualifier
     {
-       PARM->Qs++;
-       addQualifier(PARM,&(PARM->qualifiers),&$2);
+       addQualifier(PARM,&($$.qualifiers),&$2);
     }
     | instanceData property
     {
-       PARM->Ps++;
-       addProperty(PARM,&(PARM->properties),&$2);
-       PARM->PQs = 0;
+       addProperty(PARM,&($$.properties),&$2);
     }
 ;
 
@@ -1236,19 +1285,19 @@ valueArray
 valueReference
     : XTOK_VALUEREFERENCE instancePath ZTOK_VALUEREFERENCE
     {
-       $$.instancePath = $2;
+       $$.data.instancePath = $2;
        $$.type = typeValRef_InstancePath;
        PARM->valueSet=1;
     }
     | XTOK_VALUEREFERENCE instanceName ZTOK_VALUEREFERENCE
     {
-       $$.instanceName = $2;
+       $$.data.instanceName = $2;
        $$.type = typeValRef_InstanceName;
        PARM->valueSet=1;
     }
     | XTOK_VALUEREFERENCE localInstancePath ZTOK_VALUEREFERENCE
     {
-       $$.localInstancePath = $2;
+       $$.data.localInstancePath = $2;
        $$.type = typeValRef_LocalInstancePath;
        PARM->valueSet=1;
     }
@@ -1276,7 +1325,7 @@ classNames
 className
     : XTOK_CLASSNAME ZTOK_CLASSNAME
     {
-	PARM->curPath = newCMPIObjectPath(NULL, $$, NULL);
+	PARM->curPath = newCMPIObjectPath(NULL, $$.value, NULL);
     }
 ;
 
@@ -1287,13 +1336,13 @@ className
 qualifier
     : XTOK_QUALIFIER value ZTOK_QUALIFIER
     {
-       $$.value = $2.value;
+       $$.data.value.value = $2.value;
        PARM->valueSet=0;
     }
     | XTOK_QUALIFIER XTOK_VALUEARRAY optional_valueArray ZTOK_VALUEARRAY ZTOK_QUALIFIER
     {
        $$.type|=CMPI_ARRAY;
-       $$.array=PARM->curArray;
+       $$.data.array=PARM->curArray;
        memset(&PARM->curArray,0,sizeof(PARM->curArray));
        PARM->valueSet=0;
     }
@@ -1309,7 +1358,7 @@ qualifier
 localNameSpacePath
     : XTOK_LOCALNAMESPACEPATH nameSpaces ZTOK_LOCALNAMESPACEPATH
     {
-       $$ = $2.cns;
+       $$.value = $2.cns;
     }
 ;
 
@@ -1414,20 +1463,20 @@ objectPath
     	 int i;
     	 CMPIValue val,*valp;
     	 CMPIType type;
+    	 XtokKeyBinding *b;
     	 XtokInstanceName *p = &$2.instanceName;
 
     	 /* A lot of this came from createPath(), has to be unique */
 	 if (PARM->curPath) CMRelease(PARM->curPath);
-    	 PARM->curPath = newCMPIObjectPath($2.path.nameSpacePath,
+    	 PARM->curPath = newCMPIObjectPath($2.path.nameSpacePath.value,
     				                           p->className, NULL);
-	 if (p->bindings.next > 0)
-	     for (i = 0; i < p->bindings.next; i++) {
-		valp = getKeyValueTypePtr(p->bindings.keyBindings[i].type,
-    					  p->bindings.keyBindings[i].value,
-    					  &p->bindings.keyBindings[i].ref,
-					  &val, &type);
-		CMAddKey(PARM->curPath, p->bindings.keyBindings[i].name,
-    							    valp, type);
+	 //if (p->bindings.first)
+	 for (b = p->bindings.first; b; b = b->next) {
+		valp = getKeyValueTypePtr(b->type,
+    					  b->val.keyValue.value,
+    					  &b->val.ref,
+						  &val, &type);
+		CMAddKey(PARM->curPath, b->name, valp, type);
 		if (type == CMPI_ref) {
 		  CMRelease(valp->ref);
 		}
@@ -1439,8 +1488,8 @@ objectPath
     | XTOK_OBJECTPATH classPath ZTOK_OBJECTPATH
     {
          if (PARM->curPath) CMRelease(PARM->curPath);
-    	 PARM->curPath = newCMPIObjectPath($2.name.nameSpacePath,
-					   $2.className, NULL);
+    	 PARM->curPath = newCMPIObjectPath($2.name.nameSpacePath.value,
+					   $2.className.value, NULL);
 	 simpleArrayAdd(PARM->respHdr.rvArray, (CMPIValue*)&PARM->curPath,
 								CMPI_ref);
     	 PARM->curPath = NULL;
@@ -1465,8 +1514,8 @@ instanceName
     : XTOK_INSTANCENAME ZTOK_INSTANCENAME
     {
        $$.className = $1.className;
-       $$.bindings.next = 0;
-       $$.bindings.keyBindings = NULL;
+       $$.bindings.first = 0;
+       //$$.bindings.keyBindings = NULL;
        PARM->curPath = NULL;
     }
     | XTOK_INSTANCENAME keyBindings ZTOK_INSTANCENAME
@@ -1481,26 +1530,13 @@ instanceName
 keyBindings
     : keyBinding
     {
-       $$.next = 1;
-       $$.max  = 8;
-       $$.keyBindings = (XtokKeyBinding*)PARSER_MALLOC(sizeof(XtokKeyBinding) * $$.max);
-       $$.keyBindings[0].name = $1.name;
-       $$.keyBindings[0].value = $1.value;
-       $$.keyBindings[0].type = $1.type;
-       $$.keyBindings[0].ref = $1.ref;
+       $$.first = 0;
+       $$.last = 0;
+       addKeyBinding(PARM,&$$,&$1);
     }
     | keyBindings keyBinding
     {
-       if ($$.next == $$.max) {
-          $$.max *= 2;
-          $$.keyBindings = (XtokKeyBinding*)PARSER_REALLOC($$.keyBindings,
-				           sizeof(XtokKeyBinding) * $$.max);
-       }
-       $$.keyBindings[$$.next].name = $2.name;
-       $$.keyBindings[$$.next].value = $2.value;
-       $$.keyBindings[$$.next].type = $2.type;
-       $$.keyBindings[$$.next].ref = $2.ref;
-       $$.next++;
+       addKeyBinding(PARM,&$$,&$2);
     }
 ;
 
@@ -1508,15 +1544,14 @@ keyBinding
     : XTOK_KEYBINDING XTOK_KEYVALUE ZTOK_KEYVALUE ZTOK_KEYBINDING
     {
        $$.name = $1.name;
-       $$.value = $2.value;
+       $$.val.keyValue = $2;
        $$.type = $2.valueType;
     }
     | XTOK_KEYBINDING valueReference ZTOK_KEYBINDING
     {
        $$.name = $1.name;
-       $$.value = NULL;
        $$.type = "ref";
-       $$.ref = $2;
+       $$.val.ref = $2;
     }
 ;
 

@@ -2,8 +2,8 @@
 /*
  * cimXmlParser.c
  *
- * (C) Copyright IBM Corp. 2005
- * (C) Copyright Intel Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
+ * © Copyright Intel Corp. 2005
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -26,25 +26,22 @@
 #include <cmcidt.h>
 
 #include "cimXmlParser.h"
-#include "cimXmlResp.h"
+#include "grammar.h"
 
 #ifdef DMALLOC
 #include "dmalloc.h"
 #endif
 
 
-int yylex(YYSTYPE * lvalp, ParserControl * parm);
-int yyerror(char *s);
 
 static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
                    const char *tag, int etag);
 static char *getValue(XmlBuffer * xb, const char *v);
-extern int yyparse(void *);
 
 typedef struct tags {
    const char *tag;
    const int tagLen;
-   int (*process) (YYSTYPE *, ParserControl * parm);
+   int (*process) (parseUnion *, ParserControl * parm);
    int etag;
 } Tags;
 
@@ -323,9 +320,7 @@ char * cmpiToXmlType(CMPIType cmpiType)
     return NULL;
 }
 
-//static XmlBuffer* xmb;
-
-static int procXml(YYSTYPE * lvalp, ParserControl * parm)
+static int procXml(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = { {"version"},
    {"encoding"},
@@ -342,7 +337,7 @@ static int procXml(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procCim(YYSTYPE * lvalp, ParserControl * parm)
+static int procCim(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"CIMVERSION"},
@@ -359,7 +354,7 @@ static int procCim(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procMessage(YYSTYPE * lvalp, ParserControl * parm)
+static int procMessage(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"ID"},
@@ -379,7 +374,7 @@ static int procMessage(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procSimpleResp(YYSTYPE * lvalp, ParserControl * parm)
+static int procSimpleResp(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -392,7 +387,7 @@ static int procSimpleResp(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procIMethodResp(YYSTYPE * lvalp, ParserControl * parm)
+static int procIMethodResp(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"NAME"},
@@ -403,7 +398,7 @@ static int procIMethodResp(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "IMETHODRESPONSE")) {
       if (attrsOk(parm->xmb, elm, attr, "IMETHODRESPONSE", ZTOK_IMETHODRESP)) {
-         lvalp->xtokMessage.id = attr[0].attr;
+         /*lvalp->xtokMessage.id = attr[0].attr;*/
          parm->respHdr.id = attr[0].attr;
          return XTOK_IMETHODRESP;
       }
@@ -411,7 +406,7 @@ static int procIMethodResp(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procMethodResp(YYSTYPE * lvalp, ParserControl * parm)
+static int procMethodResp(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"NAME"},
@@ -422,7 +417,8 @@ static int procMethodResp(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "METHODRESPONSE")) {
       if (attrsOk(parm->xmb, elm, attr, "METHODRESPONSE", ZTOK_METHODRESP)) {
-         lvalp->xtokMessage.id = attr[0].attr;
+         memset(&lvalp->xtokMethodRespContent, 0, sizeof(XtokMethodRespContent));
+         lvalp->xtokMethodRespContent.name = attr[0].attr;
          parm->respHdr.id = attr[0].attr;
          return XTOK_METHODRESP;
       }
@@ -431,7 +427,7 @@ static int procMethodResp(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procErrorResp(YYSTYPE * lvalp, ParserControl * parm)
+static int procErrorResp(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"CODE"},
@@ -451,7 +447,7 @@ static int procErrorResp(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procIRetValue(YYSTYPE * lvalp, ParserControl * parm)
+static int procIRetValue(parseUnion * lvalp, ParserControl * parm)
 {
    if (tagEquals(parm->xmb, "IRETURNVALUE")) {
       static XmlElement elm[] = {
@@ -466,7 +462,7 @@ static int procIRetValue(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procRetValue(YYSTYPE * lvalp, ParserControl * parm)
+static int procRetValue(parseUnion * lvalp, ParserControl * parm)
 {
    if (tagEquals(parm->xmb, "RETURNVALUE")) {
       static XmlElement elm[] = {
@@ -487,7 +483,7 @@ static int procRetValue(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procLocalNameSpacePath(YYSTYPE * lvalp, ParserControl * parm)
+static int procLocalNameSpacePath(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -497,13 +493,14 @@ static int procLocalNameSpacePath(YYSTYPE * lvalp, ParserControl * parm)
       if (attrsOk
           (parm->xmb, elm, attr, "LOCALNAMESPACEPATH",
            ZTOK_LOCALNAMESPACEPATH)) {
+         lvalp->xtokLocalNameSpacePath.value = NULL;
          return XTOK_LOCALNAMESPACEPATH;
       }
    }
    return 0;
 }
 
-static int procClassPath(YYSTYPE * lvalp, ParserControl * parm)
+static int procClassPath(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -519,7 +516,7 @@ static int procClassPath(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procLocalClassPath(YYSTYPE * lvalp, ParserControl * parm)
+static int procLocalClassPath(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -535,7 +532,7 @@ static int procLocalClassPath(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procLocalInstancePath(YYSTYPE * lvalp, ParserControl * parm)
+static int procLocalInstancePath(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -551,7 +548,7 @@ static int procLocalInstancePath(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procObjectPath(YYSTYPE * lvalp, ParserControl * parm)
+static int procObjectPath(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -567,7 +564,7 @@ static int procObjectPath(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procNameSpace(YYSTYPE * lvalp, ParserControl * parm)
+static int procNameSpace(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"NAME"},
@@ -585,7 +582,7 @@ static int procNameSpace(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
+static int procParamValue(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"NAME"},
@@ -609,7 +606,7 @@ static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procClassName(YYSTYPE * lvalp, ParserControl * parm)
+static int procClassName(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"NAME"},
@@ -620,14 +617,14 @@ static int procClassName(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "CLASSNAME")) {
       if (attrsOk(parm->xmb, elm, attr, "CLASSNAME", ZTOK_CLASSNAME)) {
-         lvalp->className = attr[0].attr;
+         lvalp->xtokClassName.value = attr[0].attr;
          return XTOK_CLASSNAME;
       }
    }
    return 0;
 }
 
-static int procInstanceName(YYSTYPE * lvalp, ParserControl * parm)
+static int procInstanceName(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"CLASSNAME"},
@@ -638,6 +635,7 @@ static int procInstanceName(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "INSTANCENAME")) {
       if (attrsOk(parm->xmb, elm, attr, "INSTANCENAME", ZTOK_INSTANCENAME)) {
+         memset(&lvalp->xtokInstanceName, 0, sizeof(XtokInstanceName));
          lvalp->xtokInstanceName.className = attr[0].attr;
          return XTOK_INSTANCENAME;
       }
@@ -645,7 +643,7 @@ static int procInstanceName(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procKeyBinding(YYSTYPE * lvalp, ParserControl * parm)
+static int procKeyBinding(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"NAME"},
@@ -656,14 +654,14 @@ static int procKeyBinding(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "KEYBINDING")) {
       if (attrsOk(parm->xmb, elm, attr, "KEYBINDING", ZTOK_KEYBINDING)) {
-         lvalp->xtokInstanceName.className = attr[0].attr;
+         lvalp->xtokKeyBinding.name = attr[0].attr;
          return XTOK_KEYBINDING;
       }
    }
    return 0;
 }
 
-static int procInstance(YYSTYPE * lvalp, ParserControl * parm)
+static int procInstance(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"CLASSNAME"},
@@ -674,6 +672,7 @@ static int procInstance(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "INSTANCE")) {
       if (attrsOk(parm->xmb, elm, attr, "INSTANCE", ZTOK_INSTANCE)) {
+         memset(&lvalp->xtokInstance, 0, sizeof(XtokInstance));
          lvalp->xtokInstance.className = attr[0].attr;
          return XTOK_INSTANCE;
       }
@@ -681,7 +680,7 @@ static int procInstance(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procClass(YYSTYPE * lvalp, ParserControl * parm)
+static int procClass(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"NAME"},
@@ -693,6 +692,7 @@ static int procClass(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "CLASS")) {
       if (attrsOk(parm->xmb, elm, attr, "CLASS", ZTOK_CLASS)) {
+         memset(&lvalp->xtokClass, 0, sizeof(XtokClass));
          lvalp->xtokClass.className = attr[0].attr;
          lvalp->xtokClass.superClass = attr[1].attr;
          return XTOK_CLASS;
@@ -701,7 +701,7 @@ static int procClass(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procKeyValue(YYSTYPE * lvalp, ParserControl * parm)
+static int procKeyValue(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"VALUETYPE"},
@@ -724,7 +724,7 @@ static int procKeyValue(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procHost(YYSTYPE * lvalp, ParserControl * parm)
+static int procHost(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -739,7 +739,7 @@ static int procHost(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procValue(YYSTYPE * lvalp, ParserControl * parm)
+static int procValue(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -756,7 +756,7 @@ static int procValue(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procValueArray(YYSTYPE * lvalp, ParserControl * parm)
+static int procValueArray(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -765,13 +765,34 @@ static int procValueArray(YYSTYPE * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "VALUE.ARRAY")) {
       if (attrsOk(parm->xmb, elm, attr, "VALUE.ARRAY",
            ZTOK_VALUEARRAY)) {
+         lvalp->xtokValueArray.max = 16;
+         lvalp->xtokValueArray.next = 0;
+         lvalp->xtokValueArray.values = (char**)parser_malloc(parm->heap, (sizeof(char*) * lvalp->xtokValueArray.max));
          return XTOK_VALUEARRAY;
       }
    }
    return 0;
 }
 
-static int procValueNamedInstance(YYSTYPE * lvalp, ParserControl * parm)
+static int procValueRefArray(parseUnion * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+      {NULL}
+   };
+   XmlAttr attr[1];
+   if (tagEquals(parm->xmb, "VALUE.REFARRAY")) {
+      if (attrsOk(parm->xmb, elm, attr, "VALUE.REFARRAY",
+           ZTOK_VALUEARRAY)) {
+         lvalp->xtokValueRefArray.max = 16;
+         lvalp->xtokValueRefArray.next = 0;
+         lvalp->xtokValueRefArray.values = (XtokValueReference*)parser_malloc(parm->heap, (sizeof(XtokValueReference) * lvalp->xtokValueRefArray.max));
+         return XTOK_VALUEREFARRAY;
+      }
+   }
+   return 0;
+}
+
+static int procValueNamedInstance(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -787,7 +808,7 @@ static int procValueNamedInstance(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procInstancePath(YYSTYPE * lvalp, ParserControl * parm)
+static int procInstancePath(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -803,7 +824,7 @@ static int procInstancePath(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procNameSpacePath(YYSTYPE * lvalp, ParserControl * parm)
+static int procNameSpacePath(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -819,7 +840,7 @@ static int procNameSpacePath(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procValueReference(YYSTYPE * lvalp, ParserControl * parm)
+static int procValueReference(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -835,7 +856,7 @@ static int procValueReference(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procValueObjectWithPath(YYSTYPE * lvalp, ParserControl * parm)
+static int procValueObjectWithPath(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {NULL}
@@ -850,7 +871,7 @@ static int procValueObjectWithPath(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procQualifier(YYSTYPE * lvalp, ParserControl * parm)
+static int procQualifier(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = { {"NAME"},
    {"TYPE"},
@@ -889,15 +910,16 @@ static int procQualifier(YYSTYPE * lvalp, ParserControl * parm)
 }
 
 
-static int procProperty(YYSTYPE * lvalp, ParserControl * parm)
+static int procProperty(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = { {"NAME"},
    {"TYPE"},
    {"CLASSORIGIN"},
    {"PROPAGATED"},
+   {"EMBEDDEDOBJECT"},
    {NULL}
    };
-   XmlAttr attr[4];
+   XmlAttr attr[5];
    int i, m;
 
    memset(attr, 0, sizeof(attr));
@@ -920,21 +942,23 @@ static int procProperty(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procPropertyArray(YYSTYPE * lvalp, ParserControl * parm)
+static int procPropertyArray(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elmPA[] = { {"NAME"},
    {"TYPE"},
    {"CLASSORIGIN"},
    {"PROPAGATED"},
    {"ARRAYSIZE"},
+   {"EMBEDDEDOBJECT"},
    {NULL}
    };
-   XmlAttr attr[5];
+   XmlAttr attr[6];
    int i, m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PROPERTY.ARRAY")) {
       if (attrsOk(parm->xmb, elmPA, attr, "PROPERTY.ARRAY", ZTOK_PROPERTYARRAY)) {
+         memset(&lvalp->xtokProperty, 0, sizeof(XtokProperty));
          lvalp->xtokProperty.name = attr[0].attr;
          lvalp->xtokProperty.valueType = CMPI_null;
          if (attr[1].attr)
@@ -951,7 +975,7 @@ static int procPropertyArray(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procPropertyReference(YYSTYPE * lvalp, ParserControl * parm)
+static int procPropertyReference(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = { {"NAME"},
    {"REFERENCECLASS"},
@@ -979,7 +1003,7 @@ static int procPropertyReference(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procMethod(YYSTYPE * lvalp, ParserControl * parm)
+static int procMethod(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = { {"NAME"},
    {"TYPE"},
@@ -1008,7 +1032,7 @@ static int procMethod(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procParam(YYSTYPE * lvalp, ParserControl * parm)
+static int procParam(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] =
    { {"NAME"},
@@ -1034,7 +1058,7 @@ static int procParam(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
+static int procParamArray(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] =
    { {"NAME"},
@@ -1062,7 +1086,7 @@ static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procParamRef(YYSTYPE * lvalp, ParserControl * parm)
+static int procParamRef(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] =
    { {"NAME"},
@@ -1086,7 +1110,7 @@ static int procParamRef(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procParamRefArray(YYSTYPE * lvalp, ParserControl * parm)
+static int procParamRefArray(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] =
    { {"NAME"},
@@ -1112,6 +1136,60 @@ static int procParamRefArray(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
+
+static int procSimpleExpReq(parseUnion * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+      {NULL}
+   };
+   XmlAttr   attr[1];
+
+   if (tagEquals(parm->xmb, "SIMPLEEXPREQ")) {
+      if (attrsOk(parm->xmb, elm, attr, "SIMPLEEXPREQ", ZTOK_SIMPLEEXPREQ))
+      {
+         return XTOK_SIMPLEEXPREQ;
+      }
+   }
+   return 0;
+}
+
+static int procExportMethodCall(parseUnion * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+     {"NAME"},
+      {NULL}
+   };
+   XmlAttr   attr[1];
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "EXPMETHODCALL")) {
+      if (attrsOk(parm->xmb, elm, attr, "EXPMETHODCALL", ZTOK_EXPMETHODCALL)) {
+         if (strcasecmp(attr[0].attr, "ExportIndication") == 0) {
+            return XTOK_EXPORTINDICATION;
+         }
+      }
+   }
+   return 0;
+}
+
+static int procExParamValueCall(parseUnion * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+     {"NAME"},
+      {NULL}
+   };
+   XmlAttr   attr[1];
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "EXPPARAMVALUE")) {
+      if (attrsOk(parm->xmb, elm, attr, "EXPPARAMVALUE", ZTOK_EXPPARAMVALUE)) {
+         if (strcasecmp(attr[0].attr, "ExportIndication") == 0) {
+            return XTOK_EP_INSTANCE;
+         }
+      }
+   }
+   return 0;
+}
 
 static Tags tags[] = {
    {TAG("?xml"), procXml, ZTOK_XML},
@@ -1152,11 +1230,14 @@ static Tags tags[] = {
    {TAG("OBJECTPATH"), procObjectPath, ZTOK_OBJECTPATH},
    {TAG("METHODRESPONSE"), procMethodResp, ZTOK_METHODRESP},
    {TAG("RETURNVALUE"), procRetValue, ZTOK_RETVALUE},
-   {TAG("CLASSPATH"), procClassPath, ZTOK_CLASSPATH}
+   {TAG("CLASSPATH"), procClassPath, ZTOK_CLASSPATH},
+   {TAG("SIMPLEEXPREQ"), procSimpleExpReq, ZTOK_SIMPLEEXPREQ},
+   {TAG("EXPMETHODCALL"), procExportMethodCall, ZTOK_EXPMETHODCALL},
+   {TAG("EXPPARAMVALUE"), procExParamValueCall, ZTOK_EXPPARAMVALUE}
 };
 #define TAGS_NITEMS	(int)(sizeof(tags)/sizeof(Tags))
 
-int yylex(YYSTYPE * lvalp, ParserControl * parm)
+int sfccLex(parseUnion * lvalp, ParserControl * parm)
 {
    int i, rc;
    char *next;
@@ -1199,18 +1280,9 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
-int yyerror(char *s)
-{
-   printf("*-* yyerror: %s\n", s);
-   exit(5);
-}
-
 ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
 {
    ParserControl control;
-   XtokParamValue *outParam=NULL;
-   CMPIArgs *args = NULL;
-   CMPIValue value;
 #if DEBUG
    extern int do_debug;
 
@@ -1225,36 +1297,13 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
    control.respHdr.xmlBuffer = xmb;
 
    control.respHdr.rvArray=newCMPIArray(0,0,NULL);
-   control.da_nameSpace=(char*)getNameSpaceChars(cop);
+   if(cop) {
+       control.da_nameSpace=(char*)getNameSpaceChars(cop);
+   }
 
    control.heap = parser_heap_init();
 
-   control.respHdr.rc = yyparse(&control);
-
-   /* Process OUT parameters */
-   outParam = control.paramValues.first;
-
-   if (outParam) { 
-
-       args = newCMPIArgs(NULL);
-
-       while (outParam) {
-
-           /*value = (outParam->type == CMPI_ref) 
-               ? str2CMPIValue(outParam->type, NULL, &outParam->valueRef)
-               : str2CMPIValue(outParam->type, outParam->value.value, NULL);*/
-           value = str2CMPIValue(outParam->type, outParam->value.value, &outParam->valueRef);
-
-           /* Add it to the args list */
-           args->ft->addArg ( args, outParam->name, &value, outParam->type);
-	   native_release_CMPIValue(outParam->type,&value);
-           outParam = outParam->next;
-       }
-       control.respHdr.outArgs = args;
-       /* Note : Freeing of list will be done by
-        * parser_heap_term() routine.
-        */
-   }
+   control.respHdr.rc = startParsing(&control);
 
    parser_heap_term(control.heap);
 
