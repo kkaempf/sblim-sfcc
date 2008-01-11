@@ -15,7 +15,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -26,6 +26,7 @@
 #include "native.h"
 #include "cimXmlParser.h"
 #include "utilft.h"
+#include "parserUtil.h"
 
 #ifdef DMALLOC
 #include "dmalloc.h"
@@ -335,6 +336,15 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
    return (CMPIValue *) value;
 }
 
+CMPIInstance *getInstFromEmbedded(XtokInstance *inst)
+{
+    CMPIInstance *newInst;
+    newInst = native_new_CMPIInstance(NULL, NULL);
+    setInstNsAndCn(newInst, NULL, inst->className);
+    setInstProperties(newInst, &inst->properties);
+    return newInst;
+}
+
 CMPIType guessType(char *val)
 {
    /* TODO: Currently doesn't guess right for real values (3.175e+00) */
@@ -440,6 +450,9 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       break;
    case CMPI_ref:
       valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t);
+      break;
+   case CMPI_instance:
+      value.inst=getInstFromEmbedded((XtokInstance*)val);
       break;
   default:
  //     mlogf(M_ERROR,M_SHOW,"%s(%d): invalid value %d-%s\n", __FILE__, __LINE__, (int) type, val);

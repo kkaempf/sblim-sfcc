@@ -49,6 +49,12 @@ typedef enum typeProperty {
    typeProperty_Array
 } TypeProperty;
 
+typedef enum typeValue {
+   typeValue_Instance,
+   typeValue_Class,
+   typeValue_charP
+} TypeValue;
+
 typedef struct xmlBuffer {
    char *base;
    char *last;
@@ -78,8 +84,19 @@ typedef struct xtokMessage {
    char *id;
 } XtokMessage;
 
+struct xtokInstance;
+
+typedef struct xtokValueData {
+   union {
+    char *value;
+    struct xtokInstance *inst;
+   };
+   TypeValue type;
+} XtokValueData;
+
 typedef struct xtokValue {
-   char *value;
+   XtokValueData data;
+   TypeValue type;
 } XtokValue;
 
 typedef struct xtokValueArray {
@@ -203,11 +220,11 @@ typedef struct xtokKeyBinding {
 
 
 typedef struct xtokPropertyData {
-//   union {
-      char *value;
+   union {
+      XtokValue value;
       XtokValueReference ref;
       XtokValueArray array;
-//   };
+   };
    XtokQualifiers qualifiers;
    int null;
 } XtokPropertyData;
@@ -501,6 +518,8 @@ typedef struct parser_control {
 #define ZTOK_CLASSPATH 344
 #define XTOK_VALUEREFARRAY 345
 #define ZTOK_VALUEREFARRAY 346
+#define XTOK_CDATA 347
+#define ZTOK_CDATA 348
 
 
 typedef union parseUnion
@@ -519,6 +538,7 @@ typedef union parseUnion
    XtokClassName                 xtokClassName;
    
    XtokValue                     xtokValue;
+   XtokValueData                 xtokValueData;
    XtokValueArray                xtokValueArray;
    XtokValueReference            xtokValueReference;
    XtokValueRefArray             xtokValueRefArray;

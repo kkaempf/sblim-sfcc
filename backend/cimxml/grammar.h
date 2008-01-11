@@ -72,6 +72,7 @@ static void keyBinding(ParserControl *parm, parseUnion *stateUnion);
 static void keyBindingContent(ParserControl *parm, parseUnion *stateUnion);
 static void keyValue(ParserControl *parm, parseUnion *stateUnion);
 static void value(ParserControl *parm, parseUnion *stateUnion);
+static void valueData(ParserControl *parm, parseUnion *stateUnion);
 static void valueArray(ParserControl *parm, parseUnion *stateUnion);
 static void valueRefArray(ParserControl *parm, parseUnion *stateUnion);
 static void valueReference(ParserControl *parm, parseUnion *stateUnion);

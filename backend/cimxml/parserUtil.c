@@ -95,14 +95,14 @@ void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
       switch (p->propType) {
       case typeProperty_Value:
          type = p->valueType;
-         if (p->val.value != NULL && p->val.null==0) {
+         if (p->val.value.data.value != NULL && p->val.null==0) {
             if (type == CMPI_string || type == CMPI_chars) {
-                char *charsStr = XmlToAsciiStr(p->val.value);
+                char *charsStr = XmlToAsciiStr(p->val.value.data.value);
                 val = str2CMPIValue(type, charsStr, NULL);
                 free (charsStr);
             }
             else
-                val = str2CMPIValue(type, p->val.value, NULL);
+                val = str2CMPIValue(type, p->val.value.data.value, NULL);
             CMSetProperty(ci, p->name, &val, type);
         native_release_CMPIValue(type, &val);
          }
@@ -112,7 +112,7 @@ void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
          }
          break;
       case typeProperty_Reference: 
-         val=str2CMPIValue(CMPI_ref, NULL, &p->val.ref);//p->val.ref.op;
+         val=str2CMPIValue(CMPI_ref, NULL, &p->val.ref);
          CMSetProperty(ci, p->name, &val.ref, CMPI_ref);
      CMRelease(val.ref);
          break;
@@ -169,7 +169,7 @@ void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
                native_release_CMPIValue(q->type,(CMPIValue*)&arr);
             }
             else {
-               val = str2CMPIValue(q->type, q->data.value.value, NULL);
+               val = str2CMPIValue(q->type, q->data.value.data.value, NULL);
                rc= addInstPropertyQualifier(ci, p->name, q->name, &val, q->type);
                native_release_CMPIValue(q->type,&val);
             }   
@@ -209,7 +209,7 @@ void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
       }
       }
       else {
-         val = str2CMPIValue(q->type, q->data.value.value, NULL);
+         val = str2CMPIValue(q->type, q->data.value.data.value, NULL);
          rc = addInstQualifier(ci, q->name, &val, q->type);
          native_release_CMPIValue( q->type,&val);
       }
@@ -266,7 +266,7 @@ void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
             native_release_CMPIValue(q->type,(CMPIValue*)&arr);
          }
          else {
-            val = str2CMPIValue(q->type, q->data.value.value, NULL);
+            val = str2CMPIValue(q->type, q->data.value.data.value, NULL);
             rc= addClassPropertyQualifier(cls, p->name, q->name, &val, q->type);
             native_release_CMPIValue(q->type,&val);
          }   
@@ -310,7 +310,7 @@ void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
       }
       }
       else {
-          char *valStr = q->data.value.value;
+          char *valStr = q->data.value.data.value;
           if (q->type == CMPI_string || q->type == CMPI_chars)
           {
               char *charsStr = XmlToAsciiStr(valStr);
@@ -427,7 +427,7 @@ void setReturnArgs(ParserControl *parm, XtokParamValues *ps)
         args = newCMPIArgs(NULL);
 
         while (outParam) {
-            value = str2CMPIValue(outParam->type, outParam->data.value.value, &outParam->data.valueRef);
+            value = str2CMPIValue(outParam->type, outParam->data.value.data.value, &outParam->data.valueRef);
 
             /* Add it to the args list */
             args->ft->addArg ( args, outParam->name, &value, outParam->type);

@@ -255,6 +255,7 @@ static void returnValue(ParserControl *parm, parseUnion *stateUnion)
 	parseUnion lvalp;
 	CMPIType  t;
 	CMPIValue val;
+	CMPIInstance *inst;
 	ct = localLex((parseUnion*)&stateUnion->xtokReturnValue, parm);
 	if(ct == XTOK_RETVALUE) {
 		returnValueData(parm, (parseUnion*)&stateUnion->xtokReturnValue.data);
@@ -262,12 +263,19 @@ static void returnValue(ParserControl *parm, parseUnion *stateUnion)
 			t = CMPI_ref;
 			val = str2CMPIValue(t, NULL, &stateUnion->xtokReturnValue.data.ref);
 		}
+		else if(stateUnion->xtokReturnValue.data.value.type == typeValue_Instance) {
+			t = CMPI_instance;
+			inst = native_new_CMPIInstance(NULL,NULL);
+			setInstNsAndCn(inst,parm->da_nameSpace,stateUnion->xtokReturnValue.data.value.data.inst->className);
+			setInstProperties(inst, &stateUnion->xtokReturnValue.data.value.data.inst->properties);
+			val.inst = inst;
+		}
 		else {
 			t = stateUnion->xtokReturnValue.type;
 			if (t == CMPI_null) {
-				t = guessType(stateUnion->xtokReturnValue.data.value.value);
+				t = guessType(stateUnion->xtokReturnValue.data.value.data.value);
 			}
-			val = str2CMPIValue(t, stateUnion->xtokReturnValue.data.value.value, NULL);
+			val = str2CMPIValue(t, stateUnion->xtokReturnValue.data.value.data.value, NULL);
 		}
 		simpleArrayAdd(parm->respHdr.rvArray, (CMPIValue*)&val, t);
 		ct = localLex((parseUnion*)&stateUnion->xtokReturnValue, parm);
@@ -311,7 +319,12 @@ static void paramValue(ParserControl *parm, parseUnion *stateUnion)
 			dontLex = 1;
 			paramValueData(parm, (parseUnion*)&lvalp.xtokParamValueData);
 			stateUnion->xtokParamValue.data = lvalp.xtokParamValueData;
-			stateUnion->xtokParamValue.type |= lvalp.xtokParamValueData.type;
+			if(lvalp.xtokParamValueData.type == CMPI_instance) {
+				stateUnion->xtokParamValue.type = CMPI_instance;
+			}
+			else {
+				stateUnion->xtokParamValue.type |= lvalp.xtokParamValueData.type;
+			}
 		}
 		ct = localLex((parseUnion*)&stateUnion->xtokParamValue, parm);
 		if(ct == ZTOK_PARAMVALUE) {
@@ -332,6 +345,9 @@ static void paramValueData(ParserControl *parm, parseUnion *stateUnion)
 	if(ct == XTOK_VALUE) {
 		dontLex = 1;
 		value(parm, (parseUnion*)&stateUnion->xtokParamValueData.value);
+		if(stateUnion->xtokParamValueData.value.type == typeValue_Instance) {
+			stateUnion->xtokParamValueData.type = CMPI_instance;
+		}
 	}
 	else if(ct == XTOK_VALUEREFERENCE) {
 		dontLex = 1;
@@ -486,8 +502,8 @@ static void getPropertyRetValue(ParserControl *parm, parseUnion *stateUnion)
 	if(ct == XTOK_VALUE) {
 		dontLex = 1;
 		value(parm, (parseUnion*)&stateUnion->xtokGetPropRetContent.value);
-		t   = guessType(stateUnion->xtokGetPropRetContent.value.value);
-		val = str2CMPIValue(t, stateUnion->xtokGetPropRetContent.value.value, NULL);
+		t   = guessType(stateUnion->xtokGetPropRetContent.value.data.value);
+		val = str2CMPIValue(t, stateUnion->xtokGetPropRetContent.value.data.value, NULL);
 		simpleArrayAdd(parm->respHdr.rvArray, (CMPIValue*)&val, t);
 	}
 	else if(ct == XTOK_VALUEARRAY) {
@@ -1068,6 +1084,9 @@ static void genProperty(ParserControl *parm, parseUnion *stateUnion)
 	if(ct == XTOK_PROPERTY) {
 		dontLex = 1;
 		property(parm, (parseUnion*)&stateUnion->xtokProperty.val);
+		if(stateUnion->xtokProperty.val.value.type == typeValue_Instance) {
+			stateUnion->xtokProperty.valueType = CMPI_instance;
+		}
 	}
 	else if(ct == XTOK_PROPERTYARRAY) {
 		dontLex = 1;
@@ -1150,7 +1169,7 @@ static void property(ParserControl *parm, parseUnion *stateUnion)
 		if(ct == XTOK_VALUE) {
 			dontLex = 1;
 			value(parm, (parseUnion*)&lvalp.xtokValue);
-			stateUnion->xtokPropertyData.value = lvalp.xtokValue.value;
+			stateUnion->xtokPropertyData.value = lvalp.xtokValue;
 		}
 		ct = localLex((parseUnion*)&stateUnion->xtokPropertyData, parm);
 		if(ct == ZTOK_PROPERTY) {
@@ -1325,6 +1344,8 @@ static void value(ParserControl *parm, parseUnion *stateUnion)
 	parseUnion lvalp;
 	ct = localLex((parseUnion*)&stateUnion->xtokValue, parm);
 	if(ct == XTOK_VALUE) {
+		valueData(parm, (parseUnion*)&stateUnion->xtokValue.data);
+		stateUnion->xtokValue.type = stateUnion->xtokValue.data.type;
 		ct = localLex((parseUnion*)&stateUnion->xtokValue, parm);
 		if(ct == ZTOK_VALUE) {
 		}
@@ -1334,6 +1355,30 @@ static void value(ParserControl *parm, parseUnion *stateUnion)
 	}
 	else {
 		parseError("XTOK_VALUE", ct, parm);
+	}
+}
+
+static void valueData(ParserControl *parm, parseUnion *stateUnion)
+{
+	parseUnion lvalp;
+	ct = localLex((parseUnion*)&stateUnion->xtokValueData, parm);
+	if(ct == ZTOK_VALUE) {
+		stateUnion->xtokValueData.type=typeValue_charP;
+		dontLex = 1;
+	}
+	else if(ct == XTOK_CDATA) {
+		stateUnion->xtokValueData.inst = parser_malloc(parm->heap, sizeof(XtokInstance));
+		instance(parm, (parseUnion*)stateUnion->xtokValueData.inst);
+		stateUnion->xtokValueData.type=typeValue_Instance;
+		ct = localLex((parseUnion*)&stateUnion->xtokValueData, parm);
+		if(ct == ZTOK_CDATA) {
+		}
+		else {
+			parseError("ZTOK_CDATA", ct, parm);
+		}
+	}
+	else {
+		parseError("ZTOK_VALUE", ct, parm);
 	}
 }
 
@@ -1352,7 +1397,7 @@ static void valueArray(ParserControl *parm, parseUnion *stateUnion)
 					stateUnion->xtokValueArray.max *= 2;
 					stateUnion->xtokValueArray.values = (char**)parser_realloc(parm->heap, stateUnion->xtokValueArray.values, sizeof(char*) * stateUnion->xtokValueArray.max);
 				}
-				stateUnion->xtokValueArray.values[stateUnion->xtokValueArray.next++] = lvalp.xtokValue.value;
+				stateUnion->xtokValueArray.values[stateUnion->xtokValueArray.next++] = lvalp.xtokValue.data.value;
 				ct = localLex(&lvalp, parm);
 			}
 			while(ct == XTOK_VALUE);

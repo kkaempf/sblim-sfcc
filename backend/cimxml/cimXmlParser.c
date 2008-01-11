@@ -467,9 +467,10 @@ static int procRetValue(parseUnion * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "RETURNVALUE")) {
       static XmlElement elm[] = {
          {"PARAMTYPE"},
+         {"EMBEDDEDOBJECT"},
          {NULL}
       };
-      XmlAttr attr[2];
+      XmlAttr attr[3];
       int i;
       memset(attr, 0, sizeof(attr));
       if (attrsOk(parm->xmb, elm, attr, "RETURNVALUE", ZTOK_RETVALUE)) {
@@ -557,7 +558,6 @@ static int procObjectPath(parseUnion * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "OBJECTPATH")) {
       if (attrsOk(parm->xmb, elm, attr, "OBJECTPATH",
            ZTOK_OBJECTPATH)) {
-         lvalp->xtokValue.value = getContent(parm->xmb);
          return XTOK_OBJECTPATH;
       }
    }
@@ -587,9 +587,10 @@ static int procParamValue(parseUnion * lvalp, ParserControl * parm)
    static XmlElement elm[] = {
       {"NAME"},
       {"PARAMTYPE"},
+      {"EMBEDDEDOBJECT"},
       {NULL}
    };
-   XmlAttr attr[2];
+   XmlAttr attr[3];
    int i, m;
 
    memset(attr, 0, sizeof(attr));
@@ -749,7 +750,7 @@ static int procValue(parseUnion * lvalp, ParserControl * parm)
       char *v;
       if (attrsOk(parm->xmb, elm, attr, "VALUE", ZTOK_VALUE)) {
          v=getContent(parm->xmb);
-         lvalp->xtokValue.value = v;
+         lvalp->xtokValue.data.value = v;
          return XTOK_VALUE;
       }
    }
@@ -801,7 +802,6 @@ static int procValueNamedInstance(parseUnion * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "VALUE.NAMEDINSTANCE")) {
       if (attrsOk(parm->xmb, elm, attr, "VALUE.NAMEDINSTANCE",
            ZTOK_VALUENAMEDINSTANCE)) {
-         lvalp->xtokValue.value = getContent(parm->xmb);
          return XTOK_VALUENAMEDINSTANCE;
       }
    }
@@ -817,7 +817,6 @@ static int procInstancePath(parseUnion * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "INSTANCEPATH")) {
       if (attrsOk(parm->xmb, elm, attr, "INSTANCEPATH",
            ZTOK_INSTANCEPATH)) {
-         lvalp->xtokValue.value = getContent(parm->xmb);
          return XTOK_INSTANCEPATH;
       }
    }
@@ -833,7 +832,6 @@ static int procNameSpacePath(parseUnion * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "NAMESPACEPATH")) {
       if (attrsOk(parm->xmb, elm, attr, "NAMESPACEPATH",
            ZTOK_NAMESPACEPATH)) {
-         lvalp->xtokValue.value = getContent(parm->xmb);
          return XTOK_NAMESPACEPATH;
       }
    }
@@ -849,7 +847,6 @@ static int procValueReference(parseUnion * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "VALUE.REFERENCE")) {
       if (attrsOk(parm->xmb, elm, attr, "VALUE.REFERENCE",
            ZTOK_VALUEREFERENCE)) {
-         lvalp->xtokValue.value = getContent(parm->xmb);
          return XTOK_VALUEREFERENCE;
       }
    }
@@ -1191,6 +1188,32 @@ static int procExParamValueCall(parseUnion * lvalp, ParserControl * parm)
    return 0;
 }
 
+static int procCdata(parseUnion * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+      {NULL}
+   };
+   XmlAttr attr[1];
+   
+   if (tagEquals(parm->xmb, "![CDATA[")) {
+      parm->xmb->cur--;
+      parm->xmb->cur[0] = '>';      
+      char *v;
+      if (attrsOk(parm->xmb, elm, attr, "![CDATA[", ZTOK_CDATA)) {
+         
+         v=strstr(parm->xmb->cur, "]]>");
+         if(v) {
+            v[0] = '<';
+            v[1] = '/';
+         } else {
+            return 0;
+         }
+         return XTOK_CDATA;
+      }
+   }
+   return 0;
+}
+
 static Tags tags[] = {
    {TAG("?xml"), procXml, ZTOK_XML},
    {TAG("CIM"), procCim, ZTOK_CIM},
@@ -1233,7 +1256,9 @@ static Tags tags[] = {
    {TAG("CLASSPATH"), procClassPath, ZTOK_CLASSPATH},
    {TAG("SIMPLEEXPREQ"), procSimpleExpReq, ZTOK_SIMPLEEXPREQ},
    {TAG("EXPMETHODCALL"), procExportMethodCall, ZTOK_EXPMETHODCALL},
-   {TAG("EXPPARAMVALUE"), procExParamValueCall, ZTOK_EXPPARAMVALUE}
+   {TAG("EXPPARAMVALUE"), procExParamValueCall, ZTOK_EXPPARAMVALUE},
+   {TAG("![CDATA["), procCdata, ZTOK_CDATA},
+   {TAG(""), procCdata, ZTOK_CDATA},
 };
 #define TAGS_NITEMS	(int)(sizeof(tags)/sizeof(Tags))
 

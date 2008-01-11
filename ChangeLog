@@ -1,5 +1,12 @@
 2008-01-09  Sven Schuetz <sven@de.ibm.com>
 
+	* backend/cimxml/parserUtil.c, backend/cimxml/cimXmlParser.c,
+	backend/cimxml/value.c, backend/cimxml/cimXmlParser.h,
+	backend/cimxml/grammar.c, backend/cimxml/grammar.h:
+	Implemented 1867649: embedded instance support
+
+2008-01-09  Sven Schuetz <sven@de.ibm.com>
+
 	* backend/cimxml/cimXmlResp.y, backend/cimxml/cimXmlParser.h,
 	backend/cimxml/client.c, backend/cimxml/value.c,
 	backend/cimxml/cimXmlParser.c, Makefile.am, backend/cimxml/grammar.h,
