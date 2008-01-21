@@ -36,6 +36,7 @@ AC_STRUCT_TM
 
 # Checks for libraries
 AC_CHECK_LIB(curl,curl_easy_init,[LIBCURL=-lcurl],[AC_MSG_ERROR([Could not find required libcurl])])
+AC_CHECK_LIB(pthread,main)
 
 # Checks for library functions.
 AC_FUNC_ALLOCA

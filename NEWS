@@ -6,6 +6,7 @@ New features
 - 1820015 sfcc: prepare for indication support
 - 1854813 sfcc: new parser
 - 1867649 sfcc: embedded instance support (receiving side)
+- 1828588 sfcc: Indication support (CIMXML)
 
 Changes in 2.0.3:
 =================

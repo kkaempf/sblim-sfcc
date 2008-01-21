@@ -27,6 +27,7 @@
 #include "native.h"
 
 #include "cimc.h"
+#include "nativeCimXml.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -2900,6 +2901,17 @@ static CMPIDateTime *newDateTimeFromChars(CIMCEnv* ce, const char *utcTime, CMPI
    return native_new_CMPIDateTime_fromChars(utcTime,rc); 
 }
 
+static CIMCIndicationListener *newIndicationListener (CIMCEnv* ce,
+                                                      int sslMode,
+                                                      int *portNumber,
+                                                      char **socketName,
+                                                      void (*fp) (CIMCInstance *indInstance),
+                                                      CIMCStatus *rc)
+{
+   /* socket name not required, cimxml/tcpip mode */
+   return newCIMCIndicationListener(sslMode, portNumber, fp, rc);
+}
+
 static CIMCEnvFT localFT = {
   "CIMXML",
   releaseEnv,
@@ -2913,6 +2925,7 @@ static CIMCEnvFT localFT = {
   newDateTime,
   newDateTimeFromBinary,
   newDateTimeFromChars,
+  newIndicationListener,
 };
 
 /* Factory function for CIMXML Client */

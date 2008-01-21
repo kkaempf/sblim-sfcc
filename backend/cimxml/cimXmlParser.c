@@ -1169,7 +1169,7 @@ static int procExportMethodCall(parseUnion * lvalp, ParserControl * parm)
    return 0;
 }
 
-static int procExParamValueCall(parseUnion * lvalp, ParserControl * parm)
+static int procExParamValue(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
      {"NAME"},
@@ -1180,7 +1180,7 @@ static int procExParamValueCall(parseUnion * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "EXPPARAMVALUE")) {
       if (attrsOk(parm->xmb, elm, attr, "EXPPARAMVALUE", ZTOK_EXPPARAMVALUE)) {
-         if (strcasecmp(attr[0].attr, "ExportIndication") == 0) {
+         if (strcasecmp(attr[0].attr, "NewIndication") == 0) {
             return XTOK_EP_INSTANCE;
          }
       }
@@ -1256,9 +1256,14 @@ static Tags tags[] = {
    {TAG("CLASSPATH"), procClassPath, ZTOK_CLASSPATH},
    {TAG("SIMPLEEXPREQ"), procSimpleExpReq, ZTOK_SIMPLEEXPREQ},
    {TAG("EXPMETHODCALL"), procExportMethodCall, ZTOK_EXPMETHODCALL},
-   {TAG("EXPPARAMVALUE"), procExParamValueCall, ZTOK_EXPPARAMVALUE},
+   {TAG("EXPPARAMVALUE"), procExParamValue, ZTOK_EXPPARAMVALUE},
    {TAG("![CDATA["), procCdata, ZTOK_CDATA},
    {TAG(""), procCdata, ZTOK_CDATA},
+   /* The last two lines are a hack for embedded instances. The CDATA
+    * construct does not have a <x> ... </x> form but rather something like
+    * <bla ....>, which is not a real tag. so the second line is necessary
+    * for our lexer to find the closing "tag" for that case, which is just
+    * an empty string */
 };
 #define TAGS_NITEMS	(int)(sizeof(tags)/sizeof(Tags))
 

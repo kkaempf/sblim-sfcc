@@ -1,3 +1,10 @@
+2008-01-16  Sven Schuetz <sven@de.ibm.com>
+
+	* configure.ac, Makefile.am, backend/cimxml/grammar.c,
+	backend/cimxml/client.c, backend/cimxml/cimXmlParser.c,
+	backend/cimxml/nativeCimXml.h, backend/cimxml/indicationlistener.c:
+	Implemented 1828588: Indication support (CIMXML)
+
 2008-01-09  Sven Schuetz <sven@de.ibm.com>
 
 	* backend/cimxml/parserUtil.c, backend/cimxml/cimXmlParser.c,

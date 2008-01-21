@@ -30,7 +30,7 @@ static int dontLex = 0;
 
 static void parseError(char* tokExp, int tokFound, ParserControl *parm)
 {
-	printf("Parse error. Expected token(s) %s, found tag number %d (see cimXmlParser.h) and following xml: %s\nAborting.\n", tokExp, tokFound, parm->xmb->cur+1);
+	printf("Parse error. Expected token(s) %s, found tag number %d (see cimXmlParser.h) and following xml: %.255s...\nAborting.\n", tokExp, tokFound, parm->xmb->cur+1);
 	exit(0);
 }
 
@@ -168,6 +168,7 @@ static void exportIndication(ParserControl *parm, parseUnion *stateUnion)
 	parseUnion lvalp;
 	ct = localLex(stateUnion, parm);
 	if(ct == XTOK_EXPORTINDICATION) {
+		exParamValue(parm, stateUnion);
 		ct = localLex(stateUnion, parm);
 		if(ct == ZTOK_EXPMETHODCALL) {
 		}
@@ -177,6 +178,34 @@ static void exportIndication(ParserControl *parm, parseUnion *stateUnion)
 	}
 	else {
 		parseError("XTOK_EXPORTINDICATION", ct, parm);
+	}
+}
+
+static void exParamValue(ParserControl *parm, parseUnion *stateUnion)
+{
+	parseUnion lvalp;
+	CMPIInstance *inst;
+	ct = localLex(stateUnion, parm);
+	if(ct == XTOK_EP_INSTANCE) {
+		ct = localLex(&lvalp, parm);
+		dontLex = 1;
+		if(ct == XTOK_INSTANCE) {
+			dontLex = 1;
+			instance(parm, (parseUnion*)&lvalp.xtokInstance);
+			inst = native_new_CMPIInstance(NULL,NULL);
+			setInstNsAndCn(inst,parm->da_nameSpace,lvalp.xtokInstance.className);
+			setInstProperties(inst, &lvalp.xtokInstance.properties);
+			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&inst,CMPI_instance);
+		}
+		ct = localLex(stateUnion, parm);
+		if(ct == ZTOK_EXPPARAMVALUE) {
+		}
+		else {
+			parseError("ZTOK_EXPPARAMVALUE or XTOK_INSTANCE", ct, parm);
+		}
+	}
+	else {
+		parseError("XTOK_EP_INSTANCE", ct, parm);
 	}
 }
 
