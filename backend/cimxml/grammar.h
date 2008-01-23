@@ -29,6 +29,7 @@ static void message(ParserControl *parm, parseUnion *stateUnion);
 static void messageContent(ParserControl *parm, parseUnion *stateUnion);
 static void simpleRspContent(ParserControl *parm, parseUnion *stateUnion);
 static void exportIndication(ParserControl *parm, parseUnion *stateUnion);
+static void exParamValue(ParserControl *parm, parseUnion *stateUnion);
 static void methodRespContent(ParserControl *parm, parseUnion *stateUnion);
 static void iMethodRespContent(ParserControl *parm, parseUnion *stateUnion);
 static void error(ParserControl *parm, parseUnion *stateUnion);
