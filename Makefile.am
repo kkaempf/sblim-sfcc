@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.15 2008/01/21 10:15:41 sschuetz Exp $
+# $Id: Makefile.am,v 1.16 2008/02/05 17:26:27 sschuetz Exp $
 
 docdir=$(datadir)/doc/sfcc-$(VERSION)
 
@@ -16,9 +16,6 @@ Libcmpisfcc_AGE=0
 
 AM_LFLAGS=-i
 AM_YFLAGS=-d
-
-BUILT_SOURCES = \
-	cimXmlResp.h cimXmlResp.c
 
 dist_man_MANS = man/man3/CMCIClient.3 man/man3/CMCIClientFT.associatorNames.3 \
 	man/man3/CMCIClientFT.associators.3 \

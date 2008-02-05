@@ -1,3 +1,8 @@
+2008-02-05  Sven Schuetz <sven@de.ibm.com>
+
+	* configure.ac, Makefile.am, backend/cimxml/cimXmlResp.y:
+	Fixed 1887125: cleanup due to new parser
+
 2008-01-16  Sven Schuetz <sven@de.ibm.com>
 
 	* configure.ac, Makefile.am, backend/cimxml/grammar.c,

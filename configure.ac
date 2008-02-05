@@ -19,7 +19,6 @@ AC_ARG_ENABLE(http-chunking,
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_LIBTOOL
-AC_PROG_YACC
 
 # Checks for libraries.
 
