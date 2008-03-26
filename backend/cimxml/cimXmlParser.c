@@ -32,7 +32,53 @@
 #include "dmalloc.h"
 #endif
 
+#ifdef LARGE_VOL_SUPPORT
 
+// New begin
+#include <curl/curl.h>         // new
+#include <pthread.h>           // new
+#include <time.h>              // new
+#include <sys/time.h>          // new
+#include <setjmp.h>            // new
+
+struct _CMCIConnectionFT;                           // new 
+typedef struct _CMCIConnectionFT CMCIConnectionFT;  // new
+
+char * getNextSection(struct _CMCIConnection * ) ;
+int checkTag(char * , int ) ;
+
+#include "cmci.h"
+#include "utilStringBuffer.h"  // new
+#include "cimXmlParser.h"      // new
+#include "native.h"            // new
+#include "esinfo.h"            // new
+#include "conn.h"              // new
+
+jmp_buf save_env ;
+
+/*
+ * response data helper functions.
+ */
+inline char * CURPTR (enumScanInfo * esi ){
+ return(((char*)(esi->base)) + (esi->curoff)) ;
+}
+inline char * SSECPTR (enumScanInfo * esi ){
+ return(((char*)(esi->base)) + (esi->ssecoff)) ;
+}
+inline char * LASTPTR (enumScanInfo * esi ){
+ return(((char*)(esi->base)) + (esi->eodoff)) ;
+}
+inline void INCOFF (enumScanInfo * esi ){
+ (esi->curoff)++ ;  	
+}
+
+int sfccFreeSection(ParserControl * );
+void * enumScanThrd(struct native_enum *);
+int sfccLex(parseUnion * , ParserControl * );
+char * getNextSection(struct _CMCIConnection * );
+int checkTag(char * , int );
+
+#endif /* endif LARGE_VOL_SUPPORT */
 
 static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
                    const char *tag, int etag);
@@ -57,8 +103,10 @@ static void Throw(XmlBuffer * xb, char *msg)
 static XmlBuffer *newXmlBuffer(const char *s)
 {
    XmlBuffer *xb = (XmlBuffer *) malloc(sizeof(XmlBuffer));
-   xb->base = xb->cur = (char *) strdup(s);
-   xb->last = xb->cur + strlen(xb->cur);
+   if(s){
+      xb->base = xb->cur = (char *) strdup(s);
+      xb->last = xb->cur + strlen(xb->cur);
+   }
    xb->nulledChar = 0;
    xb->eTagFound = 0;
    xb->etag = 0;
@@ -67,7 +115,8 @@ static XmlBuffer *newXmlBuffer(const char *s)
 
 static void releaseXmlBuffer(XmlBuffer *xb)
 {
-    free (xb->base);
+	  if(xb->base)
+       free (xb->base);
     free (xb);
 }
 
@@ -348,8 +397,9 @@ static int procCim(parseUnion * lvalp, ParserControl * parm)
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "CIM")) {
-      if (attrsOk(parm->xmb, elm, attr, "CIM", ZTOK_CIM))
+      if (attrsOk(parm->xmb, elm, attr, "CIM", ZTOK_CIM)){
          return XTOK_CIM;
+      }
    }
    return 0;
 }
@@ -1267,6 +1317,8 @@ static Tags tags[] = {
 };
 #define TAGS_NITEMS	(int)(sizeof(tags)/sizeof(Tags))
 
+#ifndef LARGE_VOL_SUPPORT
+
 int sfccLex(parseUnion * lvalp, ParserControl * parm)
 {
    int i, rc;
@@ -1309,6 +1361,7 @@ int sfccLex(parseUnion * lvalp, ParserControl * parm)
    }
    return 0;
 }
+#endif
 
 ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
 {
@@ -1327,6 +1380,7 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
    control.respHdr.xmlBuffer = xmb;
 
    control.respHdr.rvArray=newCMPIArray(0,0,NULL);
+
    if(cop) {
        control.da_nameSpace=(char*)getNameSpaceChars(cop);
    }
@@ -1425,4 +1479,352 @@ void* parser_strdup(ParserHeap *ph, const char *s)
     return NULL;
   }
 }
+
+#if LARGE_VOL_SUPPORT
+
+/* **************************************************************************/
+/* **************************************************************************/
+/* **************************************************************************/
+/* **************************************************************************/
+/* **************************************************************************/
+/* **************************************************************************/
+/* **************************************************************************/
+int sfccFreeSection(ParserControl * parm)
+{
+   if(parm->econ->asynRCntl.escanInfo.section){  	              
+	    free(parm->econ->asynRCntl.escanInfo.section) ;
+		  parm->econ->asynRCntl.escanInfo.section = NULL ;
+   }	
+}
+#define TIMEDELAY 10 
+void * enumScanThrd(struct native_enum *NatEnum)
+{
+   CMCIConnection * con = NatEnum->econ ; /* enumeration */
+   CMPIObjectPath * cop = NatEnum->ecop ; /* enumeration */ 
+   
+   struct          timespec tp ;
+	 int             rc = 0 ;
+   
+   ParserControl control;
+   struct native_enum  *local_enmp ;
+   
+   memset(&control,0,sizeof(control));
+  
+   /* 
+    * get the data array and save a copy of address in enumeration 
+    */
+    
+   XmlBuffer *xmb = newXmlBuffer(NULL);
+   control.xmb = xmb;
+   control.respHdr.xmlBuffer = xmb;
+    
+   control.respHdr.rvArray=newCMPIArray(0,0,NULL);
+
+   local_enmp = con->asynRCntl.enmp ;
+   
+   local_enmp->data = control.respHdr.rvArray ;
+   
+   if(cop) {
+       control.da_nameSpace=(char*)getNameSpaceChars(cop);
+   }
+
+   control.heap = parser_heap_init();
+
+   control.econ = con ;
+     
+   if(rc = setjmp(save_env)) {
+      printf(" we had a timeout , we are going to exit from here \n") ;
+      con->asynRCntl.escanInfo.parsestate = PARSTATE_SERVER_TIMEOUT ;
+      con->asynRCntl.xfer_state = XFER_ERROR ;
+      return ;
+   }
+   
+   /*
+    * wait for first data block received or xfer complete
+    * we need to have some data before starting
+    */
+   while((con->asynRCntl.xfer_state != XFER_DATA_RECVD )&&
+         (con->asynRCntl.xfer_state != XFER_COMPLETE)){
+    	usleep(100000) ;
+   }
+       
+   control.respHdr.rc = startParsing(&control);
+     
+   /*
+    * releaseXmlBuffer free's that last con->asynRCntl.escanInfo.section 
+    * we clear out that pointer just to be safe
+    */
+   releaseXmlBuffer(xmb);
+   
+   con->asynRCntl.escanInfo.section = 0 ;
+   
+   parser_heap_term(control.heap);
+   
+   con->asynRCntl.escanInfo.parsestate = PARSTATE_COMPLETE ;
+    
+}
+
+int sfccLex(parseUnion * lvalp, ParserControl * parm)
+{
+   int i, rc;
+   char *next;
+   char *nextSection ;
+
+   for (;;) {
+   	
+   	  if(parm->econ) {
+   	     
+   	     if(parm->econ->asynRCntl.escanInfo.getnew == 1 ){
+            
+            nextSection = getNextSection(parm->econ) ;
+            if(nextSection != NULL) {
+               parm->xmb->base = nextSection ;
+               parm->xmb->cur  = nextSection ;
+               parm->xmb->last = nextSection + (parm->econ->asynRCntl.escanInfo.sectlen) ;
+
+         } else {
+     	      printf(" sfccLex --- section is NULL !!!!!!!!!!!!!!!!! \n") ;
+         }
+         }
+      }
+      
+      
+      next = nextTag(parm->xmb);
+      if (next == NULL) {
+         return 0;
+      }
+//      fprintf(stderr,"--- token: %.32s\n",next); //usefull for debugging
+      if (parm->xmb->eTagFound) {
+         parm->xmb->eTagFound = 0;
+         return parm->xmb->etag;
+      }
+
+      if (*next == '/') {
+         for (i = 0; i < TAGS_NITEMS; i++) {
+            if (nextEquals(next + 1, tags[i].tag, tags[i].tagLen) == 1) {
+               skipTag(parm->xmb);
+               return tags[i].etag;
+            }
+         }
+      }
+
+      else {
+         if (strncmp(parm->xmb->cur, "<!--", 4) == 0) {
+            parm->xmb->cur = strstr(parm->xmb->cur, "-->") + 3;
+            continue;
+         } else
+         if (strncmp(parm->xmb->cur, "<EC>", 4) == 0) {
+            parm->econ->asynRCntl.escanInfo.getnew = 1 ;
+            parm->econ->asynRCntl.escanInfo.parsestate = PARSTATE_STARTED ; 
+            continue;
+         } 
+         for (i = 0; i < TAGS_NITEMS; i++) {
+            if (nextEquals(next, tags[i].tag, tags[i].tagLen) == 1) {
+//	       printf("+++ %d\n",i);
+               rc=tags[i].process(lvalp, parm);
+               return rc;
+            }
+         }
+      }
+      break;
+   }
+   return 0;
+}
+
+char * getNextSection(struct _CMCIConnection * con)
+{
+	char * xmlb    = NULL;
+  char * workptr = NULL;
+  char * curptr  = NULL;
+  int    xmlblen = 0;
+  int    tagval  = 0;
+  int    retcode = 0; 
+  int    toval   = 0;
+  
+   /*
+    * free that old buffer 
+    */
+  
+  if(con->asynRCntl.escanInfo.section != NULL) {
+     free(con->asynRCntl.escanInfo.section);
+     con->asynRCntl.escanInfo.section = NULL ;
+  }
+  
+  if((retcode = pthread_mutex_lock(&(con->asynRCntl.escanlock))) != 0){
+     printf(" getNextSection pthread lock return code %d\n",retcode) ;	
+  }
+  
+  /*
+   * If we have no more new data from the server , we 
+   * unlock and sleep then check till we see that we have 
+   * received new data 
+   */
+  
+  while(con->asynRCntl.escanInfo.prevtotl == con->asynRCntl.escanInfo.recdtotl){
+     if((retcode = pthread_mutex_unlock(&(con->asynRCntl.escanlock))) != 0){
+        printf(" getNextSection pthread lock return code %d\n",retcode) ;	
+     }
+     /* *******************************************
+      * ******************************************* 
+      * timeout toval keeps us from hanging forever
+      * *******************************************
+      * *******************************************
+      */
+     usleep(1000) ;
+     toval++ ;
+
+     if(toval>5000) 
+         longjmp (save_env, 1);
+     
+     if(con->asynRCntl.escanInfo.prevtotl != con->asynRCntl.escanInfo.recdtotl){
+     	  /* 
+     	   * we got more data , exit this loop
+     	   */
+        if((retcode = pthread_mutex_lock(&(con->asynRCntl.escanlock))) != 0){
+             printf(" getNextSection pthread lock return code %d\n",retcode) ;	
+        }
+        break;
+     }   
+  }
+
+  if((con->asynRCntl.xfer_state == XFER_DATA_RECVD) ||
+     (con->asynRCntl.xfer_state == XFER_COMPLETE)	)    {
+
+     workptr = LASTPTR(&(con->asynRCntl.escanInfo)) ;
+     curptr  = CURPTR(&(con->asynRCntl.escanInfo));
+  
+     con->asynRCntl.escanInfo.ssecoff = con->asynRCntl.escanInfo.curoff ;
+     
+     toval = 0;
+     while(workptr > curptr) {   
+        if(*workptr == '>'){
+        	 tagval = checkTag(workptr , con->asynRCntl.eMethodType) ;
+        	 if(tagval == 0){
+              con->asynRCntl.escanInfo.curoff = con->asynRCntl.escanInfo.curoff + (workptr - curptr) + 1 ;
+              xmlblen = ((workptr - curptr) + 5) ;
+           
+              xmlb = malloc(xmlblen + 64) ;
+              con->asynRCntl.escanInfo.section = xmlb ;
+
+              con->asynRCntl.escanInfo.sectlen = xmlblen + 5 ;
+              memset(xmlb , 0x0cc , xmlblen + 5) ;
+                                   
+              if(xmlb != NULL){
+                 memcpy(xmlb , SSECPTR(&con->asynRCntl.escanInfo) , xmlblen) ;
+                 strcpy((xmlb+(xmlblen - 4)) , "<EC>") ;
+                 con->asynRCntl.escanInfo.getnew = 0 ;
+ 
+              } else {
+           	     /* getNextSection xmlb is NULL !!! This is bad */
+              }
+                           
+              con->asynRCntl.escanInfo.prevtotl = con->asynRCntl.escanInfo.recdtotl ;
+
+              if((retcode =  pthread_mutex_unlock(&(con->asynRCntl.escanlock))) != 0){
+              	 printf(" getNextSection pthread lock return code %d\n",retcode) ;	
+              }
+              return(xmlb) ;
+          } else {
+          	  /* 
+          	   * backup before this tag 
+          	   */
+              workptr = workptr - tagval ;
+              if(workptr <= curptr){
+                 if (con->asynRCntl.escanInfo.prevtotl != con->asynRCntl.escanInfo.recdtotl){
+                 	  pthread_mutex_unlock(&(con->asynRCntl.escanlock));
+                 	  usleep(1000) ;
+                 	  toval++ ;
+                 	  if(toval > 5000)
+                 	     longjmp (save_env, 2);
+                 	  pthread_mutex_lock(&(con->asynRCntl.escanlock));
+                    workptr = LASTPTR(&(con->asynRCntl.escanInfo)) ;
+                    curptr  = CURPTR(&(con->asynRCntl.escanInfo));                	
+                 }
+              }
+              continue;
+          }
+        } else {
+           workptr-- ;
+           if(workptr <= curptr){
+              if (con->asynRCntl.escanInfo.prevtotl != con->asynRCntl.escanInfo.recdtotl){
+                 workptr = LASTPTR(&(con->asynRCntl.escanInfo)) ;
+                 curptr  = CURPTR(&(con->asynRCntl.escanInfo));
+              }
+           }
+        }
+     }
+  }
+  
+  if((retcode =  pthread_mutex_unlock(&(con->asynRCntl.escanlock))) != 0){
+     printf(" getNextSection pthread unlock return code %d\n",retcode) ;	
+  }
+  return(NULL) ;
+}
+/*
+ * check to see if the ending tag is at a 
+ * place in the data that we can use to 
+ * start parsing. The parsing needs to be
+ * given certain chunks of the data based on 
+ * the request we are processing. 
+ * If we see </CIM> thats good , we are 
+ * at the end of the data.
+ * return 0 if ending tag is OK
+ * return >0 if ending tag is not OK   
+ * CIM 
+ * VALUE.NAMEDINSTANCE
+ * CLASSNAME
+ *
+ */
+
+int checkTag(char * wrkptr , int methodtype ) {
+char * workptr = wrkptr ;
+char temptag[120] ;
+int  taglength = 1 ;
+
+   memset(&temptag[0] , 00 , 119) ;
+   /*
+    * find start of tag 
+    */
+   while(*workptr != '<'){ 
+      workptr-- ;
+      taglength++ ;
+   }
+	 	 
+	 
+	 if (strncmp(workptr , "</CIM>", 6) == 0) {
+	 	  return(0) ;
+	 }
+	 
+  switch(methodtype) {
+     case ENUMERATEINSTANCES:
+        if (strncmp(workptr , "</VALUE.NAMEDINSTANCE>", 22) == 0) {
+           return(0) ;
+        }
+        break ;
+     case ENUMERATEINSTANCENAMES:     	
+     	  if (strncmp(workptr , "</INSTANCENAME>", 15) == 0) {
+           return(0) ;
+        }
+        break;
+     case ENUMERATECLASSES:
+     	  if (strncmp(workptr , "</CLASS>", 8) == 0) {
+           return(0) ;
+        }
+        break;
+     case ENUMERATECLASSNAMES:
+     	  if (strncmp(workptr , "<CLASSNAME ", 11) == 0) {
+           return(0) ;
+        }
+        break; 	
+	 }
+	    
+	 /*
+	  * return the length of this tag 
+	  */
+	 strncpy(&temptag[0] , workptr , taglength) ;
+	 return(taglength) ;
+	 	
+}
+
+#endif
 

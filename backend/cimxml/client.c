@@ -20,6 +20,14 @@
  *
  */
 
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <curl/curl.h>
+
+#include <time.h>              // new
+#include <sys/time.h>          // new
+
 #include "config.h"
 
 #include "cmci.h"
@@ -29,9 +37,62 @@
 #include "cimc.h"
 #include "nativeCimXml.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <curl/curl.h>
+#ifndef LARGE_VOL_SUPPORT 
+typedef const struct _CMCIConnectionFT {
+    CMPIStatus (*release) (CMCIConnection *);
+    char *(*genRequest)(ClientEnc *cle, const char *op, CMPIObjectPath *cop,
+						  int classWithKeys);
+    char *(*addPayload)(CMCIConnection *, UtilStringBuffer *pl);
+    char *(*getResponse)(CMCIConnection *con, CMPIObjectPath *cop);   
+    void (*initializeHeaders)(CMCIConnection *con);
+    void (*reset)(CMCIConnection *);
+} CMCIConnectionFT;
+#else
+
+#include "esinfo.h"
+#define TIMEDELAY 10 
+void * enumScanThrd(struct native_enum *) ;
+
+static CMPIEnumeration * enumInstances(CMCIClient * ,
+                                       CMPIObjectPath *,
+                                       CMPIFlags ,
+                                       char ** ,
+                                       CMPIStatus * );
+static CMPIEnumeration * enumInstanceNames(CMCIClient * ,
+                                           CMPIObjectPath * ,
+                                           CMPIStatus * ) ;
+static CMPIEnumeration * enumClasses(CMCIClient * ,
+                                     CMPIObjectPath * ,
+                                     CMPIFlags ,
+                                     CMPIStatus * ) ;
+static CMPIEnumeration* enumClassNames(CMCIClient * ,
+                                       CMPIObjectPath * ,
+                                       CMPIFlags ,
+                                       CMPIStatus *);
+static char* genEnumRequest(ClientEnc * , const char * , CMPIObjectPath * , int ) ;
+char *getEnumResponse(CMCIConnection * , CMPIObjectPath *) ;
+static size_t enumWriteHeaders(void *, size_t , size_t , void *);		  
+static size_t enumWriteCb(void *, size_t , size_t , void *) ;
+void initEscanInfo(CMCIConnection * ) ;
+static int enumCheckProgress(void * , double , double , double , double );
+
+typedef const struct _CMCIConnectionFT {
+    CMPIStatus (*release) (CMCIConnection *);
+    char *(*genRequest)(ClientEnc *cle, const char *op, CMPIObjectPath *cop,
+						  int classWithKeys);
+    char *(*genEnumRequest)(ClientEnc *cle, const char *op, CMPIObjectPath *cop,
+						  int classWithKeys);	
+    char *(*addPayload)(CMCIConnection *, UtilStringBuffer *pl);
+    char *(*getResponse)(CMCIConnection *con, CMPIObjectPath *cop);
+    char *(*getEnumResponse)(CMCIConnection *con, CMPIObjectPath *cop);    
+    void (*initializeHeaders)(CMCIConnection *con);
+    void (*reset)(CMCIConnection *);
+} CMCIConnectionFT;
+                      
+#endif /* endif LARGE_VOL_SUPPORT */
+
+#include "conn.h"
+
 #include "cimXmlParser.h"
 
 #define CIMSERVER_TIMEOUT	(10 * 60) /* 10 minutes max per operation */
@@ -77,6 +138,13 @@ static void set_debug()
 #else
 #define SET_DEBUG()
 #endif
+/*
+ * for large volume data http transfer encoding chunked  
+ */
+
+pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  init_cond  = PTHREAD_COND_INITIALIZER;
+
 
 //#if TIMING
 #if 0
@@ -117,15 +185,6 @@ static const char GetClass[] = "GetClass";
 static const char EnumerateClassNames[] = "EnumerateClassNames";
 static const char EnumerateClasses[] = "EnumerateClasses";
 
-typedef const struct _CMCIConnectionFT {
-    CMPIStatus (*release) (CMCIConnection *);
-    char *(*genRequest)(ClientEnc *cle, const char *op, CMPIObjectPath *cop,
-						  int classWithKeys);
-    char *(*addPayload)(CMCIConnection *, UtilStringBuffer *pl);
-    char *(*getResponse)(CMCIConnection *con, CMPIObjectPath *cop);
-    void (*initializeHeaders)(CMCIConnection *con);
-    void (*reset)(CMCIConnection *);
-} CMCIConnectionFT;
 
 struct _ClientEnc {
    CMCIClient          enc;
@@ -137,23 +196,7 @@ struct _ClientEnc {
 #define MAX_PLAUSIBLE_PROGRESS 30
 #define MAX_PROGRESS_FIXUPS    10
 
-struct _TimeoutControl {
-  time_t   mTimestampStart;
-  time_t   mTimestampLast;
-  unsigned mFixups;
-};
 
-struct _CMCIConnection {
-    CMCIConnectionFT *ft;        
-    CURL *mHandle;               // The handle to the curl object
-    struct curl_slist *mHeaders; // The list of headers sent with each request
-    UtilStringBuffer *mBody;     // The body of the request
-    UtilStringBuffer *mUri;      // The uri of the request
-    UtilStringBuffer *mUserPass; // The username/password used in authentication
-    UtilStringBuffer *mResponse; // Used to store the HTTP response
-    CMPIStatus        mStatus;   // returned request status (via HTTP trailers)               
-    struct _TimeoutControl mTimeout; /* Used for timeout control */
-};
 
 /* --------------------------------------------------------------------------*/
 
@@ -214,18 +257,17 @@ static size_t writeHeaders(void *ptr, size_t size,
     *colonidx=0;
     if (strcasecmp(str,"cimstatuscode") == 0) {
       /* set status code */
-      status->rc = atoi(colonidx+1);
+      status->rc = atoi(colonidx+1);       
+    } else {
+      	if (strcasecmp(str, "cimstatuscodedescription") == 0) {
+           status->msg=newCMPIString(colonidx+1,NULL);
       }
-      else
-      if (strcasecmp(str, "cimstatuscodedescription") == 0) {
-      status->msg=newCMPIString(colonidx+1,NULL);
     }
   }
   free(str);
   return nmemb;
 }
 
-/* --------------------------------------------------------------------------*/
 
 static size_t writeCb(void *ptr, size_t size,
 					size_t nmemb, void *stream)
@@ -293,7 +335,6 @@ static CMPIStatus releaseConnection(CMCIConnection *con)
   free(con);
   return rc;
 }
-
 /* --------------------------------------------------------------------------*/
 
 static char *addPayload(CMCIConnection *con, UtilStringBuffer *pl)
@@ -312,6 +353,8 @@ static char *addPayload(CMCIConnection *con, UtilStringBuffer *pl)
     if (rv) return getErrorMessage(rv);
     return NULL;
 }
+
+/* --------------------------------------------------------------------------*/
 
 /* --------------------------------------------------------------------------*/
 
@@ -427,7 +470,6 @@ static char* genRequest(ClientEnc *cle, const char *op,
 
    return NULL;
 }
-
 /* --------------------------------------------------------------------------*/
 
 char *getResponse(CMCIConnection *con, CMPIObjectPath *cop)
@@ -456,6 +498,10 @@ char *getResponse(CMCIConnection *con, CMPIObjectPath *cop)
     return NULL;
 }
 
+
+/* --------------------------------------------------------------------------*/
+
+
 /* --------------------------------------------------------------------------*/
 
 static void initializeHeaders(CMCIConnection *con)
@@ -469,6 +515,7 @@ static void initializeHeaders(CMCIConnection *con)
 #ifdef HAVE_HTTP_CHUNKING
 	"TE: trailers",
 #endif
+
 	NULL
     };
     unsigned int i;
@@ -480,7 +527,7 @@ static void initializeHeaders(CMCIConnection *con)
     for (i = 0; headers[i]!= NULL; i++)
         con->mHeaders = curl_slist_append(con->mHeaders, headers[i]);
 }
-
+#ifndef LARGE_VOL_SUPPORT
 static CMCIConnectionFT conFt={
   releaseConnection,
   genRequest,
@@ -488,12 +535,24 @@ static CMCIConnectionFT conFt={
   getResponse,
   initializeHeaders
 };
+#else 
+static CMCIConnectionFT conFt={
+  releaseConnection,
+  genRequest,
+  genEnumRequest,
+  addPayload,
+  getResponse,
+  getEnumResponse,
+  initializeHeaders
+};
+#endif
 
 /* --------------------------------------------------------------------------*/
 
 CMCIConnection *initConnection(CMCIClientData *cld)
 {
    CMCIConnection *c=(CMCIConnection*)calloc(1,sizeof(CMCIConnection));
+
    c->ft=&conFt;
    c->mHandle = curl_easy_init();
    c->mHeaders = NULL;
@@ -932,7 +991,7 @@ static CMPIStatus releaseClient(CMCIClient * mb)
 {
   CMPIStatus rc={CMPI_RC_OK,NULL};
   ClientEnc		* cl = (ClientEnc*)mb;
-  
+
   if (cl->data.hostName) {
     free(cl->data.hostName);
   }
@@ -964,6 +1023,9 @@ static CMPIStatus releaseClient(CMCIClient * mb)
   return rc;
 }
 
+#ifndef LARGE_VOL_SUPPORT
+
+/* --------------------------------------------------------------------------*/
 static CMPIEnumeration * enumInstanceNames(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1032,6 +1094,7 @@ static CMPIEnumeration * enumInstanceNames(
    END_TIMING(_T_GOOD);
    return retval;
 }
+#endif
 
 /* --------------------------------------------------------------------------*/
 
@@ -1552,8 +1615,9 @@ static CMPIEnumeration * execQuery(
    return retval;
 }
 
-/* --------------------------------------------------------------------------*/
+#ifndef LARGE_VOL_SUPPORT
 
+/* --------------------------------------------------------------------------*/
 static CMPIEnumeration * enumInstances(
 	CMCIClient * mb,
 	CMPIObjectPath * cop,
@@ -1586,7 +1650,7 @@ static CMPIEnumeration * enumInstances(
     emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
 
     if (properties != NULL)
-	addXmlPropertyListParam(sb, properties);
+       addXmlPropertyListParam(sb, properties);
 
     sb->ft->appendChars(sb,"</IMETHODCALL>\n");
     addXmlFooter(sb);
@@ -1595,7 +1659,7 @@ static CMPIEnumeration * enumInstances(
 
     if (error || (error = con->ft->getResponse(con, cop))) {
         CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
-	free(error);
+        free(error);
         END_TIMING(_T_FAILED);
         return NULL;
     }
@@ -1614,8 +1678,8 @@ static CMPIEnumeration * enumInstances(
 
     if (rh.errCode != 0) {
         CMSetStatusWithChars(rc, rh.errCode, rh.description);
-	free(rh.description);
-	CMRelease(rh.rvArray);
+        free(rh.description);
+        CMRelease(rh.rvArray);
         END_TIMING(_T_FAILED);
         return NULL;
     }
@@ -1631,9 +1695,9 @@ static CMPIEnumeration * enumInstances(
     END_TIMING(_T_GOOD);
     return retval;
 }
+#endif
 
 /* --------------------------------------------------------------------------*/
-
 static CMPIEnumeration * associators(
 	CMCIClient	* mb,
 	CMPIObjectPath	* cop,
@@ -2616,6 +2680,8 @@ static CMPIConstClass * getClass(
    return ccc;
 }
 
+#ifndef LARGE_VOL_SUPPORT 
+
 /* --------------------------------------------------------------------------*/
 
 /* finished & working */
@@ -2767,7 +2833,7 @@ static CMPIEnumeration * enumClasses(
    return retval;
 }
 
-/* --------------------------------------------------------------------------*/
+#endif
 
 static CMCIClientFT clientFt = {
    NATIVE_FT_VERSION,
@@ -2939,4 +3005,803 @@ CIMCEnv* _Create_XML_Env(char *id)
     
     return env;
  }
+/* *********************************************************** */ 
+/* *********************************************************** */
+/*                                                             */
+/* *********************************************************** */
+/* *********************************************************** */
+
+#ifdef LARGE_VOL_SUPPORT
+
+
+/* --------------------------------------------------------------------------*/
+
+/* --------------------------------------------------------------------------*/
+static CMPIEnumeration * enumInstances(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	char ** properties,
+	CMPIStatus * rc)
+{
+   ClientEnc	     *cl  = (ClientEnc *)mb;
+   CMCIConnection   *con = cl->connection;
+   UtilStringBuffer *sb  = UtilFactory->newStringBuffer(2048);
+   char               *error;
+   CMPIEnumeration    *retEnum;
+   struct native_enum *retNatEnum;
+   pthread_t enum_scanthrd_id = 0 ;
+   int       pthrd_error      = 0 ;
+
+   initEscanInfo(con) ;
+   
+   START_TIMING(EnumerateInstances);
+   SET_DEBUG();
+   
+   if(pthrd_error = pthread_mutex_init(&(con->asynRCntl.escanlock),NULL) != 0){
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED," Failed pthread mutex init");
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+    
+   con->ft->genEnumRequest(cl, EnumerateInstances, cop, 0);
+
+   addXmlHeader(sb);
+
+   sb->ft->append3Chars(sb, "<IMETHODCALL NAME=\"", EnumerateInstances, "\">");
+   addXmlNamespace(sb, cop);
+
+   addXmlClassnameParam(sb, cop);
+
+   emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
+   emitlocal(sb,flags & CMPI_FLAG_LocalOnly);
+   emitqual(sb,flags & CMPI_FLAG_IncludeQualifiers);
+   emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
+
+   if (properties != NULL)
+	    addXmlPropertyListParam(sb, properties);
+
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
+
+   error = con->ft->addPayload(con,sb);
+
+   CMSetStatus (&con->mStatus, CMPI_RC_OK );
+
+   if (error || (error = con->ft->getEnumResponse(con, cop))) {
+       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+	     free(error);
+       END_TIMING(_T_FAILED);
+       return NULL;
+   }
+
+   if (con->mStatus.rc != CMPI_RC_OK) {
+      if (rc)
+         *rc=cloneStatus(con->mStatus);
+      CMRelease(sb);
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+
+	 /*
+	  * allocate an empty enumeration , to be filled in 
+	  * by the scan of the xml data in enumScanThrd .  
+    */
+    
+   retEnum = newCMPIEnumeration(NULL , NULL);
+   
+   /*
+    * copy addresses so parsing can find our connection and 
+    * the enumeration. 
+    */
+   
+   retNatEnum = (struct native_enum *) retEnum ;
+	 retNatEnum->econ = con ;
+	 retNatEnum->ecop = cop ;
+	 con->asynRCntl.enmp = (struct native_enum  *) retEnum ;
+	   
+   pthrd_error = pthread_create(&enum_scanthrd_id,
+                                 NULL,
+                                 (void*)&enumScanThrd,
+                                 (void*)retNatEnum);
+   /*
+    * if enumInstances Couldn't run thread pthrd_error , system error 
+    * otherwise we are OK , set status appropriately
+    */                                    
+   if(pthrd_error != 0){
+     CMSetStatus(rc,CMPI_RC_ERROR_SYSTEM);
+   } else {
+   	 CMSetStatus(rc,CMPI_RC_OK);
+   }
+	
+	 CMRelease(sb);
+	 
+   return retEnum;
+}
+
+/* --------------------------------------------------------------------------*/
+static CMPIEnumeration * enumInstanceNames(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIStatus * rc)
+{
+   ClientEnc		* cl = (ClientEnc*)mb;
+   CMCIConnection	* con = cl->connection;
+   UtilStringBuffer	* sb = UtilFactory->newStringBuffer(2048);
+   char			* error;
+   CMPIEnumeration    *retval;
+   CMPIEnumeration    *retEnum;
+   struct native_enum *retNatEnum;
+   pthread_t enum_scanthrd_id = 0 ;
+   int       pthrd_error      = 0 ;
+    
+   initEscanInfo(con) ;
+
+   START_TIMING(EnumerateInstanceNames);
+   SET_DEBUG();
+   
+   if(pthrd_error = pthread_mutex_init(&(con->asynRCntl.escanlock),NULL) != 0){
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED," Failed pthread mutex init");
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+     
+   con->ft->genEnumRequest(cl, EnumerateInstanceNames, cop, 0);
+
+   /* Construct the CIM-XML request */
+   addXmlHeader(sb);
+   sb->ft->append3Chars(sb, "<IMETHODCALL NAME=\"", EnumerateInstanceNames, "\">");
+
+   addXmlNamespace(sb, cop);
+   addXmlClassnameParam(sb, cop);
+
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
+
+   error = con->ft->addPayload(con, sb);
+
+   CMSetStatus (&con->mStatus, CMPI_RC_OK );
+
+   if (error || (error = con->ft->getEnumResponse(con, cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+	    free(error);
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+
+   if (con->mStatus.rc != CMPI_RC_OK) {
+      if (rc)
+         *rc=cloneStatus(con->mStatus);
+      CMRelease(sb);
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+
+	 /*
+	  * allocate an empty enumeration , to be filled in 
+	  * by the scan of the xml data in enumScanThrd .  
+    */
+     
+   retEnum = newCMPIEnumeration(NULL , NULL);
+    
+   /*
+    * copy addresses so parsing can find our connection and 
+    * the enumeration. 
+    */
+    
+   retNatEnum = (struct native_enum *) retEnum ;
+	 retNatEnum->econ = con ;
+	 retNatEnum->ecop = cop ;
+	 con->asynRCntl.enmp = (struct native_enum  *) retEnum ;
+	    
+   pthrd_error = pthread_create(&enum_scanthrd_id,
+                                 NULL,
+                                 (void*)&enumScanThrd,
+                                 (void*)retNatEnum);
+   /*
+    * if enumInstanceNames Couldn't run thread pthrd_error , system error 
+    * otherwise we are OK , set status appropriately
+    */                                    
+   if(pthrd_error != 0){
+      CMSetStatus(rc,CMPI_RC_ERROR_SYSTEM);
+   } else {
+      CMSetStatus(rc,CMPI_RC_OK);
+   }
+	 	  
+	 CMRelease(sb);
+	  
+   return retEnum;
+
+}
+/* --------------------------------------------------------------------------*/
+static CMPIEnumeration * enumClasses(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	CMPIStatus * rc)
+{
+   ClientEnc	     *cl  = (ClientEnc *)mb;
+   CMCIConnection   *con = cl->connection;
+   UtilStringBuffer *sb  = UtilFactory->newStringBuffer(2048);
+   char             *error;
+   CMPIEnumeration  *retval;
+   CMPIEnumeration    *retEnum;
+   struct native_enum *retNatEnum;
+   pthread_t enum_scanthrd_id = 0 ;
+   int       pthrd_error      = 0 ;
+    
+   START_TIMING(EnumerateClasses);
+   SET_DEBUG();
+    
+   initEscanInfo(con) ;
+   if(pthrd_error = pthread_mutex_init(&(con->asynRCntl.escanlock),NULL) != 0){
+       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED," Failed pthread mutex init");
+       END_TIMING(_T_FAILED);
+       return NULL;
+   }
+   
+   con->ft->genEnumRequest(cl, EnumerateClasses, cop, 0);
+
+   /* Construct the CIM-XML request */
+   addXmlHeader(sb);
+   sb->ft->append3Chars(sb, "<IMETHODCALL NAME=\"", EnumerateClasses, "\">");
+
+   addXmlNamespace(sb, cop);
+   emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
+   emitlocal(sb,flags & CMPI_FLAG_LocalOnly);
+   emitqual(sb,flags & CMPI_FLAG_IncludeQualifiers);
+   emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
+   addXmlClassnameParam(sb, cop);
+
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
+
+   error = con->ft->addPayload(con,sb);
+   
+   CMSetStatus (&con->mStatus, CMPI_RC_OK );
+   
+   if (error || (error = con->ft->getEnumResponse(con, cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+	    free(error);
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+
+   if (con->mStatus.rc != CMPI_RC_OK) {
+      if (rc)
+         *rc=cloneStatus(con->mStatus);
+      CMRelease(sb);
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+
+	 /*
+	  * allocate an empty enumeration , to be filled in 
+	  * by the scan of the xml data in enumScanThrd .  
+    */
+     
+   retEnum = newCMPIEnumeration(NULL , NULL);
+    
+   /*
+    * copy addresses so parsing can find our connection and 
+    * the enumeration. 
+    */
+    
+   retNatEnum = (struct native_enum *) retEnum ;
+	 retNatEnum->econ = con ;
+	 retNatEnum->ecop = cop ;
+	 con->asynRCntl.enmp = (struct native_enum  *) retEnum ;
+
+   pthrd_error = pthread_create(&enum_scanthrd_id,
+                                 NULL,
+                                 (void*)&enumScanThrd,
+                                 (void*)retNatEnum);
+  /*
+   * if enumClasses Couldn't run thread pthrd_error , system error 
+   * otherwise we are OK , set status appropriately
+   */                                     
+   if(pthrd_error != 0){
+      CMSetStatus(rc,CMPI_RC_ERROR_SYSTEM);
+   } else {
+      CMSetStatus(rc,CMPI_RC_OK);
+   }
+	 
+   CMRelease(sb);
+
+   return retEnum;
+
+}
+/* --------------------------------------------------------------------------*/
+/* finished & working */
+static CMPIEnumeration* enumClassNames(
+	CMCIClient * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	CMPIStatus * rc)
+{
+   ClientEnc *cl=(ClientEnc*)mb;
+   CMCIConnection *con=cl->connection;
+   UtilStringBuffer *sb=UtilFactory->newStringBuffer(2048);
+   char *error;
+   CMPIEnumeration    *retEnum;
+   struct native_enum *retNatEnum;
+   pthread_t enum_scanthrd_id = 0 ;
+   int       pthrd_error      = 0 ;
+    
+   START_TIMING(EnumerateClassNames);
+   SET_DEBUG();
+
+    
+   // con->asynRCntl.enmp = (struct native_enum  *)retNatEnum ;
+    
+   initEscanInfo(con) ;
+   if(pthrd_error = pthread_mutex_init(&(con->asynRCntl.escanlock),NULL) != 0){
+       CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED," Failed pthread mutex init");
+       END_TIMING(_T_FAILED);
+       return NULL;
+   }
+    
+   con->ft->genEnumRequest(cl, EnumerateClassNames, cop, 0);
+
+   /* Construct the CIM-XML request */
+   addXmlHeader(sb);
+   sb->ft->append3Chars(sb,"<IMETHODCALL NAME=\"", EnumerateClassNames, "\">");
+
+   addXmlNamespace(sb, cop);
+   emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
+   addXmlClassnameParam(sb, cop);
+
+   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
+   addXmlFooter(sb);
+
+   error = con->ft->addPayload(con,sb);
+   
+   CMSetStatus (&con->mStatus, CMPI_RC_OK ); 
+   
+   if (error || (error = con->ft->getEnumResponse(con, cop))) {
+      CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
+	    free(error);
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+
+   if (con->mStatus.rc != CMPI_RC_OK) {
+      if (rc)
+         *rc=cloneStatus(con->mStatus);
+      CMRelease(sb);
+      END_TIMING(_T_FAILED);
+      return NULL;
+   }
+	 /*
+	  * allocate an empty enumeration , to be filled in 
+	  * by the scan of the xml data in enumScanThrd .  
+    */
+     
+   retEnum = newCMPIEnumeration(NULL , NULL);
+    
+   /*
+    * copy addresses so parsing can find our connection and 
+    * the enumeration. 
+    */
+    
+   retNatEnum = (struct native_enum *) retEnum ;
+	 retNatEnum->econ = con ;
+	 retNatEnum->ecop = cop ;
+	 con->asynRCntl.enmp = (struct native_enum  *) retEnum ;
+        
+   pthrd_error = pthread_create(&enum_scanthrd_id,
+                                 NULL,
+                                 (void*)&enumScanThrd,
+                                 (void*)retNatEnum);
+  /*
+   * if enumClassNames Couldn't run thread pthrd_error , system error 
+   * otherwise we are OK , set status appropriately
+   */                               
+   if(pthrd_error != 0){
+      CMSetStatus(rc,CMPI_RC_ERROR_SYSTEM);
+   } else {
+      CMSetStatus(rc,CMPI_RC_OK);
+   }
+	 	  
+   CMRelease(sb);
+
+   return retEnum;
+
+}
+
+/* --------------------------------------------------------------------------*/
+static char* genEnumRequest(ClientEnc *cle, const char *op,
+			CMPIObjectPath *cop, int classWithKeys)
+{
+   CMCIConnection   *con = cle->connection;
+   CMCIClientData   *cld = &cle->data;
+   UtilList 	    *nsc;
+   char		    method[256]    = "CIMMethod: ";
+   char		    CimObject[512] = "CIMObject: ";
+   char		    *nsp;
+   int        isEnumOp = 0 ;
+   int        chunkedTransfer = 0 ; 
+   
+   if (!con->mHandle) return "Unable to initialize curl interface.";
+
+//    if (!supportsSSL() && url.scheme == "https")
+//        throw HttpException("this curl library does not support https urls.");
+   
+   /* 
+    * check to see if this is an enumeration 
+    */
+   if((strcmp(op , EnumerateInstances )) == 0) {
+   	  chunkedTransfer = 1 ;
+   	  isEnumOp = 1 ; 
+      con->asynRCntl.eMethodType = ENUMERATEINSTANCES ;
+   } else 
+   if((strcmp(op , EnumerateInstanceNames )) == 0) {
+   	  chunkedTransfer = 1 ;
+   	  isEnumOp = 1 ;
+      con->asynRCntl.eMethodType = ENUMERATEINSTANCENAMES ;
+   } else
+   if((strcmp(op , EnumerateClasses )) == 0) {
+   	  chunkedTransfer = 1 ;
+   	  isEnumOp = 1 ;
+      con->asynRCntl.eMethodType = ENUMERATECLASSES ;
+   } else 
+   if((strcmp(op , EnumerateClassNames )) == 0) {
+   	  chunkedTransfer = 1 ;
+   	  isEnumOp = 1 ; 
+      con->asynRCntl.eMethodType = ENUMERATECLASSNAMES ;
+   }  else {
+   	 isEnumOp = 0 ; /* some other operation */
+   }
+      
+   con->mResponse->ft->reset(con->mResponse);
+
+   con->mUri->ft->reset(con->mUri);
+   con->mUri->ft->append6Chars(con->mUri, cld->scheme, "://", cld->hostName,
+						  ":", cld->port, "/cimom");
+
+   /* Initialize curl with the url */
+   curl_easy_setopt(con->mHandle, CURLOPT_URL,
+				  con->mUri->ft->getCharPtr(con->mUri));
+
+   /* Enable progress checking */
+   curl_easy_setopt(con->mHandle, CURLOPT_NOPROGRESS, 0);
+   
+   /* Reset timeout control */
+   con->mTimeout.mTimestampStart = 0;
+   con->mTimeout.mTimestampLast = 0;
+   con->mTimeout.mFixups = 0;
+
+   /* This will be a HTTP post */
+   curl_easy_setopt(con->mHandle, CURLOPT_POST, 1);
+
+   /* Disable SSL Host verification */
+   curl_easy_setopt(con->mHandle, CURLOPT_SSL_VERIFYHOST, 0);
+
+   /* Setup authentication */
+   curl_easy_setopt(con->mHandle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+   /* Set username and password */
+   if (cld->user != NULL) {
+      UtilStringBuffer *UserPass = con->mUserPass;
+
+      UserPass->ft->reset(UserPass);
+      UserPass->ft->appendChars(UserPass, cld->user);
+      if (cld->pwd)
+	 UserPass->ft->append3Chars(UserPass, ":", cld->pwd, NULL);
+      /* Setup "<userid>:<password>" */
+      curl_easy_setopt(con->mHandle, CURLOPT_USERPWD,
+				     UserPass->ft->getCharPtr(UserPass));
+   }
+
+   /* initialize status */
+   CMSetStatus(&con->mStatus,CMPI_RC_OK);
+
+   /* Setup connect timeouts for cimserver operations */
+   curl_easy_setopt(con->mHandle, CURLOPT_NOSIGNAL, 1);
+   curl_easy_setopt(con->mHandle, CURLOPT_CONNECTTIMEOUT, CIMSERVER_TIMEOUT);
+
+   /* setup callback for client timeout calculations */
+   curl_easy_setopt(con->mHandle, CURLOPT_PROGRESSFUNCTION, enumCheckProgress);
+   curl_easy_setopt(con->mHandle, CURLOPT_PROGRESSDATA, con);
+
+   // Initialize default headers
+   con->ft->initializeHeaders(con);
+
+   /* 
+    * check for chunk transfer or no chunk  
+    */
+       
+   if(chunkedTransfer == 1){
+   	 /* 
+   	  * only use http chunk if these enumeration requests come in
+   	  */ 
+   	 if(isEnumOp) {
+        con->mHeaders = curl_slist_append(con->mHeaders, "TE: trailers ");
+     } 
+   } 
+
+   // Add CIMMethod header
+   strcat(method, op);
+   con->mHeaders = curl_slist_append(con->mHeaders, method);
+
+   // Add CIMObject header with cop's namespace, class, keys
+   if (classWithKeys)
+       pathToChars(cop, NULL, &CimObject[11], 1);
+   else {
+       nsc = getNameSpaceComponents(cop);
+       nsp = nsc->ft->getFirst(nsc);
+       while (nsp != NULL) {
+	   strcat(CimObject, nsp);
+	   free(nsp); /* VM: freeing strdup'ed memory - should be part of release */
+           if ((nsp = nsc->ft->getNext(nsc)) != NULL)
+	       strcat(CimObject, "%2F");
+       }
+       CMRelease(nsc);
+   }
+   con->mHeaders = curl_slist_append(con->mHeaders, CimObject);
+
+   // Set all of the headers for the request
+   curl_easy_setopt(con->mHandle, CURLOPT_HTTPHEADER, con->mHeaders);
+
+   // Set up the callbacks to store the response
+   if(isEnumOp){
+     curl_easy_setopt(con->mHandle, CURLOPT_WRITEFUNCTION, enumWriteCb);
+     //Use CURLOPT_FILE instead of CURLOPT_WRITEDATA - more portable
+     curl_easy_setopt(con->mHandle, CURLOPT_FILE, con);
+     // SAVE ME curl_easy_setopt(con->mHandle, CURLOPT_FILE, con->mResponse);
+        // Header processing: 
+     curl_easy_setopt(con->mHandle, CURLOPT_WRITEHEADER, con);
+     curl_easy_setopt(con->mHandle, CURLOPT_HEADERFUNCTION, enumWriteHeaders);
+   } else {
+   curl_easy_setopt(con->mHandle, CURLOPT_WRITEFUNCTION, writeCb);
+
+   // Use CURLOPT_FILE instead of CURLOPT_WRITEDATA - more portable
+   curl_easy_setopt(con->mHandle, CURLOPT_FILE, con->mResponse);
+
+   // Header processing: 
+   curl_easy_setopt(con->mHandle, CURLOPT_WRITEHEADER, &con->mStatus);
+   curl_easy_setopt(con->mHandle, CURLOPT_HEADERFUNCTION, writeHeaders);
+   }
+
+   // Fail if we receive an error (HTTP response code >= 300)
+   curl_easy_setopt(con->mHandle, CURLOPT_FAILONERROR, 1);
+
+   return NULL;
+}
+
+/* --------------------------------------------------------------------------*/
  
+static size_t enumWriteHeaders(void *ptr, size_t size,
+				  size_t nmemb, void *stream)
+{
+  CMCIConnection   *con = stream ;
+  CMPIStatus *status=(CMPIStatus*)&con->mStatus ;
+  char *str=ptr;
+  char *colonidx; 
+  int   length = 0 ;
+
+  if (str[nmemb-1] != 0) {
+    /* make sure the string is zero-terminated */
+      str = malloc(nmemb + 1);
+      memcpy(str,ptr,nmemb);
+      str[nmemb] = 0;
+  } else {
+    str = strdup(ptr);
+  }
+  colonidx=strchr(str,':');
+  
+  if (colonidx) {
+    *colonidx=0;
+    if (strcasecmp(str,"cimstatuscode") == 0) {
+        /* set status code */
+        status->rc = atoi(colonidx+1);
+        con->asynRCntl.xfer_state = XFER_COMPLETE ;
+    }      
+    else if (strcasecmp(str, "cimstatuscodedescription") == 0) {
+        status->msg=newCMPIString(colonidx+1,NULL);
+    }  
+    else if (strcasecmp(str, "content-length") == 0) {
+        length = atoi(colonidx+1);
+        /*
+         * even though we sent for chunk response and expect a trailer
+         * we can get all the data back without getting a trailer !
+         * keep track of this for checkProgress function. 
+         * in both cases signal enumResponseThrd.                                        
+         */
+        con->asynRCntl.xfer_state = XFER_RESP_CL ;
+        pthread_mutex_lock( &con->asynRCntl.xfer_cond_mutex );
+        pthread_cond_signal( &con->asynRCntl.xfer_cond );
+        pthread_mutex_unlock( &con->asynRCntl.xfer_cond_mutex );                                              
+    }
+    else if (strncasecmp(str, "Transfer-encoding" , 17) == 0) {
+      	if (strncasecmp(colonidx+2, "chunked" , 7) == 0){	
+      	   con->asynRCntl.xfer_state = XFER_RESP_TEC ;
+           pthread_mutex_lock( &con->asynRCntl.xfer_cond_mutex );
+           pthread_cond_signal( &con->asynRCntl.xfer_cond );
+           pthread_mutex_unlock( &con->asynRCntl.xfer_cond_mutex );     
+      	   	
+      	}
+    }
+  }
+  
+  if (strncasecmp(str, "Transfer-encoding" , 17) == 0) {
+  	// printf(" enumWriteHeaders we see Transfer-encoding: 2nd one \n") ;
+  }
+  
+  free(str);
+  return nmemb;
+}
+
+/* --------------------------------------------------------------------------*/
+
+static size_t enumWriteCb(void *ptr, size_t size,
+					size_t nmemb, void *stream)
+{
+	  CMCIConnection   *con = stream ;
+	  int retcode    = 0;
+	  
+    UtilStringBuffer *sb=(UtilStringBuffer*)con->mResponse ;
+    
+    /*
+     * lock connection structure here 
+     */
+    if((retcode = pthread_mutex_lock(&(con->asynRCntl.escanlock))) != 0){
+     // printf(" enumWriteCb pthread lock return code %d\n",retcode) ;	
+    }                 	
+    
+    unsigned int length = size * nmemb;
+    sb->ft->appendBlock(sb, ptr, length);
+    
+    /*
+     * maintain escanInfo base pointer and end of data offset  
+     */
+    con->asynRCntl.escanInfo.base = sb->hdl ;
+    con->asynRCntl.escanInfo.eodoff = con->asynRCntl.escanInfo.eodoff + length  ;
+    con->asynRCntl.escanInfo.recdtotl = con->asynRCntl.escanInfo.recdtotl + length ;
+    
+    /*
+     * unlock connection structure here 
+     */
+    if((retcode = pthread_mutex_unlock(&(con->asynRCntl.escanlock))) != 0){
+     //printf(" enumWriteCb ptread lock return code %d\n",retcode) ;	
+    }  
+     
+    if(length > 0) 
+    	con->asynRCntl.xfer_state = XFER_DATA_RECVD ; 
+
+    return length;
+}
+
+/* --------------------------------------------------------------------------*/
+
+void *enumResponseThrd(CMCIConnection *con)
+{
+CURLcode rv ; /* CURL error code */ 
+    
+    if(con->asynRCntl.xfer_state == XFER_NOT_STARTED){
+      con->asynRCntl.xfer_state = XFER_GENRQST ;
+    } else {
+    //  printf(" enumResponseThrd xfer_state = %d is out of sequence !!!!!!!!!!! \n",
+    //       con->asynRCntl.xfer_state) ;    
+    }  
+    
+    rv  = curl_easy_perform(con->mHandle);   
+    
+    /* indicate timeout error for aborted by progess handler */
+    if (rv  == CURLE_ABORTED_BY_CALLBACK) {
+      rv = CURLE_OPERATION_TIMEOUTED;
+    }
+    
+    if (rv) {
+        CMSetStatus(&con->mStatus,CMPI_RC_ERROR_SYSTEM);
+    }
+                     
+}
+
+/* --------------------------------------------------------------------------*/
+
+char *getEnumResponse(CMCIConnection *con, CMPIObjectPath *cop)
+{
+    CURLcode rv;
+    pthread_t       enum_rthd_id  = 0 ;
+    int             pthrd_error   = 0 ;
+    struct          timespec tp ;
+	  int             rc = 0 ;
+      
+
+    pthrd_error = pthread_create(&enum_rthd_id,
+                                  NULL,
+                                  (void*)&enumResponseThrd,
+                                  (void*)con);
+    /*
+     * if we cannot create the thread return error
+     */                                   
+    if(pthrd_error != 0){
+      // fprintf(stderr, "getEnumResponse Couldn't run enumResponseThrd errno %d\n", pthrd_error);
+      return strdup("Error from pthread_create of enumResponseThrd"); 
+    }
+
+    pthread_mutex_lock( &con->asynRCntl.xfer_cond_mutex );
+    clock_gettime(CLOCK_REALTIME, &tp);
+    tp.tv_sec += TIMEDELAY;    
+    rc = pthread_cond_timedwait(&con->asynRCntl.xfer_cond, &con->asynRCntl.xfer_cond_mutex , &tp);    
+    pthread_mutex_unlock( &con->asynRCntl.xfer_cond_mutex);    
+    /* 
+     * if we didn't get something back from server in TIMEDELAY seconds
+     * we are calling it an error and cancel the thread.
+     */   
+    if(rc != 0) {
+    	 // printf(" - DEBUG getEnumResponse pthread_cond_timedwait - TIMEDOUT !!!! rc = %d!!!\n",rc) ;      	
+       pthread_cancel(enum_rthd_id);
+       return strdup("No data received from server");   	
+    }
+    
+    if(con->mStatus.rc != CMPI_RC_OK)
+    {
+    	 pthread_cancel(enum_rthd_id);
+       return strdup("failed curl_easy_perform call");   
+    }	
+    
+    return NULL;
+}
+static int enumCheckProgress(void *data,
+			 double total,
+			 double actual,
+			 double ign1,
+			 double ign2)
+{
+	CMCIConnection   *con = (CMCIConnection   *) data ;
+  struct _TimeoutControl * timeout;
+
+  timeout = &con->mTimeout ;
+  time_t timestampNow = time(NULL);
+    
+  if (total > 0 ){
+    if (total == actual){ 
+       con->asynRCntl.xfer_state = XFER_COMPLETE ;
+    }
+  }
+  /* we received everything and don't care about timeouts */
+  if (total == actual) {
+    return 0;
+  }
+  if (timeout->mFixups > MAX_PROGRESS_FIXUPS) {
+    /* to many fixups occured -> fail */
+    return 1;
+  }
+  if (timeout->mTimestampStart == 0 || 
+      timeout->mTimestampLast > timestampNow ||
+      timestampNow - timeout->mTimestampLast > MAX_PLAUSIBLE_PROGRESS ) {
+    /* need to fix up - either first call or system time changed */
+    timeout->mFixups += 1;
+    timeout->mTimestampStart = timestampNow;
+    timeout->mTimestampLast = timestampNow;
+    return 0;
+  }
+  if (timestampNow - timeout->mTimestampStart < CIMSERVER_TIMEOUT) {
+    timeout->mTimestampLast = timestampNow;
+    return 0; 
+  } else {
+    return 1;
+  }
+}
+
+/* --------------------------------------------------------------------------*/
+void initEscanInfo(CMCIConnection * con) {   
+   con->asynRCntl.escanInfo.base    = 0;
+   con->asynRCntl.escanInfo.eodoff  = 1;
+   con->asynRCntl.escanInfo.ssecoff = 0;
+   con->asynRCntl.escanInfo.curoff  = 0;
+   con->asynRCntl.escanInfo.section = 0;
+   con->asynRCntl.escanInfo.sectlen = 0;
+   con->asynRCntl.escanInfo.prevtotl= 0;
+   con->asynRCntl.escanInfo.recdtotl= 0;
+   con->asynRCntl.escanInfo.getnew  = 1;  /* set so we getnext section right away */
+   con->asynRCntl.escanInfo.parsestate = PARSTATE_INIT;
+   con->asynRCntl.escanlock         = init_mutex;
+   con->asynRCntl.xfer_cond_mutex   = init_mutex;
+   con->asynRCntl.xfer_cond         = init_cond; 
+}
+/* --------------------------------------------------------------------------*/
+
+#endif

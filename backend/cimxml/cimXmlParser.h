@@ -425,6 +425,9 @@ typedef struct parser_control {
    ResponseHdr respHdr;
    char *da_nameSpace;
    ParserHeap *heap;
+#ifdef LARGE_VOL_SUPPORT
+   CMCIConnection * econ ; /* enumeration connection */
+#endif
 } ParserControl;
 
 

@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #ifndef _REMOTE_CMPI_NATIVE_DATA_H
@@ -36,6 +36,28 @@ extern "C" {
 #include "cmci.h"
 // #include "cimXmlParser.h"
 
+
+/* ************************************************** */
+/*                                                    */
+/* ************************************************** */
+
+#ifndef LARGE_VOL_SUPPORT 
+struct native_enum {
+	CMPIEnumeration enumeration;
+
+	CMPICount current;
+	CMPIArray * data;
+};
+#else
+struct native_enum {
+	CMPIEnumeration enumeration;
+
+	CMPICount current;
+	CMPIArray * data;
+	CMCIConnection * econ;
+	CMPIObjectPath * ecop;
+};
+#endif
 
 //! Forward declaration for anonymous struct.
 struct native_property;

@@ -120,3 +120,23 @@ To build:
 	http://sourceforge.net/projects/sblim
 	- sblim-cmpi-base (available in tar.bz2 format)
 	- cmpi-tests (currently available 
+	
+	
+Large Volume Data support - CIMXML :
+  The default is to build without this support.
+  To build with this support :
+  
+  #configure --enable-large_volume_support
+  #make
+  #make install
+  
+  Large volume support is provided for the following requests :
+     enumerateClasses
+     enumerateClassNames
+     enumerateInstances
+     enumerateInstanceNames
+     
+  This support will create multiple threads to receive data from the server and 
+  to parse the data as it is received. This creates parallel operation of receiving
+  data and parsing it.
+   

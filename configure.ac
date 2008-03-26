@@ -13,14 +13,28 @@ AC_ARG_ENABLE(http-chunking,
 		[disable http chunking support. May be necessary for older CURL versions.])],
 	[enable_http_chunking=$enableval],
 	[enable_http_chunking="yes"]
+	)
+		
+AC_ARG_ENABLE(large_volume_support,
+	[AC_HELP_STRING([--enable-large_volume_support],
+		[large_volume_support uses http chunk for enumclasses,enumclassnames,enuminstances,enuminstancenames.])],
+	[large_volume_support=$enableval],
+	[large_volume_support="no"]
 	)	
-
+	
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
+
+# 
+if test "$large_volume_support" == "yes" ; then
+   echo "enabled to compile for large volume support"
+   CPPFLAGS="-DLARGE_VOL_SUPPORT $CPPFLAGS"
+   LIBS="$LIBS -lrt"
+fi
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -54,5 +68,5 @@ then
    AC_DEFINE(HAVE_HTTP_CHUNKING,1,[Indication support enabled.])
 fi
 
-AC_CONFIG_FILES([Makefile sfcc.spec TEST/Makefile])
+AC_CONFIG_FILES([Makefile sfcc.spec TEST/Makefile ])
 AC_OUTPUT
