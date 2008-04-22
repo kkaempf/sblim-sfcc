@@ -1,10 +1,11 @@
 AM_CPPFLAGS = \
-	-I$(srcdir)/../frontend/sfcc
+	-I$(srcdir)/../frontend/sfcc \
+	-I./../cimc \
 	-I../../ \
 	$(MELUNIT_CXX_CFLAGS) \
 	-I$(top_builddir)/src \
 	-I$(top_srcdir)/src
-
+	
 if HAVE_MELUNIT_CXX
 
 AM_LDFLAGS = \
@@ -56,7 +57,12 @@ noinst_PROGRAMS	= test \
                   test_cpp \
                   test_qualifiers \
                   test_qualifiers2 \
-		  print-types
+                  v2test_ec \
+                  v2test_ecn \
+                  v2test_ei \
+                  v2test_ein \
+                  v2test_gc \
+									print-types
 
 test_SOURCES = test.c show.c
 test_LDADD = ../libcmpisfcc.la
@@ -171,7 +177,20 @@ test_qualifiers2_SOURCES = test_qualifiers2.c \
                   show.c
 test_qualifiers2_LDADD = ../libcmpisfcc.la
 
+v2test_ec_SOURCES = v2test_ec.c show.c
+v2test_ec_LDADD   = ../libcmpisfcc.la
 
+v2test_ecn_SOURCES = v2test_ecn.c show.c
+v2test_ecn_LDADD   = ../libcmpisfcc.la
+
+v2test_ei_SOURCES = v2test_ei.c show.c
+v2test_ei_LDADD   = ../libcmpisfcc.la
+
+v2test_ein_SOURCES = v2test_ein.c show.c
+v2test_ein_LDADD   = ../libcmpisfcc.la
+
+v2test_gc_SOURCES = v2test_gc.c show.c
+v2test_gc_LDADD   = ../libcmpisfcc.la
 
 print_types_SOURCES = print-types.c
 
