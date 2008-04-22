@@ -1,3 +1,8 @@
+2008-04-22 Gary Readler <gdr@us.ibm.com>
+	* README TEST/Makefile.am TEST/v2test_ec.c TEST/v2test_ecn.c
+	TEST/v2test_ei.c TEST/v2test_ein.c TEST/v2test_gc.c
+	updated README and added some v2 interface testcases  
+
 2008-02-05  Sven Schuetz <sven@de.ibm.com>
 
 	* configure.ac, Makefile.am, backend/cimxml/cimXmlResp.y:
