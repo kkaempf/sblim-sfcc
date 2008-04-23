@@ -579,7 +579,7 @@ static const XmlSpecialChar XmlEscapes[] = {
      {0x3c, "&lt;",	4},	/* '<' */
      {0x3e, "&gt;",	4},	/* '>' */
 };
-
+#define LargestXmlEscapeSize 6 /* From above */
 #define SizeofXmlEscapes (sizeof(XmlEscapes)/sizeof(XmlSpecialChar))
 
 char XmlToAscii(char **XmlStr);
@@ -621,38 +621,40 @@ char * XmlToAsciiStr(char *XmlStr)
 
 char * AsciiToXmlStr(char *AsciiStr)
 {
-    char *Ap;
-    char *XmlStr; 
+    char *Ap = NULL;
+    char *XmlStr = NULL; 
     int  Xlen;
     int  i;
-    size_t buflen;
+    int buflen;
     if (AsciiStr) {
       buflen = strlen(AsciiStr) + 1;
       XmlStr = malloc(buflen);
     }
     if (XmlStr) {
-      Xlen = 0;
-      for (Ap = AsciiStr; *Ap != '\0'; Ap++)
-	{
-	  for (i = 0; i < SizeofXmlEscapes; ++i)
-            if (*Ap == XmlEscapes[i].XmlAscii)
-	      break;
-	  if (i < SizeofXmlEscapes)
-	    {
-	      if (buflen - Xlen <= XmlEscapes[i].XmlEscapeSize) {
-		buflen = 2 * buflen;
-		XmlStr = realloc(XmlStr,buflen);
-		if (XmlStr == NULL) {
-		  break;
-		}
-	      }
-	      memcpy(XmlStr + Xlen, XmlEscapes[i].XmlEscape, XmlEscapes[i].XmlEscapeSize);
-	      Xlen += XmlEscapes[i].XmlEscapeSize;
-	    }
-	  else
-            XmlStr[Xlen++] = *Ap;
-	}
-      XmlStr[Xlen] = '\0';
+        Xlen = 0;
+        for (Ap = AsciiStr; *Ap != '\0'; Ap++)
+        {
+            for (i = 0; i < SizeofXmlEscapes; ++i)
+                if (*Ap == XmlEscapes[i].XmlAscii)
+                    break;
+
+            if (buflen <= Xlen + LargestXmlEscapeSize) {
+                buflen = 2 * buflen;
+                XmlStr = realloc(XmlStr,buflen);
+                if (XmlStr == NULL) {
+                    break;
+                }
+            }
+
+            if (i < SizeofXmlEscapes)
+            {
+                memcpy(XmlStr + Xlen, XmlEscapes[i].XmlEscape, XmlEscapes[i].XmlEscapeSize);
+                Xlen += XmlEscapes[i].XmlEscapeSize;
+            }
+            else
+                XmlStr[Xlen++] = *Ap;
+        }
+        XmlStr[Xlen] = '\0';
     }
     return XmlStr;
 }
@@ -733,7 +735,7 @@ static void addXmlValue(UtilStringBuffer *sb,
             CMPIData ele = CMGetArrayElementAt(arr, i, NULL);
             cv = value2Chars(valtyp, &ele.value);
             if (valtyp == CMPI_string || valtyp == CMPI_chars)
-{
+            {
                 char *xmlValStr  = AsciiToXmlStr(cv);
                 if (cv) free(cv);
                 cv = xmlValStr;

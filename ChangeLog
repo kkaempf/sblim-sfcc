@@ -1,3 +1,9 @@
+2008-04-23  Chris Buccella <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/client.c:
+	Fixed 1940546: Memory corruption in AsciiToXmlStr()
+	(patch by Shashi Uli)
+
 2008-04-22 Gary Readler <gdr@us.ibm.com>
 	* README TEST/Makefile.am TEST/v2test_ec.c TEST/v2test_ecn.c
 	TEST/v2test_ei.c TEST/v2test_ein.c TEST/v2test_gc.c

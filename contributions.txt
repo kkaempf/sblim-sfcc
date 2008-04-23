@@ -1,0 +1,23 @@
+External Contributions to sfcc
+******************************
+
+Below are listed code contributions from the open source community.  
+The format is:
+
+MM/DD/YYYY by Author, Organization
+----------------------------------
+[ bugnum ] description
+
+
+where "bugnum" is the bug number on SourceForge where a summary of the fix can 
+be found, along with a patch file containing the contributed code.
+
+The SourceForge bugtracker can be found here:
+
+https://sourceforge.net/tracker/?atid=712784&group_id=128809
+
+********************************************************************************
+
+04/23/2008 by Shashi Uli, Citrix
+--------------------------------
+[ 1940546 ] Memory corruption in AsciiToXmlStr()

@@ -1,19 +1,17 @@
 Small Footprint CIM Client Library NEWS
 
-New features
-- 1828584 sfcc: large volume data support (CIMXML)
-
-
 Changes in 2.1
 ==============
-New features
+New features:
 - 1820015 sfcc: prepare for indication support
 - 1854813 sfcc: new parser
 - 1867649 sfcc: embedded instance support (receiving side)
 - 1828588 sfcc: Indication support (CIMXML)
+- 1828584 sfcc: large volume data support (CIMXML)
 
 Bugs:
 - 1887125 sfcc: cleanup due to new parser
+- 1940546: Memory corruption in AsciiToXmlStr()
 
 Changes in 2.0.3:
 =================
