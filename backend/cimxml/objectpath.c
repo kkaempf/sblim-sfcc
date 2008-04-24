@@ -20,7 +20,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdio.h>
@@ -248,7 +248,7 @@ static struct native_cop * __new_empty_cop ( const char * nameSpace,
         
 	static CMPIObjectPath const o = {
 		"CMPIObjectPath",
-		&oft
+		(CMPIObjectPathFT*)&oft
 	};
 
 	struct native_cop * cop =

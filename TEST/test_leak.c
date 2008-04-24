@@ -23,7 +23,7 @@
 #include <cmci.h>
 #include <native.h>
 #include <unistd.h>
-
+#include <stdlib.h>
 #include "show.h"
 
 #define NUM_ITERS	125

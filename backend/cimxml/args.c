@@ -20,10 +20,11 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "cmcidt.h"
 #include "cmcift.h"
 #include "cmcimacs.h"
@@ -137,7 +138,7 @@ static struct native_args * __new_empty_args ( CMPIStatus * rc )
 	};
 	static CMPIArgs a = {
 		"CMPIArgs",
-		&aft
+		(CMPIArgsFT*)&aft
 	};
 
 	struct native_args * args = (struct native_args *)

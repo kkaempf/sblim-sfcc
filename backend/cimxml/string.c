@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 
   \todo Once CMGetCharPtr() macro uses the appropriate function call instead
   of casting the internal hdl, store "CMPIString" type in there.
@@ -93,7 +93,7 @@ static struct native_string * __new_string ( const char * ptr,
 		calloc ( 1, sizeof ( struct native_string ) );
 
         string->string.hdl = ( ptr )? strdup ( ptr ): NULL;
-	string->string.ft  = &sft;
+	string->string.ft  = (CMPIStringFT*) &sft;
 
 	CMSetStatus ( rc, CMPI_RC_OK );
 	return string;

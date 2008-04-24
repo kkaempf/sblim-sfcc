@@ -68,13 +68,13 @@ int count = 0;
        printf(" failed the call to connect \n") ;	
     }
     
-    op = ce->ft->newObjectPath(ce, "root/cimv2", "CIM_ManagedElement" , &status);     
+    op = (CMPIObjectPath *) ce->ft->newObjectPath(ce, "root/cimv2", "CIM_ManagedElement" , &status);     
     if(op == NULL) 
     {
        printf(" failed the call to newObjectPath \n") ;	
     }
      
-    enm = client->ft->enumInstances(client, op, 0 , NULL, &status);
+    enm = client->ft->enumInstances(client,(CIMCObjectPath *) op, 0 , NULL, &status);
 
     if(enm == NULL) 
     {
@@ -91,7 +91,7 @@ int count = 0;
        	  
           data = enm->ft->getNext(enm, NULL);
 
-          showInstance(data.value.inst);
+          showInstance((CMPIInstance *)data.value.inst);
           /*
            * see if we have any more
            */

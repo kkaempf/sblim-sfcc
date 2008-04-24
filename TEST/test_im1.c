@@ -22,7 +22,7 @@
 #include <cmci.h>
 #include <native.h>
 #include <unistd.h>
-
+#include <stdlib.h>
 #include "show.h"
 
 int main()

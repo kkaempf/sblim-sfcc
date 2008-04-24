@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdio.h>
@@ -270,7 +270,7 @@ static struct native_datetime * __new_datetime ( const char *cimDt,
 
 	static const CMPIDateTime dt = {
 		"CMPIDateTime",
-		&dtft
+		(CMPIDateTimeFT *)&dtft
 	};
 
     struct native_datetime * ndt = (struct native_datetime *) 

@@ -69,14 +69,14 @@ int count = 0;
     }
     
     printf("do newObjectPath \n") ;
-    op = ce->ft->newObjectPath(ce, "root/cimv2", "CIM_ManagedElement" , &status);     
+    op = (CMPIObjectPath *)ce->ft->newObjectPath(ce, "root/cimv2", "CIM_ManagedElement" , &status);     
     if(op == NULL) 
     {
        printf(" failed the call to newObjectPath \n") ;	
     }
         
     printf("do enumInstances \n") ;
-    enm = client->ft->enumInstanceNames(client, op , &status);
+    enm = client->ft->enumInstanceNames(client, (CIMCObjectPath *) op , &status);
     if(enm == NULL) 
     {
        printf(" failed the call to client->ft->enumInstances \n") ;	

@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include "cmcidt.h"
@@ -136,7 +136,7 @@ static struct native_enum * __new_enumeration ( CMPIArray * array,
 	};
 	static const CMPIEnumeration e = {
 		"CMPIEnumeration",
-		&eft
+		(CMPIEnumerationFT*)&eft
 	};
 
 	struct native_enum * enumeration = (struct native_enum *)

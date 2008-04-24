@@ -83,8 +83,8 @@ int main()
 	
 	  client = ce->ft->connect(ce, cim_host , "http", cim_host_port, cim_host_userid, cim_host_passwd , &status);
 
-    op = ce->ft->newObjectPath(ce, "root/cimv2", "CIM_ComputerSystem" , &status); 
-    class = client->ft->getClass(client, op, CMPI_FLAG_IncludeQualifiers, NULL, &status);
+    op = (CMPIObjectPath *)ce->ft->newObjectPath(ce, "root/cimv2", "CIM_ComputerSystem" , &status); 
+    class =(CMPIConstClass *) client->ft->getClass(client,(CIMCObjectPath *) op, CMPI_FLAG_IncludeQualifiers, NULL, &status);
 	 
     /* Print the results */
     printf( "getClass() rc=%d, msg=%s\n", 
@@ -95,7 +95,7 @@ int main()
         showClass(class);
     }
 
-    if (class) op->ft->release(class);
+    if (class) class->ft->release((CMPIConstClass *)class);
     if (op) op->ft->release(op);
 
     if (client) client->ft->release(client);

@@ -23,7 +23,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 */
 
 #include <stdlib.h>
@@ -230,7 +230,7 @@ static struct native_array * __new_empty_array ( CMPICount size, CMPIType type,
    };
    static const CMPIArray a = {
       "CMPIArray",
-      &aft
+      (CMPIArrayFT*)&aft
    };
 
    struct native_array * array = (struct native_array *)

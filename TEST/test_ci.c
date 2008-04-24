@@ -20,7 +20,8 @@
 #include <cmci.h>
 #include <native.h>
 #include <unistd.h>
-
+#include <stdlib.h>
+#include <string.h>
 #include "show.h"
 
 static char * _HOSTNAME = "bestorga.ibm.com";
