@@ -1,11 +1,11 @@
 AM_CPPFLAGS = \
 	-I$(srcdir)/../frontend/sfcc \
-	-I./../cimc \
+	-I$(top_srcdir)/cimc \
 	-I../../ \
 	$(MELUNIT_CXX_CFLAGS) \
 	-I$(top_builddir)/src \
 	-I$(top_srcdir)/src
-	
+
 if HAVE_MELUNIT_CXX
 
 AM_LDFLAGS = \
