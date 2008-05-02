@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.16 2008/02/05 17:26:27 sschuetz Exp $
+# $Id: Makefile.am,v 1.17 2008/05/02 00:57:27 buccella Exp $
 
 docdir=$(datadir)/doc/sfcc-$(VERSION)
 
@@ -51,7 +51,9 @@ noinst_HEADERS = \
 	backend/cimxml/parserUtil.h \
 	backend/cimxml/sfcUtil/hashtable.h \
 	backend/cimxml/nativeCimXml.h \
-	backend/cimxml/sfcUtil/utilft.h
+	backend/cimxml/sfcUtil/utilft.h \
+        backend/cimxml/utilStringBuffer.h \
+        frontend/sfcc/conn.h 
 
 cimcinclude_HEADERS = \
 	cimc/cimc.h \
