@@ -19,10 +19,11 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "cmcidt.h"
 #include "cmcift.h"

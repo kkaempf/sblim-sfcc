@@ -1,3 +1,9 @@
+2008-05-01  Chris Buccella <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/client.c, backend/cimxml/property.c, 
+	backend/cimxml/qualifier.c, backend/cimxml/string.c:
+	Made changes to quiet some gcc warnings
+
 2008-04-23  Chris Buccella <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/client.c:

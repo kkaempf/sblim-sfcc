@@ -2867,11 +2867,11 @@ static CMCIClientFT clientFt = {
 
 /* --------------------------------------------------------------------------*/
 
-static CMCIClient *xmlConnect2(CIMCEnv *env, const char *hn, const char *scheme, const char *port,
+static CIMCClient *xmlConnect2(CIMCEnv *env, const char *hn, const char *scheme, const char *port,
 			 const char *user, const char *pwd, 
 			 int verifyMode, const char * trustStore,
 			 const char * certFile, const char * keyFile,
-			 CMPIStatus *rc)
+			 CIMCStatus *rc)
 {  
    ClientEnc *cc = (ClientEnc*)calloc(1, sizeof(ClientEnc));
 
@@ -2909,13 +2909,13 @@ static CMCIClient *xmlConnect2(CIMCEnv *env, const char *hn, const char *scheme,
      }
  
    CMSetStatus(rc, CMPI_RC_OK);
-   return (CMCIClient*)cc;
+   return (CIMCClient*)cc;
 }
 
-static CMCIClient *xmlConnect(CIMCEnv *env, const char *hn, const char *scheme, const char *port,
-                        const char *user, const char *pwd, CMPIStatus *rc)
+static CIMCClient *xmlConnect(CIMCEnv *env, const char *hn, const char *scheme, const char *port,
+                        const char *user, const char *pwd, CIMCStatus *rc)
 {
-  return xmlConnect2(env, hn, scheme, port, user, pwd, CMCI_VERIFY_PEER, NULL,
+  return (CIMCClient*)xmlConnect2(env, hn, scheme, port, user, pwd, CMCI_VERIFY_PEER, NULL,
 		      NULL, NULL, rc);
 }
 
@@ -2928,45 +2928,45 @@ static void *releaseEnv(CIMCEnv *env)
   return NULL;
 }
 
-static CMPIInstance* newInstance(CIMCEnv* ce, const CMPIObjectPath* op, CMPIStatus* rc)
+static CIMCInstance* newInstance(CIMCEnv* ce, const CIMCObjectPath* op, CIMCStatus* rc)
 {
-   return newCMPIInstance((CMPIObjectPath*)op,rc);
+  return (CIMCInstance*)newCMPIInstance((CMPIObjectPath*)op,(CMPIStatus*)rc);
 }
 
-static CMPIString* newString(CIMCEnv* ce, const char *ptr, CMPIStatus * rc)
+static CIMCString* newString(CIMCEnv* ce, const char *ptr, CIMCStatus * rc)
 {
-   return newCMPIString(ptr, rc);
+  return (CIMCString*)newCMPIString(ptr, (CMPIStatus*)rc);
 }
 
-static CMPIObjectPath* newObjectPath(CIMCEnv* ce, const char *ns, const char *cn, CMPIStatus* rc)
+static CIMCObjectPath* newObjectPath(CIMCEnv* ce, const char *ns, const char *cn, CIMCStatus* rc)
 {
-   return newCMPIObjectPath(ns,cn,rc);
+  return (CIMCObjectPath*)newCMPIObjectPath(ns,cn,(CMPIStatus*)rc);
 }
 
-static CMPIArgs* newArgs(CIMCEnv* ce, CMPIStatus* rc)
+static CIMCArgs* newArgs(CIMCEnv* ce, CIMCStatus* rc)
 {
-   return newCMPIArgs(rc);
+  return (CIMCArgs*)newCMPIArgs((CMPIStatus*)rc);
 }
 
-static CMPIArray* newArray(CIMCEnv* ce, CMPICount max, CMPIType type, CMPIStatus* rc)
+static CIMCArray* newArray(CIMCEnv* ce, CMPICount max, CMPIType type, CIMCStatus* rc)
 {
-   return newCMPIArray(max, type, rc);
+  return (CIMCArray*)newCMPIArray(max, type, (CMPIStatus*)rc);
 }
 
-static CMPIDateTime *newDateTime(CIMCEnv* ce, CMPIStatus *rc) 
+static CIMCDateTime *newDateTime(CIMCEnv* ce, CIMCStatus *rc) 
 {
-   return native_new_CMPIDateTime(rc); 
+  return (CIMCDateTime*)native_new_CMPIDateTime((CMPIStatus*)rc); 
 }
 
-static CMPIDateTime *newDateTimeFromBinary(CIMCEnv* ce, CMPIUint64 binTime, CMPIBoolean interval, 
-      CMPIStatus *rc) 
+static CIMCDateTime *newDateTimeFromBinary(CIMCEnv* ce, CMPIUint64 binTime, CMPIBoolean interval, 
+      CIMCStatus *rc) 
 {
-   return native_new_CMPIDateTime_fromBinary(binTime,interval,rc); 
+  return (CIMCDateTime*)native_new_CMPIDateTime_fromBinary(binTime,interval,(CMPIStatus*)rc); 
 }
 
-static CMPIDateTime *newDateTimeFromChars(CIMCEnv* ce, const char *utcTime, CMPIStatus *rc) 
+static CIMCDateTime *newDateTimeFromChars(CIMCEnv* ce, const char *utcTime, CIMCStatus *rc) 
 {
-   return native_new_CMPIDateTime_fromChars(utcTime,rc); 
+  return (CIMCDateTime*)native_new_CMPIDateTime_fromChars(utcTime,(CMPIStatus*)rc); 
 }
 
 static CIMCIndicationListener *newIndicationListener (CIMCEnv* ce,
