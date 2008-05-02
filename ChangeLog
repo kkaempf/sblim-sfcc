@@ -4,6 +4,15 @@
 	backend/cimxml/qualifier.c, backend/cimxml/string.c:
 	Made changes to quiet some gcc warnings
 
+	* Makfile.am:
+	Additions needed for large volume support feature
+
+	* TEST/Makefile.am:
+	Additions needed for new test_ programs
+
+	* configure.ac:
+	Bumped version number to 1.2.0
+
 2008-04-23  Chris Buccella <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/client.c:
