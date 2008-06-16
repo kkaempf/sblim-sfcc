@@ -1,3 +1,7 @@
+2008-06-16  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+    * frontend/sfcc/sfcclient.c
+    Better handling of NULL values for slp.
+
 2008-05-16  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
     * cimc/cimcclient.c

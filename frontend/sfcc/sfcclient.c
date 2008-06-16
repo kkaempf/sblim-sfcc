@@ -241,7 +241,8 @@ char * value2Chars (CMPIType type, CMPIValue *value)
       case CMPI_booleanString:
       case CMPI_dateTimeString:
       case CMPI_classNameString:
-         return strdup(value->string ? (char*)value->string->hdl : "NULL");
+         return strdup((value->string && value->string->hdl) ?
+             (char*)value->string->hdl : "NULL");
 
       case CMPI_dateTime:
          if (value->dateTime) {
