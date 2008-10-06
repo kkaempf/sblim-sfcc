@@ -1,4 +1,9 @@
 2008-09-06  Sean Swehla <smswehla@linux.vnet.ibm.com>
+	* TEST/v2_testein.c
+	Fixed 2102345: missing configuration of CIM-HOST-PORT in sblim-sfcc
+	(patch by Pavol Rusnak)
+
+2008-09-06  Sean Swehla <smswehla@linux.vnet.ibm.com>
 	* TEST/print-types.c, backend/cimxml/constClass.c,
 	backend/cimxml/indicationlistener.c, backend/cimxml/instance.c
 	Fixed 2102339: Missing ret values in sblim-sfcc
