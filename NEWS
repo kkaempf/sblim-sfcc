@@ -1,5 +1,10 @@
 Small Footprint CIM Client Library NEWS
 
+Changes since 2.1
+=================
+Bugs:
+- 2102339: Missing ret values in sblim-sfcc
+
 Changes in 2.1
 ==============
 New features:

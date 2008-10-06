@@ -1,3 +1,9 @@
+2008-09-06  Sean Swehla <smswehla@linux.vnet.ibm.com>
+	* TEST/print-types.c, backend/cimxml/constClass.c,
+	backend/cimxml/indicationlistener.c, backend/cimxml/instance.c
+	Fixed 2102339: Missing ret values in sblim-sfcc
+	(patch by Pavol Rusnak)
+
 2008-06-16  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
     * frontend/sfcc/sfcclient.c
     Better handling of NULL values for slp.
