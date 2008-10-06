@@ -42,6 +42,7 @@ int count = 0;
     cim_host_passwd = getenv("CIM_HOST_PASSWD");
     if (cim_host_passwd == NULL)
        cim_host_passwd = "password";
+    cim_host_port = getenv("CIM_HOST_PORT");
     if (cim_host_port == NULL)
 	     cim_host_port = "5988";
 	     
