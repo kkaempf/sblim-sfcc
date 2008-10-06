@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 */
 
 #include <stdio.h>
@@ -186,6 +186,9 @@ static CMPIData __ift_getPropertyQualifier ( CMPIInstance * instance,
 
 	if (p) return qualifierFT.getDataQualifier ( p->qualifiers, qname, rc );        
 	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMPIData ret;
+	ret.state = CMPI_nullValue;
+	return ret;
 }
 
 static CMPIData __ift_getPropertyQualifierAt ( CMPIInstance * instance, 
@@ -199,6 +202,9 @@ static CMPIData __ift_getPropertyQualifierAt ( CMPIInstance * instance,
 
 	if (p) return qualifierFT.getDataQualifierAt ( p->qualifiers, index, name, rc );
 	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	CMPIData ret;
+	ret.state = CMPI_nullValue;
+	return ret;
 }
 
 static unsigned int __ift_getPropertyQualifierCount ( CMPIInstance * instance, 
@@ -210,6 +216,7 @@ static unsigned int __ift_getPropertyQualifierCount ( CMPIInstance * instance,
   
 	if (p) return qualifierFT.getQualifierCount ( p->qualifiers, rc );
 	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
+	return 0;
 }
 
 

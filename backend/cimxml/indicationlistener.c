@@ -458,6 +458,8 @@ static void* establish_listener(int sslMode, int port, struct native_indicationl
             close(connFd);
         }
     }
+
+    return NULL;
 }
 
 static void* start_listen_thread(void *parms)
@@ -465,6 +467,7 @@ static void* start_listen_thread(void *parms)
     struct native_indicationlistener* i;
     i = (struct native_indicationlistener*) parms;
     establish_listener(i->sslMode, i->port, i);   
+    return NULL;
 }
 
 static CIMCStatus _ilft_release(CIMCIndicationListener* il)
@@ -475,6 +478,10 @@ static CIMCStatus _ilft_release(CIMCIndicationListener* il)
     if(i) {
         free(i);
     }
+    CIMCStatus ret;
+    ret.rc = CIMC_RC_OK;
+    ret.msg = NULL;
+    return ret;
 }
 
 static CIMCIndicationListener* _ilft_clone(CIMCIndicationListener* il,
@@ -483,6 +490,7 @@ static CIMCIndicationListener* _ilft_clone(CIMCIndicationListener* il,
     /* not yet implemented. function is just here to comply with the default
      * function tables. it is questionable if a clone is needed for an
      * indication listener */
+    return NULL;
 }
 
 static CIMCStatus _ilft_start(CIMCIndicationListener* il)
@@ -495,11 +503,21 @@ static CIMCStatus _ilft_start(CIMCIndicationListener* il)
     do_listen = 1;
     
     pthread_create(&id, NULL, &start_listen_thread, i);
+
+    CIMCStatus ret;
+    ret.rc = CIMC_RC_OK;
+    ret.msg = NULL;
+    return ret;
 }
 
 static CIMCStatus _ilft_stop(CIMCIndicationListener* il)
 {
     do_listen = 0;
+
+    CIMCStatus ret;
+    ret.rc = CIMC_RC_OK;
+    ret.msg = NULL;
+    return ret;
 }
 
 CIMCIndicationListener *newCIMCIndicationListener(int sslMode,

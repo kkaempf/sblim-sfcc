@@ -94,4 +94,6 @@ main()
     PRINT_TYPE(CMPI_keyValue);
     PRINT_TYPE(CMPI_notFound);
     PRINT_TYPE(CMPI_badValue);
+
+    return 0;
 }
