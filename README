@@ -36,6 +36,11 @@ Communication is accomplished via localconnect sockets. Note that the local conn
 will use a library that is part of sfcb so the application must have the same 
 authorization as the installer of sfcb.
 
+If the sfcb libraries have not been installed to the default location
+(/usr/local/lib/sfcb), SFCC will need to be configured to find them. Use 
+"configure SFCB_LIBDIR=<dir>" to inform the SFCC build where to find the
+libraries.
+
 Applications using SFCC determine which method to use by calling the NewCIMCEnv 
 library function which establishes the environment for using one of the above 
 communication methods.

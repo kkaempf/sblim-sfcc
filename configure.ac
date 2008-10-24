@@ -60,6 +60,14 @@ AC_FUNC_REALLOC
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([gettimeofday localtime_r memset strcasecmp strdup strncasecmp strstr tzset])
 
+#SFCB Library location
+# Set with "configure SFCB_LIBDIR=<dir>
+AC_SUBST(SFCB_LIBDIR)
+if test -z "$SFCB_LIBDIR"
+then
+    SFCB_LIBDIR="/usr/local/lib/sfcb"
+fi
+
 # MELUNIT
 AM_CONDITIONAL(HAVE_MELUNIT_CXX,[test 0 = 1 ])
 

@@ -1,6 +1,6 @@
 
 /*
- * $Id: cimcclient.c,v 1.3 2008/05/16 22:32:35 mchasal Exp $
+ * $Id: cimcclient.c,v 1.4 2008/10/24 15:38:59 mchasal Exp $
  *
  * © Copyright IBM Corp. 2007
  *
@@ -50,7 +50,7 @@ CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
         *rc=3;
         snprintf(*msg,ERRLEN,"Invalid connection type '%s'. Must be 'XML' or 'SfcbLocal'.",id);
     } else {
-        snprintf(libName, LIBLEN, "libcimcClient%s.so",id);
+        snprintf(libName, LIBLEN, "%s/libcimcClient%s.so",SFCB_LIBDIR,id);
         library = dlopen(libName, RTLD_NOW);
         if (library==NULL) {
             *msg=calloc(1,ERRLEN+1);

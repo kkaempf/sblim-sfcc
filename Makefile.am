@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.17 2008/05/02 00:57:27 buccella Exp $
+# $Id: Makefile.am,v 1.18 2008/10/24 15:38:59 mchasal Exp $
 
 docdir=$(datadir)/doc/sfcc-$(VERSION)
 
@@ -109,6 +109,7 @@ libcimcclient_la_LDFLAGS = \
        -version-info $(Libcimcclient_CURRENT):$(Libcimcclient_REVISION):$(Libcimcclient_AGE) \
        -Wl,--version-script,$(srcdir)/cimc/libcimcclient.Versions
 libcimcclient_la_LIBADD = -ldl
+libcimcclient_la_CPPFLAGS = -DSFCB_LIBDIR=\"$(SFCB_LIBDIR)\"
 
 libcmpisfcc_la_CPPFLAGS = -I$(srcdir)/cimc -I$(srcdir)/backend/cimxml -I$(srcdir)/frontend/sfcc
 libcmpisfcc_la_LIBADD = -lcimcclient
