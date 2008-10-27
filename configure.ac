@@ -65,7 +65,7 @@ AC_CHECK_FUNCS([gettimeofday localtime_r memset strcasecmp strdup strncasecmp st
 AC_SUBST(SFCB_LIBDIR)
 if test -z "$SFCB_LIBDIR"
 then
-    SFCB_LIBDIR="/usr/local/lib/sfcb"
+    SFCB_LIBDIR="$libdir/sfcb"
 fi
 
 # MELUNIT

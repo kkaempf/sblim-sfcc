@@ -37,7 +37,7 @@ will use a library that is part of sfcb so the application must have the same
 authorization as the installer of sfcb.
 
 If the sfcb libraries have not been installed to the default location
-(/usr/local/lib/sfcb), SFCC will need to be configured to find them. Use 
+(<libdir>/sfcb), SFCC will need to be configured to find them. Use 
 "configure SFCB_LIBDIR=<dir>" to inform the SFCC build where to find the
 libraries.
 

@@ -1,3 +1,8 @@
+2008-10-27  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+	* Makefile.am 
+	Updated 2158091: sfcb modules belong in private dir
+		use $libdir for default
+
 2008-10-23  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 	* Makefile.am configure.ac cimc/cimcclient.c
 	Fixed 2158091: sfcb modules belong in private dir
