@@ -61,7 +61,7 @@ int main()
 
     if(ce == NULL) {
       printf(" local connect failed call to NewCIMCEnv rc = %d , message = [%s] \n",retc,msg) ;
-      return ;	
+      return 1;
     }
     
     client = ce->ft->connect(ce, cim_host , "http", cim_host_port, cim_host_userid, cim_host_passwd , &status);

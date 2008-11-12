@@ -6,7 +6,7 @@ Bugs:
 - 2102339: Missing ret values in sblim-sfcc
 - 2102345: missing configuration of CIM-HOST-PORT in sblim-sfcc
 - 2158091: sfcb modules belong in private dir
-
+- 2270179: Missing includes and values in return statements
 
 Changes in 2.1
 ==============

@@ -28,6 +28,7 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 
 static int do_listen=1;
 

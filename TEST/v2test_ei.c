@@ -59,7 +59,7 @@ int count = 0;
 
     if(ce == NULL) {
       printf(" local connect failed call to NewCIMCEnv message = [%s] \n",msg) ;
-      return ;	
+      return 1;
     }
     
     client = ce->ft->connect(ce, cim_host, cim_host_port, "5988", cim_host_userid, cim_host_passwd, &status);
@@ -108,6 +108,8 @@ int count = 0;
     if(client) client->ft->release(client);
     if(ce) ce->ft->release(ce);
     if(status.msg) CMRelease(status.msg);		       
+
+    return 0;
 }
 
 /* */

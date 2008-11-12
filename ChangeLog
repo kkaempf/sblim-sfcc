@@ -1,3 +1,9 @@
+2008-11-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* TEST/*.c, backend/cimxml/indicationlistener.c:
+	Fixed 2270179: Missing includes and values in return statements
+	(patch by Pavol Rusnak)
+	
 2008-10-27  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 	* Makefile.am 
 	Updated 2158091: sfcb modules belong in private dir
