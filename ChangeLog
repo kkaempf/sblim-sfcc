@@ -1,4 +1,4 @@
-2008-10-27  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+2008-12-16  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 	* cimc/cimclient.c:
 	Fixed 2431835: XML client library not found. 
 
