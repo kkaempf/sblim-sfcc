@@ -1,3 +1,8 @@
+2009-02-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* TEST/v2test_ei.c:
+	Fixed 2596921: v2test_ei test fails when using CIMXML interface
+
 2008-12-16  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 	* cimc/cimclient.c:
 	Fixed 2431835: XML client library not found. 

@@ -8,6 +8,7 @@ Bugs:
 - 2158091: sfcb modules belong in private dir
 - 2270179: Missing includes and values in return statements
 - 2431835: XML client library not found. 
+- 2596921: v2test_ei test fails when using CIMXML interface
 
 Changes in 2.1
 ==============

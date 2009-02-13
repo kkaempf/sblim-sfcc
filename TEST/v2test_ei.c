@@ -62,7 +62,7 @@ int count = 0;
       return 1;
     }
     
-    client = ce->ft->connect(ce, cim_host, cim_host_port, "5988", cim_host_userid, cim_host_passwd, &status);
+    client = ce->ft->connect(ce, cim_host , "http", cim_host_port, cim_host_userid, cim_host_passwd , &status);
     if(client == NULL) 
     {
        printf(" failed the call to connect \n") ;	
