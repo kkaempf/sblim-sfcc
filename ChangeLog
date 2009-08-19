@@ -1,3 +1,10 @@
+2009-08-19  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/grammar.c:
+	Fixed 2691478: sfcc 2.1.0 cannot handle OutParams on Extrinsic 
+	Method Call
+	(patch by Rajib Saha)
+
 2009-02-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* TEST/v2test_ei.c:
