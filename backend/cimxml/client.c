@@ -215,7 +215,7 @@ static CMPIStatus cloneStatus(CMPIStatus st)
 static char *getErrorMessage(CURLcode err)
 {
 #if LIBCURL_VERSION_NUM >= 0x071200
-    return curl_easy_strerror(err);
+    return strdup(curl_easy_strerror(err));
 #else
     char error[64];
     sprintf(error,"CURL error: %d", err);

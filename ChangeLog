@@ -1,3 +1,8 @@
+2009-09-02  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+	* backend/cimxml/client.c
+	Fixed 2847782: sfcc getClass crashes if cimom isn't running
+	(patch by Klaus Kämpf)
+
 2009-08-19  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/grammar.c:
