@@ -6,6 +6,7 @@ Changes since 2.2
 Bugs:
 - 2691478: sfcc 2.1.0 cannot handle OutParams on Extrinsic Method Call
 - 2847782: sfcc getClass crashes if cimom isn't running
+- 2849853: getClass reports most property types as CMPI_Instance
 
 Changes in 2.2
 ==============

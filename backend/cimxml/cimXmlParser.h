@@ -38,18 +38,21 @@ extern "C" {
 #endif
 
 typedef enum typeValRef {
+   typeValRef_Unknown,
    typeValRef_InstanceName,
    typeValRef_InstancePath,
    typeValRef_LocalInstancePath
 } TypeValRef;
 
 typedef enum typeProperty {
+   typeProperty_Unknown,
    typeProperty_Value,
    typeProperty_Reference,
    typeProperty_Array
 } TypeProperty;
 
 typedef enum typeValue {
+   typeValue_Unknown,
    typeValue_Instance,
    typeValue_Class,
    typeValue_charP
