@@ -1,7 +1,7 @@
 Small Footprint CIM Client Library NEWS
 
-Changes since 2.2
-=================
+Changes in 2.2.1
+================
 
 Bugs:
 - 2691478: sfcc 2.1.0 cannot handle OutParams on Extrinsic Method Call
