@@ -22,6 +22,7 @@ Bugs:
 - 2431835: XML client library not found. 
 - 2596921: v2test_ei test fails when using CIMXML interface
 - 2050256: SFCC and SFCB header files for Binary communication varies
+- 1946188: Error in sfcc decoding function causes SFCB process to crash
 
 Changes in 2.1
 ==============
