@@ -40,6 +40,11 @@
 	* Makefile.am configure.ac cimc/cimcclient.c
 	Fixed 2158091: sfcb modules belong in private dir
 
+2008-09-09  Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* cimc/cimcft.h:
+	Fixed 2050256: SFCC and SFCB header files for Binary communication varies
+	
 2008-09-06  Sean Swehla <smswehla@linux.vnet.ibm.com>
 	* TEST/v2_testein.c
 	Fixed 2102345: missing configuration of CIM-HOST-PORT in sblim-sfcc

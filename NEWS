@@ -21,6 +21,7 @@ Bugs:
 - 2270179: Missing includes and values in return statements
 - 2431835: XML client library not found. 
 - 2596921: v2test_ei test fails when using CIMXML interface
+- 2050256: SFCC and SFCB header files for Binary communication varies
 
 Changes in 2.1
 ==============
