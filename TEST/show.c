@@ -45,14 +45,14 @@ type2Chars (CMPIType type)
 	return "Filter";
       case CMPI_string:
 	return "String";
+      case CMPI_chars:
+	return "Chars";
       case CMPI_numericString:
 	return "NumericString";
       case CMPI_booleanString:
 	return "BooleanString";
       case CMPI_dateTimeString:
 	return "DateTimeString";
-      case CMPI_classNameString:
-	return "ClassNameString";
       case CMPI_dateTime:
 	return "DateTime";
       default:

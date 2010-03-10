@@ -178,11 +178,13 @@ static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
       case CMPI_filter:
          break;
 
+      case CMPI_chars:
+         return strdup(value->chars ? (char*)value->chars : "NULL");
+
       case CMPI_string:
       case CMPI_numericString:
       case CMPI_booleanString:
       case CMPI_dateTimeString:
-      case CMPI_classNameString:
          return strdup(value->string ? (char*)value->string->hdl : "NULL");
 
       case CMPI_dateTime:
