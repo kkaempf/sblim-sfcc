@@ -24,6 +24,94 @@
 
 #include "show.h"
 
+char *
+type2Chars (CMPIType type)
+{
+   if (type & CMPI_ARRAY) {
+     char buf[512];
+     snprintf(buf,511, "Array of %s", type2Chars(type & ~CMPI_ARRAY));
+     return strdup(buf);
+   }
+   else if (type & CMPI_ENC) {
+
+      switch (type) {
+      case CMPI_instance:
+	return "Instance";
+      case CMPI_ref:
+	return "Reference";
+      case CMPI_args:
+	return "Args";
+      case CMPI_filter:
+	return "Filter";
+      case CMPI_string:
+	return "String";
+      case CMPI_numericString:
+	return "NumericString";
+      case CMPI_booleanString:
+	return "BooleanString";
+      case CMPI_dateTimeString:
+	return "DateTimeString";
+      case CMPI_classNameString:
+	return "ClassNameString";
+      case CMPI_dateTime:
+	return "DateTime";
+      default:
+	return "***Encoding***";
+      }
+
+   }
+   else if (type & CMPI_SIMPLE) {
+
+      switch (type) {
+      case CMPI_boolean:
+	return "Boolean";
+      case CMPI_char16:
+	return "Char16";
+      default:
+	return "***Simple***";
+      }
+
+   }
+   else if (type & CMPI_INTEGER) {
+
+      switch (type) {
+      case CMPI_uint8:
+	return "UInt8";
+      case CMPI_sint8:
+	return "SInt8";
+      case CMPI_uint16:
+	return "UInt16";
+      case CMPI_sint16:
+	return "SInt16";
+      case CMPI_uint32:
+	return "UInt32";
+      case CMPI_sint32:
+	return "SInt32";
+      case CMPI_uint64:
+	return "UInt64";
+      case CMPI_sint64:
+	return "SInt64";
+      default:
+	return "***Integer***";
+      }
+
+   }
+   else if (type & CMPI_REAL) {
+
+      switch (type) {
+      case CMPI_real32:
+	return "Real32";
+      case CMPI_real64:
+	return "Real64";
+      default:
+	return "***Real***";
+      }
+
+   }
+   return "***Unknown***";
+}
+
+
 void showObjectPath( CMPIObjectPath * objectpath )
 {
    CMPIString * namespace = objectpath->ft->getNameSpace(objectpath, NULL);
@@ -97,10 +185,10 @@ static char *CMPIState_str(CMPIValueState state)
 void showProperty( CMPIData data, char *name )
 {
 	 char *valuestr;
-    CMPIValueState state = data.state & ~CMPI_keyValue;
-    if (state == CMPI_goodValue)
+  CMPIValueState state = data.state & ~CMPI_keyValue;
+  if (state != CMPI_badValue)
     {
-        if (CMIsArray(data))
+      if (CMIsArray(data) && state != CMPI_nullValue)
         {
 	     CMPIArray *arr   = data.value.array;
 	     CMPIType  eletyp = data.type & ~CMPI_ARRAY;
@@ -109,20 +197,24 @@ void showProperty( CMPIData data, char *name )
             for (j = 0; j < n; ++j)
             {
 		CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
-		valuestr = value2Chars(eletyp, &ele.value);
-	        printf("\t%s[%d]=%s\n", name, j, valuestr);
-		free (valuestr);
+	        if (state == CMPI_goodValue)
+	          valuestr = value2Chars(eletyp, &ele.value);
+	        else
+		  valuestr = NULL;
+	        printf("\t%s[%d]=%s<%s>\n", name, j, (state == CMPI_nullValue)?"NIL":valuestr, type2Chars(ele.type));
+		if (valuestr) free (valuestr);
 	     }
         }
         else
         {
-            if (state == CMPI_goodValue)
-            {
-	     valuestr = value2Chars(data.type, &data.value);
-	     printf("\t%s=%s\n", name, valuestr);
-	     free (valuestr);
-	 }
-}         
+	  if (state == CMPI_goodValue)
+	    valuestr = value2Chars(data.type, &data.value);
+	  else
+	    valuestr = NULL;
+    
+	  printf("\t%s=%s<%s>\n", name, (state == CMPI_nullValue)?"NIL":valuestr, type2Chars(data.type));
+	  if (valuestr) free (valuestr);
+	}         
     }
     else
     {
@@ -202,6 +294,7 @@ void showInstance( CMPIInstance *instance )
 void showClass( CMPIConstClass * class )
 {
    CMPIString * classname = class->ft->getClassName(class, NULL);
+   int numqualifiers = class->ft->getQualifierCount(class, NULL);
    int numproperties = class->ft->getPropertyCount(class, NULL);
    int i;
    char *cv;
@@ -211,27 +304,53 @@ void showClass( CMPIConstClass * class )
         printf("classname=%s\n", (char *)classname->hdl);
     }
 
+    if (numqualifiers)
+    {
+      int j;
+      printf("%d qualifiers:\n", numqualifiers);
+      for (j = 0; j < numqualifiers; ++j) {
+	CMPIString *qualifier_name;
+	CMPIData data = class->ft->getQualifierAt(class, j, &qualifier_name, NULL);
+	printf("[%s]", CMGetCharPtr(qualifier_name));
+      }
+    }
+    else
+    {
+      printf("No qualifiers\n");
+    }
+  
     if (numproperties)
     {
-      printf("properties:\n");
+      printf("%d properties:\n", numproperties);
         for (i=0; i<numproperties; i++)
         {
 	  CMPIString * propertyname;
 	  CMPIData data = class->ft->getPropertyAt(class, i,
 						   &propertyname, NULL);
 	  if (propertyname) {
-	    CMPIData data = class->ft->getPropertyQualifier(class,(char *)propertyname->hdl,"KEY",NULL);
+#if 1
+	    int property_qualifier_count = class->ft->getPropertyQualifierCount(class, CMGetCharPtr(propertyname), NULL);
+	    int j;
+	    for (j = 0; j < property_qualifier_count; ++j) {
+	       CMPIString *property_qualifier_name;
+	       CMPIData data = class->ft->getPropertyQualifierAt(class, CMGetCharPtr(propertyname), j, &property_qualifier_name, NULL);
+	       printf("[%s]", CMGetCharPtr(property_qualifier_name));
+	    }
+#else
+	    CMPIData data = class->ft->getPropertyQualifier(class,CMGetCharPtr(propertyname),"KEY",NULL);
 	    if (data.state != CMPI_nullValue && data.value.boolean) {
 	      printf ("[KEY]");
 	    }
+	    printf("%2d",property_qualifier_count);
+#endif
 	  }
+
 	  if (data.state==0)
-            {
-	      printf("\t%s=%s\n", (char *)propertyname->hdl,
-		     cv=value2Chars(data.type, &data.value));
-	      if(cv) free(cv);	    
-	    }
-	  else printf("\t%s=NIL\n", (char *)propertyname->hdl);
+	    cv=value2Chars(data.type, &data.value);
+	  else
+	    cv=NULL;
+	  printf("\t%s=%s<%s>\n", (char *)propertyname->hdl,cv?cv:"NIL", type2Chars(data.type) );
+	  if(cv) free(cv);	    
 	  if (propertyname) {
 	    CMRelease(propertyname);
 	  }
