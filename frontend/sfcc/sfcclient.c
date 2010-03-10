@@ -256,11 +256,15 @@ char * value2Chars (CMPIType type, CMPIValue *value)
 
       case CMPI_filter:
          break;
+<<<<<<< HEAD
 
       case CMPI_chars:
         return strdup(value->chars ? (char*)value->chars : "NULL");
         break;
 
+=======
+	      
+>>>>>>> 2967265 Code cleanup in frontend/sfcc/sfcclient.c
       case CMPI_string:
       case CMPI_numericString:
       case CMPI_booleanString:
@@ -268,12 +272,12 @@ char * value2Chars (CMPIType type, CMPIValue *value)
       //case CMPI_classNameString: /* Deprecated SF# 2967257 */
          return strdup((value->string && value->string->hdl) ?
              (char*)value->string->hdl : "NULL");
-
+	      
       case CMPI_dateTime:
          if (value->dateTime) {
-         cStr=CMGetStringFormat(value->dateTime,NULL);
-         p = strdup((char *) cStr->hdl);
-         CMRelease(cStr);
+	     cStr = CMGetStringFormat(value->dateTime, NULL);
+             p = strdup((char *) cStr->hdl);
+             CMRelease(cStr);
          } else
              p = strdup("NULL");
 	 return p;
