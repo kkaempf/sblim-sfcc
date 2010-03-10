@@ -256,15 +256,11 @@ char * value2Chars (CMPIType type, CMPIValue *value)
 
       case CMPI_filter:
          break;
-<<<<<<< HEAD
 
       case CMPI_chars:
-        return strdup(value->chars ? (char*)value->chars : "NULL");
-        break;
+	 return strdup(value->chars ? (char*)value->chars : "NULL");
+	 break;
 
-=======
-	      
->>>>>>> 2967265 Code cleanup in frontend/sfcc/sfcclient.c
       case CMPI_string:
       case CMPI_numericString:
       case CMPI_booleanString:
