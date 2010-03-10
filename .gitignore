@@ -12,6 +12,8 @@ TEST/Makefile
 TEST/Makefile.in
 TEST/TAGS
 TEST/stress.sh
+INSTALL
+TEST/print-types
 TEST/test
 TEST/test_an
 TEST/test_an_2
@@ -49,7 +51,6 @@ TEST/v2test_gc
 TEST/v2test_im
 aclocal.m4
 autom4te.cache/
-*~
 config.guess
 config.h
 config.h.in
@@ -64,4 +65,4 @@ libtool
 ltmain.sh
 missing
 sfcc.spec
-
+stamp-h1
