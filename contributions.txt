@@ -36,3 +36,7 @@ Klaus Kampf, Novell
 -------------------
 09/02/2009 [ 2847782 ] sfcc getClass crashes if cimom isn't running
 09/22/2009 [ 2849853 ] getClass reports most property types as CMPI_Instance
+
+Suresh Sundriyal, VMWare
+------------------------
+04/05/2010 [ 2982349 ] Memory leak in backend/cimxml/client.c

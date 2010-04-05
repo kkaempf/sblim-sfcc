@@ -1662,6 +1662,7 @@ static CMPIEnumeration * enumInstances(
     if (error || (error = con->ft->getResponse(con, cop))) {
         CMSetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
         free(error);
+        CMRelease(sb);
         END_TIMING(_T_FAILED);
         return NULL;
     }

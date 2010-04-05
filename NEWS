@@ -3,6 +3,8 @@ Small Footprint CIM Client Library NEWS
 Changes in 2.2.2
 ================
 
+Bugs:
+- 2982349: Memory leak in backend/cimxml/client.c
 
 Changes in 2.2.1
 ================
