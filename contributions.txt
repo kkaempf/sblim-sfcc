@@ -40,3 +40,4 @@ Klaus Kampf, Novell
 Suresh Sundriyal, VMWare
 ------------------------
 04/05/2010 [ 2982349 ] Memory leak in backend/cimxml/client.c
+04/05/2010 [ 2982352 ] Double free in backend/cimxml/property.c

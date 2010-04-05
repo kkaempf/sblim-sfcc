@@ -4,6 +4,10 @@
 	Fixed 2982349: Memory leak in backend/cimxml/client.c
 	(patch by Suresh Sundriyal)
 
+	* backend/cimxml/property.c:
+	Fixed 2982352: Double free in backend/cimxml/property.c
+	(patch by Suresh Sundriyal)
+	
 2009-09-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/cimXmlParser.h:

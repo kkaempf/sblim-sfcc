@@ -19,7 +19,7 @@
   http://www.opensource.org/licenses/eclipse-1.0.php
 
   \author Frank Scheffler
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 */
 
 #include <stdio.h>
@@ -218,7 +218,8 @@ static void __release ( struct native_property * prop )
 	struct native_property * next;
 	for ( ; prop; prop = next ) {
 		free ( prop->name );
- 		native_release_CMPIValue ( prop->type, &prop->value );
+                if(prop->state != CMPI_nullValue)
+                        native_release_CMPIValue ( prop->type, &prop->value );
                 qualifierFT.release(prop->qualifiers);
                 next=prop->next;
 		free ( prop );
