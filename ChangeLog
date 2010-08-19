@@ -3,6 +3,8 @@
 	* backend/cimxml/client.c:
 	Fixed 3043288: XML generated with VALUE.ARRAY for ref arrays
 
+	Fixed 3043282: XML gen for embedded instances for invokeMethod is incorrect
+
 2010-04-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/client.c:

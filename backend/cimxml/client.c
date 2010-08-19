@@ -2247,7 +2247,7 @@ CMPIData invokeMethod(
          case CMPI_instance:	/* TODO: UNTESTED */
              sb->ft->append3Chars(sb, "<PARAMVALUE NAME=\"",
                                       argname->hdl,
-                                      "\" PARAMTYPE=\"instance\">\n");
+                                      "\">\n");
 	     if (argdata.type & CMPI_ARRAY) {
 	       int i;
 	       int n = CMGetArrayCount(argdata.value.array, NULL);
@@ -2255,11 +2255,13 @@ CMPIData invokeMethod(
 	       for (i=0; i < n; i++) {
 		 CMPIData instel = 
 		   CMGetArrayElementAt(argdata.value.array,i,NULL);
-		 addXmlNamedInstance(sb, NULL, instel.value.inst);
+		 addXmlInstance(sb, NULL, instel.value.inst);
 	       }
 	       sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");	       
 	     } else {
-	       addXmlNamedInstance(sb, NULL, argdata.value.inst);
+	       sb->ft->appendChars(sb, "<VALUE>\n<![CDATA[\n");
+	       addXmlInstance(sb, NULL, argdata.value.inst);
+	       sb->ft->appendChars(sb, "]]>\n</VALUE>\n");
 	     }
 	     sb->ft->appendChars(sb,"</PARAMVALUE>\n");
              break;
