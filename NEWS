@@ -6,6 +6,7 @@ Changes in 2.2.2
 Bugs:
 - 2982349: Memory leak in backend/cimxml/client.c
 - 2982352: Double free in backend/cimxml/property.c
+- 3043288: XML generated with VALUE.ARRAY for ref arrays
 
 Changes in 2.2.1
 ================

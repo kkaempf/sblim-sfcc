@@ -2270,13 +2270,13 @@ CMPIData invokeMethod(
 	     if (argdata.type & CMPI_ARRAY) {
 	       int i;
 	       int n = CMGetArrayCount(argdata.value.array, NULL);
-	       sb->ft->appendChars(sb, "<VALUE.ARRAY>\n");	       
+	       sb->ft->appendChars(sb, "<VALUE.REFARRAY>\n");	       
 	       for (i=0; i < n; i++) {
 		 CMPIData refel = 
 		   CMGetArrayElementAt(argdata.value.array,i,NULL);
 		 addXmlReference(sb,refel.value.ref);
 	       }
-	       sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");	       
+	       sb->ft->appendChars(sb, "</VALUE.REFARRAY>\n");	       
 	     } else {
 	       addXmlReference(sb,argdata.value.ref);
 	     }
