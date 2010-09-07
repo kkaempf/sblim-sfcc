@@ -432,6 +432,16 @@ extern "C" {
     CIMCArgsFT* ft;
   };
 
+  struct _CIMCArgsFT {
+    int ftVersion;
+    CIMCStatus (*release) (CIMCArgs args);
+    CIMCArgs* (*clone) (CIMCArgs* args, CIMCStatus* rc);
+    CIMCStatus (*addArg) (CIMCArgs* args, const char* name, CIMCValue* value, CIMCType type);
+    CIMCData (*getArg) (CIMCArgs * args, const char * name, CIMCStatus * rc);
+    CIMCData (*getArgAt) (CIMCArgs * args, unsigned int index, CIMCString ** name, CIMCStatus * rc);
+    unsigned int (*getArgCount) (CIMCArgs * args, CIMCStatus * rc );
+  };
+
   /** This structure represents the Encapsulated String object.
    */
   struct _CIMCString {

@@ -8,6 +8,7 @@ Bugs:
 - 2982352: Double free in backend/cimxml/property.c
 - 3043288: XML generated with VALUE.ARRAY for ref arrays
 - 3043282: XML gen for embedded instances for invokeMethod is incorrect
+- 3059060: 'struct _CIMCArgsFT' not defined in cimc/cimcft.h
 
 Changes in 2.2.1
 ================
