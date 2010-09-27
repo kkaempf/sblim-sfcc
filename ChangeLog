@@ -1,3 +1,8 @@
+2010-09-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/client.c:
+	Expandeded fix for 3043282 to cover arrays as well
+
 2010-09-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimc/cimcft.h:

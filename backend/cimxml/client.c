@@ -2255,7 +2255,9 @@ CMPIData invokeMethod(
 	       for (i=0; i < n; i++) {
 		 CMPIData instel = 
 		   CMGetArrayElementAt(argdata.value.array,i,NULL);
+		 sb->ft->appendChars(sb, "<VALUE>\n<![CDATA[\n");
 		 addXmlInstance(sb, NULL, instel.value.inst);
+		 sb->ft->appendChars(sb, "]]>\n</VALUE>\n");
 	       }
 	       sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");	       
 	     } else {
