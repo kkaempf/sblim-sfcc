@@ -32,11 +32,12 @@
 #include "dmalloc.h"
 #endif
 
+#include <pthread.h>
+
 #ifdef LARGE_VOL_SUPPORT
 
 // New begin
 #include <curl/curl.h>         // new
-#include <pthread.h>           // new
 #include <time.h>              // new
 #include <sys/time.h>          // new
 #include <setjmp.h>            // new
@@ -1363,8 +1364,12 @@ int sfccLex(parseUnion * lvalp, ParserControl * parm)
 }
 #endif
 
+static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
 {
+
+   pthread_mutex_lock(&scan_mutex);
    ParserControl control;
 #if DEBUG
    extern int do_debug;
@@ -1392,6 +1397,8 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
    parser_heap_term(control.heap);
 
    releaseXmlBuffer(xmb);
+
+   pthread_mutex_unlock(&scan_mutex);
 
    return control.respHdr;
 }
