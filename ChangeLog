@@ -1,3 +1,9 @@
+2011-02-22  Narasimha Sharoff  <nsharoff@us.ibm.com>
+
+	* cimc/cimcclient.c, TEST/show.c, TEST/test.c, TEST/test_gc.c
+	[ 2793377 ] Missing includes
+	(patch to add <string.h> in cimcclient.c by Miska, miska_tx)
+
 2011-01-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/cimXmlParser.c:

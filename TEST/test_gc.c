@@ -46,7 +46,7 @@ int main()
 			       cim_host_userid, cim_host_passwd, &status);
 
     if (cc == NULL || status.rc != CMPI_RC_OK) {
-      fprintf (stderr, "Connect failed: client handle = %x, status.rc = %d\n", cc, status.rc);
+      fprintf (stderr, "Connect failed: client handle = %p, status.rc = %d\n", cc, status.rc);
       return -1;
     }
 
