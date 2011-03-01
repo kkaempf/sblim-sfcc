@@ -1,3 +1,8 @@
+2011-03-01  Narasimha Sharoff  <nsharoff@us.ibm.com>
+
+	* cimc/cimcclient.c
+	[ 3101151 ] SfcbLocal failed to connect due to hardcoded library path
+
 2011-02-22  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
 	* cimc/cimcclient.c, TEST/show.c, TEST/test.c, TEST/test_gc.c

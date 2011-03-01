@@ -51,7 +51,8 @@ CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
         *rc=3;
         snprintf(*msg,ERRLEN,"Invalid connection type '%s'. Must be 'XML' or 'SfcbLocal'.",id);
     } else {
-        if (strcmp(id, "SfcbLocal") == 0) {
+        if ((strcmp(id, "SfcbLocal") == 0) && 
+	    ((SFCB_LIBDIR != NULL) && (strlen(SFCB_LIBDIR) > 0))) {
             snprintf(libName, LIBLEN, "%s/libcimcClient%s.so",SFCB_LIBDIR,id);
         } else {
             snprintf(libName, LIBLEN, "libcimcClient%s.so",id);

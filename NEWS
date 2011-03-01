@@ -11,6 +11,7 @@ Bugs:
 - 3059060: 'struct _CIMCArgsFT' not defined in cimc/cimcft.h
 - 2348900: Concurrency issue when parsing responses
 - 2793377: Missing includes
+- 3101151: SfcbLocal failed to connect due to hardcoded library path
 
 Changes in 2.2.1
 ================
