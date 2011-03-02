@@ -1,3 +1,8 @@
+2011-03-02  Narasimha Sharoff  <nsharoff@us.ibm.com>
+
+	* TEST/v2*.c
+	[ 3195267 ] sfcc v2 tests segfault when sfcb is not running
+
 2011-03-01  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
 	* cimc/cimcclient.c

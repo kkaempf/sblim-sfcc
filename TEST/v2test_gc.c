@@ -93,6 +93,10 @@ int main()
     if (rc == 0 ) {
 	
         client = ce->ft->connect(ce, cim_host , "http", cim_host_port, cim_host_userid, cim_host_passwd , &status);
+        if (client == NULL) {
+	  printf("Coudn't connect to the server. Check if sfcb is running.\n");
+	  return 1;
+        }
 
         op = (CMPIObjectPath *)ce->ft->newObjectPath(ce, "root/cimv2", "CIM_ComputerSystem" , &status); 
         class =(CMPIConstClass *) client->ft->getClass(client,(CIMCObjectPath *) op, CMPI_FLAG_IncludeQualifiers, NULL, &status);

@@ -63,9 +63,9 @@ int count = 0;
     }
     
     client = ce->ft->connect(ce, cim_host , "http", cim_host_port, cim_host_userid, cim_host_passwd , &status);
-    if(client == NULL) 
-    {
-       printf(" failed the call to connect \n") ;	
+    if (client == NULL) {
+	printf("Coudn't connect to the server. Check if sfcb is running.\n");
+	return 1;
     }
     
     op = (CMPIObjectPath *) ce->ft->newObjectPath(ce, "root/cimv2", "CIM_ManagedElement" , &status);     
