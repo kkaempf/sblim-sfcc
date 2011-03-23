@@ -109,6 +109,15 @@ CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
     }
   }
   pthread_mutex_unlock(&ConnectionControl.ccMux);
+  if (!cc) {
+    /* cleanup ccEnv after pthread_mutex_unlock */
+    cmciRelease(NULL);
+    if (rc) {
+      rc->rc = CMPI_RC_ERR_FAILED;
+      rc->msg = NULL;
+    }
+  }
+
   return cc;
 }
 

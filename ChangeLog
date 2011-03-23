@@ -1,3 +1,8 @@
+2011-03-23  Narasimha Sharoff  <nsharoff@us.ibm.com>
+
+	* frontend/sfcc/sfcclient.c
+	[ 2990315 ] cmciRelease not called in case of error
+
 2011-03-02  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
 	* TEST/v2*.c

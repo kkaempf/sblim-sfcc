@@ -13,6 +13,7 @@ Bugs:
 - 2793377: Missing includes
 - 3101151: SfcbLocal failed to connect due to hardcoded library path
 - 3195267: sfcc v2 tests segfault when sfcb is not running
+- 2990315: cmciRelease not called in case of error
 
 Changes in 2.2.1
 ================
