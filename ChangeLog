@@ -2,6 +2,7 @@
 
 	* frontend/sfcc/sfcclient.c
 	[ 2990315 ] cmciRelease not called in case of error
+	(patch by Klaus Kampf)
 
 2011-03-02  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
