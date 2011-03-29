@@ -36,8 +36,13 @@ Klaus Kampf, Novell
 -------------------
 09/02/2009 [ 2847782 ] sfcc getClass crashes if cimom isn't running
 09/22/2009 [ 2849853 ] getClass reports most property types as CMPI_Instance
+03/23/2011 [ 2990315 ] cmciRelease not called in case of error
 
 Suresh Sundriyal, VMWare
 ------------------------
 04/05/2010 [ 2982349 ] Memory leak in backend/cimxml/client.c
 04/05/2010 [ 2982352 ] Double free in backend/cimxml/property.c
+
+Josef Moellers, Fujitsu
+-----------------------
+03/29/2011 [ 3196128 ] enumInstances does not set NameSpace in ObjectPath in XML mode

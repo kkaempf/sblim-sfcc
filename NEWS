@@ -14,6 +14,7 @@ Bugs:
 - 3101151: SfcbLocal failed to connect due to hardcoded library path
 - 3195267: sfcc v2 tests segfault when sfcb is not running
 - 2990315: cmciRelease not called in case of error
+- 3196128: enumInstances does not set NameSpace in ObjectPath in XML mode
 
 Changes in 2.2.1
 ================
