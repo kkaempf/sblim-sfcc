@@ -15,6 +15,7 @@ Bugs:
 - 3195267: sfcc v2 tests segfault when sfcb is not running
 - 2990315: cmciRelease not called in case of error
 - 3196128: enumInstances does not set NameSpace in ObjectPath in XML mode
+- 1956407: CIM-XML/HTTP connection to unix socket
 
 Changes in 2.2.1
 ================
