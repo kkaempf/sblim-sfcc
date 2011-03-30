@@ -245,11 +245,15 @@ char * value2Chars (CMPIType type, CMPIValue *value)
       case CMPI_filter:
          break;
 
+      case CMPI_chars:
+        return strdup(value->chars ? (char*)value->chars : "NULL");
+        break;
+
       case CMPI_string:
       case CMPI_numericString:
       case CMPI_booleanString:
       case CMPI_dateTimeString:
-      case CMPI_classNameString:
+      //case CMPI_classNameString: /* Deprecated SF# 2967257 */
          return strdup((value->string && value->string->hdl) ?
              (char*)value->string->hdl : "NULL");
 

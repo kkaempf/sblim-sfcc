@@ -86,7 +86,7 @@ main()
     PRINT_TYPE(CMPI_numericString);
     PRINT_TYPE(CMPI_booleanString);
     PRINT_TYPE(CMPI_dateTimeString);
-    PRINT_TYPE(CMPI_classNameString);
+    // PRINT_TYPE(CMPI_classNameString);  /* Deprecated SF#2967247 */
     PRINT_TYPE(CMPI_nameString);
 
     PRINT_TYPE(CMPI_goodValue);

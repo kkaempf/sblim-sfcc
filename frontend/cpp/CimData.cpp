@@ -143,9 +143,12 @@ CimData::operator CimString() const {
 }
 
 CimData::operator const char* () const {
-   if (_data.type!=CIMC_string)
+   if (_data.type == CIMC_string)
+      return (const char *)cim.string;
+   else if (_data.type == CIMC_chars)
+      return _data.value.chars;
+   else
       throw CimStatus(CIMC_RC_ERR_TYPE_MISMATCH);
-   else return (const char*)cim.string;
 }
 
 CimData::operator CimDateTime() const {

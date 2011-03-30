@@ -1,3 +1,9 @@
+2011-03-30  Narasimha Sharoff  <nsharoff@us.ibm.com>
+
+	* backend/cimxml/value.c frontend/cpp/CimData.cpp ; sfcclient.c
+        [ 2967257 ] Use of CMPI_chars in SFCC. General CMPI specification bug
+	(patch by Klaus Kampf)
+
 2011-03-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/client.c:
