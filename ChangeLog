@@ -1,3 +1,9 @@
+2011-03-30  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* backend/cimxml/constClass.c, backend/cimxml/grammar.c
+	[ 2847964 ] sfcc's getClass() fails to report class qualifiers
+	(patch by Klaus Kampf)
+
 2011-03-30  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
 	* backend/cimxml/value.c frontend/cpp/CimData.cpp ; sfcclient.c
@@ -74,7 +80,7 @@
 	Fixed 2849853: getClass reports most property types as CMPI_Instance
 	(patch by Klaus Kampf)
 
-2009-09-02  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+2009-09-02  Michael Chase-Salerno <ckend/cimxml/constClass.cbratac@linux.vnet.ibm.com>
 	* backend/cimxml/client.c
 	Fixed 2847782: sfcc getClass crashes if cimom isn't running
 	(patch by Klaus Kämpf)

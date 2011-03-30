@@ -17,6 +17,7 @@ Bugs:
 - 3196128: enumInstances does not set NameSpace in ObjectPath in XML mode
 - 1956407: CIM-XML/HTTP connection to unix socket
 - 2967257: Use of CMPI_chars in SFCC. General CMPI specification bug
+- 2847964: sfcc's getClass() fails to report class qualifiers
 
 Changes in 2.2.1
 ================
