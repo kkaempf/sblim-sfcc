@@ -87,8 +87,8 @@ int main()
     if (status.msg) CMRelease(status.msg);
 
     if (!status.rc) {
-      char *cv = value2Chars(retval.type,&(retval.value));
-      printf("result(s):\n\treturn value: "%s"\n", cv);
+      char *cv = value2Chars(retval.type,(CMPIValue*)&(retval.value));
+      printf("result(s):\n\treturn value: \"%s\"\n", cv);
     }
 
     if (objectpath) CMRelease(objectpath);
