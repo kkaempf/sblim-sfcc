@@ -63,6 +63,7 @@ noinst_PROGRAMS	= test \
                   v2test_ein \
                   v2test_gc \
                   v2test_im \
+                  v2test_xq_synerr \
  		  print-types
 
 test_SOURCES = test.c show.c
@@ -195,6 +196,9 @@ v2test_gc_LDADD   = ../libcmpisfcc.la
 
 v2test_im_SOURCES = v2test_im.c show.c
 v2test_im_LDADD   = ../libcmpisfcc.la
+
+v2test_xq_synerr_SOURCES = v2test_xq_synerr.c show.c
+v2test_xq_synerr_LDADD   = ../libcmpisfcc.la
 
 print_types_SOURCES = print-types.c
 

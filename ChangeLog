@@ -1,3 +1,8 @@
+2011-04-05  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* TEST/v2test_xq_synerr.c:
+	[ 3213591 ] Local intf client abort abnormally on enum filter syntax err
+
 2011-03-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* TEST/v2test_im.c:
