@@ -477,6 +477,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 			dontLex = 1;
 			valueNamedInstance(parm, (parseUnion*)&lvalp.xtokNamedInstance);
 			createPath(&op,&(lvalp.xtokNamedInstance.path));
+			CMSetNameSpace(op, parm->da_nameSpace);
 			inst = native_new_CMPIInstance(op,NULL);
 			//setInstQualifiers(inst, &lvalp.xtokNamedInstance.instance.qualifiers);
 			setInstProperties(inst, &lvalp.xtokNamedInstance.instance.properties);

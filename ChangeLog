@@ -1,3 +1,9 @@
+2011-04-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/grammar.c:
+	[ 3196128 ] enumInstances does not set NameSpace in ObjectPath in XML mode
+	(patch by Josef Moellers)
+
 2011-03-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* TEST/v2test_im.c:
@@ -20,10 +26,6 @@
 	* backend/cimxml/client.c:
 	[ 1956407 ] CIM-XML/HTTP connection to unix socket
 	(patch by Bart Whiteley)
-
-	* backend/cimxml/grammar.c:
-	[ 3196128 ] enumInstances does not set NameSpace in ObjectPath in XML mode
-	(patch by Josef Moellers)
 
 2011-03-23  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
