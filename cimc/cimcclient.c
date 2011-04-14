@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 /*
  * Canonical CIM C API entry points
@@ -42,6 +44,7 @@ CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
    void        *library; 
    InitCimcEnv  init=NULL;
    CIMCEnv     *rv=NULL;
+   struct      stat sbuf;
    
     libName[LIBLEN]=0;
     entry[ENTLEN]=0;
@@ -52,7 +55,7 @@ CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
         snprintf(*msg,ERRLEN,"Invalid connection type '%s'. Must be 'XML' or 'SfcbLocal'.",id);
     } else {
         if ((strcmp(id, "SfcbLocal") == 0) && 
-	    ((SFCB_LIBDIR != NULL) && (strlen(SFCB_LIBDIR) > 0))) {
+	    (stat(SFCB_LIBDIR, &sbuf) == 0)) {
             snprintf(libName, LIBLEN, "%s/libcimcClient%s.so",SFCB_LIBDIR,id);
         } else {
             snprintf(libName, LIBLEN, "libcimcClient%s.so",id);

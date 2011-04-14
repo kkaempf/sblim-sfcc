@@ -47,6 +47,7 @@
 
 	* cimc/cimcclient.c
 	[ 3101151 ] SfcbLocal failed to connect due to hardcoded library path
+	(based on the patch by: Chris Poblete <Chris_Poblete@Dell.com>)
 
 2011-02-22  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
