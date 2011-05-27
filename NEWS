@@ -4,6 +4,7 @@ Changes in 2.2.3
 ================
 
 Bugs:
+- 2967265: Code cleanup in frontend/sfcc/sfcclient.c
 - 3286489: getInstance does not return key/value through XML
 
 Changes in 2.2.2

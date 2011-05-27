@@ -215,12 +215,14 @@ void * newStringBuffer (int s)
 
 char * value2Chars (CMPIType type, CMPIValue *value)
 {
-   char str[2048], *p;
+#define SBUFLEN 32
+   char str[SBUFLEN], *p;
    unsigned int size;
    CMPIString *cStr;
 
    str[0]=0;
    if (type & CMPI_ARRAY) {
+	fprintf(stderr, "*** value2Chars not implemented for Array *** ");
    }
    else if (type & CMPI_ENC) {
 
@@ -283,29 +285,29 @@ char * value2Chars (CMPIType type, CMPIValue *value)
 
       switch (type) {
       case CMPI_uint8:
-         sprintf(str, "%u", value->uint8);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%u", value->uint8);
+         break;
       case CMPI_sint8:
-         sprintf(str, "%d", value->sint8);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%d", value->sint8);
+         break;
       case CMPI_uint16:
-         sprintf(str, "%u", value->uint16);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%u", value->uint16);
+         break;
       case CMPI_sint16:
-         sprintf(str, "%d", value->sint16);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%d", value->sint16);
+         break;
       case CMPI_uint32:
-         sprintf(str, "%lu", value->uint32);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%lu", value->uint32);
+         break;
       case CMPI_sint32:
-         sprintf(str, "%ld", value->sint32);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%ld", value->sint32);
+         break;
       case CMPI_uint64:
-         sprintf(str, "%llu", value->uint64);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%llu", value->uint64);
+         break;
       case CMPI_sint64:
-         sprintf(str, "%lld", value->sint64);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%lld", value->sint64);
+         break;
       }
 
    }
@@ -313,13 +315,14 @@ char * value2Chars (CMPIType type, CMPIValue *value)
 
       switch (type) {
       case CMPI_real32:
-         sprintf(str, "%g", value->real32);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%g", value->real32);
+         break;
       case CMPI_real64:
-         sprintf(str, "%g", value->real64);
-         return strdup(str);
+         snprintf(str, SBUFLEN, "%g", value->real64);
+         break;
       }
 
    }
+#undef SBUFLEN
    return strdup(str);
 }

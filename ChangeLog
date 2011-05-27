@@ -6,6 +6,12 @@
 	[ 3286489 ] getInstance does not return key/value through XML
 	(patch originated by Josef Moellers)
 
+2011-04-25  Narasimha Sharoff  <nsharoff@us.ibm.com>
+
+	* frontend/sfcc/sfcclient.c:
+	[ 2967265 ] code cleanup in sfcclient
+	(patch by Klaus Kaempf)
+
 2011-04-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/grammar.c:
@@ -55,6 +61,7 @@
 
 	* cimc/cimcclient.c
 	[ 3101151 ] SfcbLocal failed to connect due to hardcoded library path
+	(based on the patch by: Chris Poblete <Chris_Poblete@Dell.com>)
 
 2011-02-22  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
