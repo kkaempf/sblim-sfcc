@@ -1,5 +1,11 @@
 Small Footprint CIM Client Library NEWS
 
+Changes in 2.2.3
+================
+
+Bugs:
+- 3286489: getInstance does not return key/value through XML
+
 Changes in 2.2.2
 ================
 

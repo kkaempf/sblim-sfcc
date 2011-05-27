@@ -193,7 +193,7 @@ static void exParamValue(ParserControl *parm, parseUnion *stateUnion)
 			dontLex = 1;
 			instance(parm, (parseUnion*)&lvalp.xtokInstance);
 			inst = native_new_CMPIInstance(NULL,NULL);
-			setInstNsAndCn(inst,parm->da_nameSpace,lvalp.xtokInstance.className);
+			setInstNsAndCn(inst,getNameSpaceChars(parm->requestObjectPath),lvalp.xtokInstance.className);
 			setInstProperties(inst, &lvalp.xtokInstance.properties);
 			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&inst,CMPI_instance);
 		}
@@ -295,7 +295,7 @@ static void returnValue(ParserControl *parm, parseUnion *stateUnion)
 		else if(stateUnion->xtokReturnValue.data.value.type == typeValue_Instance) {
 			t = CMPI_instance;
 			inst = native_new_CMPIInstance(NULL,NULL);
-			setInstNsAndCn(inst,parm->da_nameSpace,stateUnion->xtokReturnValue.data.value.data.inst->className);
+			setInstNsAndCn(inst,getNameSpaceChars(parm->requestObjectPath),stateUnion->xtokReturnValue.data.value.data.inst->className);
 			setInstProperties(inst, &stateUnion->xtokReturnValue.data.value.data.inst->properties);
 			val.inst = inst;
 		}
@@ -452,8 +452,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 		do {
 			dontLex = 1;
 			instance(parm, (parseUnion*)&lvalp.xtokInstance);
-			inst = native_new_CMPIInstance(NULL,NULL);
-			setInstNsAndCn(inst,parm->da_nameSpace,lvalp.xtokInstance.className);
+			inst = native_new_CMPIInstance(parm->requestObjectPath,NULL);
 			setInstProperties(inst, &lvalp.xtokInstance.properties);
 			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&inst,CMPI_instance);
 			ct = localLex(&lvalp, parm);
@@ -477,7 +476,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 			dontLex = 1;
 			valueNamedInstance(parm, (parseUnion*)&lvalp.xtokNamedInstance);
 			createPath(&op,&(lvalp.xtokNamedInstance.path));
-			CMSetNameSpace(op, parm->da_nameSpace);
+			CMSetNameSpace(op, getNameSpaceChars(parm->requestObjectPath));
 			inst = native_new_CMPIInstance(op,NULL);
 			//setInstQualifiers(inst, &lvalp.xtokNamedInstance.instance.qualifiers);
 			setInstProperties(inst, &lvalp.xtokNamedInstance.instance.properties);

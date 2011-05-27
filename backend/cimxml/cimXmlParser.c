@@ -1386,9 +1386,7 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
 
    control.respHdr.rvArray=newCMPIArray(0,0,NULL);
 
-   if(cop) {
-       control.da_nameSpace=(char*)getNameSpaceChars(cop);
-   }
+   control.requestObjectPath = cop;
 
    control.heap = parser_heap_init();
 
@@ -1531,9 +1529,7 @@ void * enumScanThrd(struct native_enum *NatEnum)
    
    local_enmp->data = control.respHdr.rvArray ;
    
-   if(cop) {
-       control.da_nameSpace=(char*)getNameSpaceChars(cop);
-   }
+   control.requestObjectPath = cop;
 
    control.heap = parser_heap_init();
 

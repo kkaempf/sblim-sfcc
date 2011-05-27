@@ -375,7 +375,7 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 	return (CMPIInstance *) instance;
 }
 
-void setInstNsAndCn(CMPIInstance *ci, char *ns, char *cn)
+void setInstNsAndCn(CMPIInstance *ci, const char *ns, char *cn)
 {
    struct native_instance * i = (struct native_instance *) ci;
    

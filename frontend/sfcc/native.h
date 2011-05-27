@@ -225,7 +225,7 @@ CMPIDateTime * native_new_CMPIDateTime_fromChars ( const char *,
 
 struct xtokValueReference;
 CMPIValue str2CMPIValue(CMPIType type, char *val, struct xtokValueReference *ref);
-void setInstNsAndCn(CMPIInstance *ci, char *ns, char *cn);
+void setInstNsAndCn(CMPIInstance *ci, const char *ns, char *cn);
 CMPIStatus simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type);
 const char *getNameSpaceChars(CMPIObjectPath * cop);
 CMPIValue *getKeyValueTypePtr(char *type, char *value, struct xtokValueReference *ref,

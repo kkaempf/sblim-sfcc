@@ -438,6 +438,8 @@ static CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc)
 
 const char *getNameSpaceChars(CMPIObjectPath * cop)
 {
+   if (cop == NULL) return NULL;
+
 	struct native_cop * o = (struct native_cop *) cop;
    return o->nameSpace;
 }

@@ -1,3 +1,11 @@
+2011-05-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/grammar.c, backend/cimxml/cimXmlParser.h, 
+	  backend/cimxml/cimXmlParser.c, backend/cimxml/instance.c,
+	  backend/cimxml/objectpath.c, frontend/sfcc/native.h:
+	[ 3286489 ] getInstance does not return key/value through XML
+	(patch originated by Josef Moellers)
+
 2011-04-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/grammar.c:

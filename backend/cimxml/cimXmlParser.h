@@ -426,7 +426,7 @@ typedef struct parser_heap {
 typedef struct parser_control {
    XmlBuffer *xmb;
    ResponseHdr respHdr;
-   char *da_nameSpace;
+   CMPIObjectPath *requestObjectPath;
    ParserHeap *heap;
 #ifdef LARGE_VOL_SUPPORT
    CMCIConnection * econ ; /* enumeration connection */
