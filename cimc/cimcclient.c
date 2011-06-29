@@ -72,6 +72,7 @@ CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
                 *msg=calloc(1,ERRLEN+1);
                 *rc=2;
                 snprintf(*msg,ERRLEN,"Unable to locate entry %s in %s",entry,libName);
+                dlclose(library);
             } else {
                 *rc=0;
                 *msg=NULL;
