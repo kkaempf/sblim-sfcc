@@ -152,8 +152,7 @@ static CMPIData __ccft_getPropertyQualifier ( CMPIConstClass * ccls,
 
 	if (p) return qualifierFT.getDataQualifier ( p->qualifiers, qname, rc );        
 	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
-	CMPIData ret;
-	ret.state = CMPI_nullValue;
+	CMPIData ret = { 0, CMPI_nullValue, {0} };
 	return ret;
 }
 
@@ -168,8 +167,7 @@ static CMPIData __ccft_getPropertyQualifierAt ( CMPIConstClass * ccls,
 
 	if (p) return qualifierFT.getDataQualifierAt ( p->qualifiers, index, name, rc );
 	CMSetStatus ( rc, CMPI_RC_ERR_NO_SUCH_PROPERTY );
-	CMPIData ret;
-	ret.state = CMPI_nullValue;
+	CMPIData ret= { 0, CMPI_nullValue, {0} };
 	return ret;
 }
 

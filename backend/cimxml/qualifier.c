@@ -53,7 +53,7 @@ struct native_qualifier {
 static CMPIData __convert2CMPIData ( struct native_qualifier * qual,
 				     CMPIString ** qualname )
 {
-	CMPIData result;
+	CMPIData result = { 0, CMPI_nullValue, {0} };
 
 	if ( qual != NULL ) {
 		result.type  = qual->type;
@@ -64,9 +64,6 @@ static CMPIData __convert2CMPIData ( struct native_qualifier * qual,
 			*qualname  = native_new_CMPIString ( qual->name,
 							     NULL );
 		}
-
-	} else {
-		result.state = CMPI_nullValue;
 	}
 
 	return result;

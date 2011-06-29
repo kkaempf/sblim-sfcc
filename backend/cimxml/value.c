@@ -291,7 +291,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
       else if (strcasecmp(type, "ref") == 0) {
          CMPIObjectPath *op;
          char *hn="",*ns="",*cn;
-         CMPIType type;
+         CMPIType type = 0;
          CMPIValue v, *valp;
          int i,m;
          XtokInstanceName *in; 

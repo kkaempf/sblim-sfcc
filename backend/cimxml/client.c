@@ -2221,7 +2221,7 @@ CMPIData invokeMethod(
    char			*error;
    ResponseHdr		rh;
    CMPIString		*cn;
-   CMPIData		retval;
+   CMPIData		retval= { 0, CMPI_nullValue, {0} };
    int			i, numinargs = 0;
    char                 *cv;
 
@@ -2562,7 +2562,7 @@ static CMPIData getProperty(
    char			*error;
    ResponseHdr		rh;
    CMPIString		*cn;
-   CMPIData		retval;
+   CMPIData		retval= { 0, CMPI_nullValue, {0} };
 
    START_TIMING(GetProperty);
    SET_DEBUG();

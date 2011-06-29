@@ -67,7 +67,7 @@ static struct native_enum * __new_enumeration ( CMPIArray *, CMPIStatus * );
 static CMPIStatus __eft_release ( CMPIEnumeration * enumeration )
 {
 	struct native_enum * e = (struct native_enum *) enumeration;
-	CMPIStatus st;
+	CMPIStatus st= { CMPI_RC_OK, NULL };
 	if (e) {
 		if (e->data)
 		  st = CMRelease(e->data);

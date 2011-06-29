@@ -85,7 +85,7 @@ void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
    CMPIValue val;
    CMPIObjectPath *op;
    CMPIStatus status;
-   CMPIType   type;
+   CMPIType   type = NULL;
    XtokQualifier *nq = NULL,*q;
    XtokQualifiers *qs;
    int rc, n, setq;
@@ -225,7 +225,7 @@ void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
 {
    XtokProperty *np = NULL,*p = ps ? ps->first : NULL;
    CMPIValue val;
-   CMPIArray       *arr;
+   CMPIArray       *arr = NULL;
    XtokQualifier   *nq,*q;
    XtokQualifiers *qs;
    int rc, n;

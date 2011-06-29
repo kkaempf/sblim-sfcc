@@ -44,7 +44,7 @@
 static CMPIData __convert2CMPIData ( struct native_property * prop,
 				     CMPIString ** propname )
 {
-	CMPIData result;
+	CMPIData result = { 0, CMPI_nullValue, {0} };
 
 	if ( prop != NULL ) {
 		result.type  = prop->type;
@@ -56,9 +56,7 @@ static CMPIData __convert2CMPIData ( struct native_property * prop,
 							     NULL );
 		}
 
-	} else {
-		result.state = CMPI_nullValue;
-	}
+	} 
 
 	return result;
 }
