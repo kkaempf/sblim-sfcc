@@ -675,7 +675,7 @@ char * AsciiToXmlStr(char *AsciiStr)
                 buflen = 2 * buflen;
                 XmlStr = realloc(XmlStr,buflen);
                 if (XmlStr == NULL) {
-                    break;
+                    return NULL;
                 }
             }
 

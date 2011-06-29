@@ -109,9 +109,8 @@ static CMPIStatus __oft_setNameSpace ( CMPIObjectPath * cop,
 	if ( o ) {
 		if ( o->nameSpace )
 		     free ( o->nameSpace );
+	    o->nameSpace = ns;
 	}
-
-	o->nameSpace = ns;
 	CMReturn ( CMPI_RC_OK );
 }
 
@@ -147,10 +146,11 @@ static CMPIStatus __oft_setClassName ( CMPIObjectPath * cop,
 	char * cn = ( classname )? strdup ( classname ): NULL;
   
 	if ( o ) {
-		free ( o->classname );
+		if ( o->classname )
+		    free ( o->classname );
+	    o->classname = cn;
 	}
 
-	o->classname = cn;
 	CMReturn ( CMPI_RC_OK );
 }
 
@@ -465,7 +465,7 @@ UtilList *getNameSpaceComponents(CMPIObjectPath * cop)
    }   
    
    if (s) ul->ft->append(ul,strdup(nsc));
-   CMRelease(nss);
+   if (nss) CMRelease(nss);
    return ul;
 }
 

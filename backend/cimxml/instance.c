@@ -341,12 +341,12 @@ CMPIInstance * native_new_CMPIInstance ( CMPIObjectPath * cop,
 	   int j = CMGetKeyCount ( cop, &tmp1 );
     
       str = CMGetClassName ( cop, &tmp2 );
-	   instance->classname = strdup(CMGetCharPtr ( str ));
+	  instance->classname = strdup(CMGetCharPtr ( str ));
       CMRelease(str);
       
       str = CMGetNameSpace ( cop, &tmp3 );
       instance->nameSpace = (str && str->hdl) ? strdup(CMGetCharPtr ( str )) : NULL;
-      CMRelease(str);
+      if (str) CMRelease(str);
 
 	   if ( tmp1.rc != CMPI_RC_OK ||
 	        tmp2.rc != CMPI_RC_OK ||

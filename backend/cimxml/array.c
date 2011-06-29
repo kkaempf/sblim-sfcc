@@ -186,6 +186,14 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
 	 }         
       }
 
+      if ( type == CMPI_null ) {
+
+         if ( ! ( a->data[index].state & CMPI_nullValue ) ) {
+            __make_NULL ( a, index, index, 1 );
+         }
+         CMReturn ( CMPI_RC_OK );
+      }
+
       if ( opt || type == a->type ) {
 
          CMPIStatus rc = {CMPI_RC_OK, NULL};
@@ -196,14 +204,6 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
          if(v.string)
          	CMRelease(v.string);
          return rc;
-      }
-
-      if ( type == CMPI_null ) {
-
-         if ( ! ( a->data[index].state & CMPI_nullValue ) ) {
-            __make_NULL ( a, index, index, 1 );
-         }
-         CMReturn ( CMPI_RC_OK );
       }
    }
    CMReturn ( CMPI_RC_ERR_FAILED );
