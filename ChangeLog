@@ -1,3 +1,11 @@
+2011-04-05  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* backend/cimxml/client.c, backend/cimxml/constClass.c,
+		backend/cimxml/enumeration.c, backend/cimxml/instance.c,
+		backend/cimxml/parserUtil.c, backend/cimxml/property.c, 
+		backend/cimxml/qualifier.c, backend/cimxml/value.c:
+	[ 3344403 ]  Beam, unitialized vars 
+
 2011-05-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/grammar.c, backend/cimxml/cimXmlParser.h, 

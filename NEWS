@@ -3,6 +3,8 @@ Small Footprint CIM Client Library NEWS
 Changes in 2.2.4
 ================
 
+Bugs:
+- 3344403: Beam, unitialized vars
 
 Changes in 2.2.3
 ================
