@@ -1,4 +1,10 @@
-2011-04-05  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+2011-06-29  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* backend/cimxml/array.c, backend/cimxml/client.c,
+	  backend/cimxml/instance.c, backend/cimxml/objectpath.c:
+	[ 3344757 ] Beam, deref of potential Null pointers.
+
+2011-06-29  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* backend/cimxml/client.c, backend/cimxml/constClass.c,
 		backend/cimxml/enumeration.c, backend/cimxml/instance.c,

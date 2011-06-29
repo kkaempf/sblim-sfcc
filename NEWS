@@ -5,6 +5,7 @@ Changes in 2.2.4
 
 Bugs:
 - 3344403: Beam, unitialized vars
+- 3344757: Beam, deref of potential Null pointers.
 
 Changes in 2.2.3
 ================
