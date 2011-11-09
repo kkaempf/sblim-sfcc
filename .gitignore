@@ -49,6 +49,7 @@ TEST/v2test_ei
 TEST/v2test_ein
 TEST/v2test_gc
 TEST/v2test_im
+TEST/v2test_xq_synerr
 aclocal.m4
 autom4te.cache/
 config.guess
