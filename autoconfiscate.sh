@@ -1,6 +1,8 @@
 #!/bin/sh
-aclocal &&
-autoheader &&
-libtoolize &&
-automake -af &&
+set -e
+
+aclocal
+autoheader
+test -x `which glibtoolize` && glibtoolize || libtoolize
+automake -af
 autoconf
