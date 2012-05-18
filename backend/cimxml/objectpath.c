@@ -238,11 +238,11 @@ static struct native_cop * __new_empty_cop ( const char * nameSpace,
 		__oft_getKeyAt,
 		__oft_getKeyCount,
 		__oft_setNameSpaceFromObjectPath,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
+		NULL, /* setHostAndNameSpaceFromObjectPath */
+		NULL, /* getClassQualifier */
+		NULL, /* getPropertyQualifier */
+		NULL, /* getMethodQualifier */
+		NULL, /* getParameterQualifier */
 		__oft_toString
 	};
         
