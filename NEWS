@@ -7,6 +7,7 @@ Bugs:
 - 3344403: Beam, unitialized vars
 - 3344757: Beam, deref of potential Null pointers.
 - 3344917: Beam, file leak
+- 3528819: Crash in getInstance when instance has NULL properties
 
 Changes in 2.2.3
 ================

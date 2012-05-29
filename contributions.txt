@@ -38,6 +38,7 @@ Klaus Kampf, Novell
 09/22/2009 [ 2849853 ] getClass reports most property types as CMPI_Instance
 03/23/2011 [ 2990315 ] cmciRelease not called in case of error
 04/25/2011 [ 2967265 ] code cleanup in sfcclient
+05/29/2012 [ 3528819 ] Crash in getInstance when instance has NULL properties
 
 Suresh Sundriyal, VMWare
 ------------------------

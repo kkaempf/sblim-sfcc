@@ -243,15 +243,16 @@ static struct native_property * __clone ( struct native_property * prop,
 	result->name  = strdup ( prop->name );
 	result->type  = prop->type;
 	result->state = prop->state;
-	result->value = native_clone_CMPIValue ( prop->type,
-						 &prop->value,
-						 &tmp );
-
-	if ( tmp.rc != CMPI_RC_OK ) {
+        if (prop->state != CMPI_nullValue
+            && prop->state != CMPI_badValue) {
+          result->value = native_clone_CMPIValue ( prop->type,
+                                                   &prop->value,
+                                                   &tmp );
+          if ( tmp.rc != CMPI_RC_OK ) {
 
 		result->state = CMPI_nullValue;
-	}
-
+	  }
+        }
 	result->qualifiers    = qualifierFT.clone ( prop->qualifiers, rc );
         
 	result->next  = __clone ( prop->next, rc );

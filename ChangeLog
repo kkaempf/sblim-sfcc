@@ -1,3 +1,9 @@
+2012-05-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/property.c:
+	[ 3528819 ] Crash in getInstance when instance has NULL properties
+	(patch by Klaus Kampf)
+
 2011-06-29  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimc/cimcclient.c:
