@@ -26,7 +26,7 @@ int main()
     int rc;
     CIMCStatus status;
     CIMCClient *client;
-    CIMCObjectPath *op;
+    CIMCObjectPath *op, *cop;
     CIMCEnumeration *enm;
     CIMCString *path;
     CIMCData data;
@@ -74,9 +74,9 @@ int main()
 	return 1;
     }
 
-    op = ce->ft->newObjectPath(ce, "root/cimv2", NULL , &status); 
+    cop = ce->ft->newObjectPath(ce, "root/cimv2", NULL , &status); 
     printf(" calling enumClassNames \n") ;
-    enm = client->ft->enumClassNames(client, op, 0 , &status);
+    enm = client->ft->enumClassNames(client, cop, 0 , &status);
 
     printf(" back from  enumClassNames \n") ;
 
@@ -95,7 +95,7 @@ int main()
     }
     
     if(enm) enm->ft->release(enm);
-    if(op) op->ft->release(op);
+    if(cop) cop->ft->release(cop);
     if(client) client->ft->release(client);
     if(ce) ce->ft->release(ce);
     if(status.msg) CMRelease(status.msg);	

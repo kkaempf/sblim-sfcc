@@ -2946,7 +2946,7 @@ static CIMCClient *xmlConnect2(CIMCEnv *env, const char *hn, const char *scheme,
        curl_easy_setopt(cc->connection->mHandle,CURLOPT_SSLKEY,keyFile);       
      }
  
-   CMSetStatus(rc, CMPI_RC_OK);
+   CMSetStatus(rc, CIMC_RC_OK);
    return (CIMCClient*)cc;
 }
 

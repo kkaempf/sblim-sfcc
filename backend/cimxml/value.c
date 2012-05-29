@@ -110,37 +110,30 @@ CMPIValue native_clone_CMPIValue ( CMPIType type,
 		switch ( type ) {
 
 		case CMPI_instance:
-                        if (val->inst)
 			v.inst = CMClone ( val->inst, rc );
 			break;
 
 		case CMPI_ref:
-                        if (val->ref)
 			v.ref = CMClone ( val->ref, rc );
 			break;
 
 		case CMPI_args:
-                        if (val->args)
 			v.args = CMClone ( val->args, rc );
 			break;
 
 		case CMPI_enumeration:
-                        if (val->Enum)
 			v.Enum = CMClone ( val->Enum, rc );
 			break;
 
 		case CMPI_string:
-                        if (val->string)
 			v.string = CMClone ( val->string, rc );
 			break;
 
 		case CMPI_chars:
-                        if (val->chars)
 			v.chars = strdup ( val->chars );
 			break;
 
 		case CMPI_dateTime:
-                        if (val->dateTime)
 			v.dateTime = CMClone ( val->dateTime, rc );
 			break;
 		}

@@ -1,5 +1,10 @@
 2012-05-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* TEST/v2test_ecn.c, backend/cimxml/cimXmlParser.c,
+	backend/cimxml/client.c, backend/cimxml/objectpath.c,
+	backend/cimxml/parserUtil.c, backend/cimxml/value.c:
+	[ 3530609 ] Various BEAM Errors
+
 	* backend/cimxml/property.c:
 	[ 3528819 ] Crash in getInstance when instance has NULL properties
 	(patch by Klaus Kampf)

@@ -281,7 +281,7 @@ static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
    strcat(ptr," ");
    strcat(ptr, tag);
    Throw(xb, ptr);
-   return -1;
+   return 0;
 }
 
 /* Is this Broken?  I guess we don't allow escaping the quotes */
@@ -505,7 +505,7 @@ static int procIRetValue(parseUnion * lvalp, ParserControl * parm)
          {NULL}
       };
       XmlAttr attr[0];
-      memset(attr, 0, sizeof(attr));
+      //      memset(attr, 0, sizeof(attr));
       if (attrsOk(parm->xmb, elm, attr, "IRETURNVALUE", ZTOK_IRETVALUE)) {
          return XTOK_IRETVALUE;
       }

@@ -104,9 +104,9 @@ static CMPIStatus __oft_setNameSpace ( CMPIObjectPath * cop,
 {
 	struct native_cop * o = (struct native_cop *) cop;
 
-	char * ns = ( nameSpace )? strdup ( nameSpace ): NULL;
-  
 	if ( o ) {
+		char * ns = ( nameSpace )? strdup ( nameSpace ): NULL;
+  
 		if ( o->nameSpace )
 		     free ( o->nameSpace );
 	    o->nameSpace = ns;
@@ -143,9 +143,9 @@ static CMPIStatus __oft_setClassName ( CMPIObjectPath * cop,
 {
 	struct native_cop * o = (struct native_cop *) cop;
 
-	char * cn = ( classname )? strdup ( classname ): NULL;
-  
 	if ( o ) {
+		char * cn = ( classname )? strdup ( classname ): NULL;
+  
 		if ( o->classname )
 		    free ( o->classname );
 	    o->classname = cn;
@@ -453,7 +453,7 @@ UtilList *getNameSpaceComponents(CMPIObjectPath * cop)
    
    if (nss && nss->hdl) {
       ns=(char*)nss->hdl;
-      if (ns) for (s=i=0, m=strlen(ns); i<m; i++,s++) {
+      for (s=i=0, m=strlen(ns); i<m; i++,s++) {
          if (ns[i]=='/') {
             nsc[s]=0;
             ul->ft->append(ul,strdup(nsc));
