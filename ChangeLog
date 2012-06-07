@@ -1,3 +1,8 @@
+2012-06-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/client.c, cimc/cimc.h, cimc/cimcclient.c:
+	[ 3435363 ] Wrong call of curl_global_cleanup()
+
 2012-05-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* TEST/v2test_ecn.c, backend/cimxml/cimXmlParser.c,

@@ -30,6 +30,9 @@
 extern "C" {
 #endif
 
+/* NewCIMCEnv options */
+
+#define CIMC_NO_CURL_INIT 1  /* don't call curl_global_init() or _cleanup() */
 
   
   /*
@@ -404,6 +407,7 @@ extern "C" {
   struct _CIMCEnv {
     void *hdl;
     CIMCEnvFT *ft;
+    unsigned int options;
   };
 
 

@@ -36,7 +36,12 @@
 #define ENTLEN 256
 #define ERRLEN 1024
 
+/* Create new CIMCEnv
 
+   id - the interface to use, either XML or SfcbLocal
+   options - options passed to the given backend (ops in cimc.h)
+
+ */
 CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
 {
    char         libName[LIBLEN+1];

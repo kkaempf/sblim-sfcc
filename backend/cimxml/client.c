@@ -2961,8 +2961,12 @@ static void *releaseEnv(CIMCEnv *env)
 {
   CMPIStatus rc = {CMPI_RC_OK,NULL};
   
+  if (!(env->options & CIMC_NO_CURL_INIT)) {
+    curl_global_cleanup();
+  }
+
   free(env);
-  curl_global_cleanup();
+
   return NULL;
 }
 
@@ -3036,13 +3040,18 @@ static CIMCEnvFT localFT = {
 
 /* Factory function for CIMXML Client */
 
-CIMCEnv* _Create_XML_Env(char *id)
+CIMCEnv* _Create_XML_Env(const char *id, unsigned int options, int *rc, char **msg)
 {
  
     CIMCEnv *env = (CIMCEnv*)malloc(sizeof(CIMCEnv));
     env->hdl=NULL;
     env->ft=&localFT;
-    
+    env->options = options;
+
+    if (!(options & CIMC_NO_CURL_INIT)) {
+      curl_global_init(CURL_GLOBAL_SSL);
+    }
+
     return env;
  }
 /* *********************************************************** */ 
