@@ -284,6 +284,33 @@ static unsigned int __ccft_getMethodParameterCount ( CMPIConstClass * ccls,
 	return 0;
 }
 
+static const char     *__ccft_getCharSuperClassName (const CMPIConstClass * br)
+{
+  return NULL;
+}
+
+static CMPIBoolean     __ccft_isAssociation (CMPIConstClass * cc)
+{
+  return 0;
+}
+
+static CMPIBoolean     __ccft_isAbstract (CMPIConstClass * cc)
+{
+  return 0;
+}
+
+static CMPIBoolean     __ccft_isIndication (CMPIConstClass * cc)
+{
+  return 0;
+}
+
+static CMPIData        __ccft_getPropQualAt (CMPIConstClass * cc, CMPICount p, CMPICount i, CMPIString **name, CMPIStatus *rc)
+{
+  CMPIData data = { CMPI_null, CMPI_nullValue, { 0 } };
+  if (rc)
+    rc->rc = CMPI_RC_ERR_NOT_SUPPORTED;
+  return data;
+}
 
 
 CMPIConstClass * native_new_CMPIConstClass ( char  *cn, CMPIStatus * rc )
