@@ -571,7 +571,7 @@ static void valueObjectWithPath(ParserControl *parm, parseUnion *stateUnion)
 static void valueObjectWithPathData(ParserControl *parm, parseUnion *stateUnion)
 {
 	parseUnion lvalp={0};
-	CMPIObjectPath *op;
+	CMPIObjectPath *op = NULL;
 	CMPIInstance *inst;
 	ct = localLex((parseUnion*)&stateUnion->xtokObjectWithPathData, parm);
 	if(ct == XTOK_CLASSPATH) {
@@ -590,6 +590,7 @@ static void valueObjectWithPathData(ParserControl *parm, parseUnion *stateUnion)
 		setInstQualifiers(inst, &stateUnion->xtokObjectWithPathData.inst.inst.qualifiers);
 		setInstProperties(inst, &stateUnion->xtokObjectWithPathData.inst.inst.properties);
 		simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&inst,CMPI_instance);
+		if (op) op->ft->release(op);
 	}
 	else {
 		parseError("XTOK_CLASSPATH or XTOK_INSTANCEPATH", ct, parm);

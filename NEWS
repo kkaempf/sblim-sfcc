@@ -10,6 +10,7 @@ Bugs:
 - 3528819: Crash in getInstance when instance has NULL properties
 - 3530609: Various BEAM Errors
 - 3435363: Wrong call of curl_global_cleanup()
+- 3547832: memory leak in backend/cimxml/grammer.c
 
 Changes in 2.2.3
 ================

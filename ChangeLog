@@ -1,3 +1,9 @@
+2012-07-31  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* backend/cimxml/grammar.c:
+	[ 3547832 ] memory leak in backend/cimxml/grammer.c
+	(patch by Michal Minar)
+
 2012-06-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* backend/cimxml/client.c, cimc/cimc.h, cimc/cimcclient.c:

@@ -53,3 +53,7 @@ Josef Moellers, Fujitsu
 J. Bart Whiteley, Novell
 ------------------------
 03/29/2011 [ 1956407 ] CIM-XML/HTTP connection to unix socket
+
+Michal Minar
+------------
+07/31/2012 [ 3547832 ] memory leak in backend/cimxml/grammer.c
