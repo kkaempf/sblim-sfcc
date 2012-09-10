@@ -57,3 +57,4 @@ J. Bart Whiteley, Novell
 Michal Minar
 ------------
 07/31/2012 [ 3547832 ] memory leak in backend/cimxml/grammer.c
+09/10/2012 [ 3555103 ] wrong declaration of release attribute in _CIMCArgsFT

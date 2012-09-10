@@ -434,7 +434,7 @@ extern "C" {
 
   struct _CIMCArgsFT {
     int ftVersion;
-    CIMCStatus (*release) (CIMCArgs args);
+    CIMCStatus (*release) (CIMCArgs* args);
     CIMCArgs* (*clone) (CIMCArgs* args, CIMCStatus* rc);
     CIMCStatus (*addArg) (CIMCArgs* args, const char* name, CIMCValue* value, CIMCType type);
     CIMCData (*getArg) (CIMCArgs * args, const char * name, CIMCStatus * rc);
