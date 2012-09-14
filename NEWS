@@ -12,6 +12,7 @@ Bugs:
 - 3435363: Wrong call of curl_global_cleanup()
 - 3547832: memory leak in backend/cimxml/grammer.c
 - 3555103: wrong declaration of release attribute in _CIMCArgsFT
+- 3566968: sfcc enumInstances fails to parse the xml
 
 Changes in 2.2.3
 ================

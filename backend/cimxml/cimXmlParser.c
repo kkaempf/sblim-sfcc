@@ -757,9 +757,10 @@ static int procKeyValue(parseUnion * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
       {"VALUETYPE"},
+      {"TYPE"},
       {NULL}
    };
-   XmlAttr attr[1] = {
+   XmlAttr attr[2] = {
       {NULL}
    };
    char *val;
