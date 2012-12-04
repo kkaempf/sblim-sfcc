@@ -76,10 +76,11 @@ CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
 			 CMPIStatus *rc)
 {  
   CMCIClient     *cc = NULL;
-  char           *msg;
+  char           *msg = NULL;
   int             retc = 0;
   char           *client;
 
+  if (rc) rc->rc = CMPI_RC_OK;
   pthread_mutex_lock(&ConnectionControl.ccMux);
   if (ConnectionControl.ccCount == 0) {
     client = getenv("SFCC_CLIENT");
@@ -94,8 +95,15 @@ CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
   }
   if (retc || ConnectionControl.ccEnv == NULL) {
     if(rc) {
-      rc->rc=CMPI_RC_ERR_FAILED;
-      rc->msg=NULL;
+      rc->rc = CMPI_RC_ERR_FAILED;
+      if (msg) {
+        fprintf(stderr, "sfcc: NewCIMCEnv failed: %s\n", msg);
+        free(msg);
+      }
+      else {
+        fprintf(stderr, "sfcc: NewCIMCEnv failed without message\n");
+      }
+      rc->msg = NULL; /* Can't create CMPIString without ConnectionControl.ccEnv ! */
     }
     cc=NULL;
   } else {
@@ -113,8 +121,10 @@ CMCIClient *cmciConnect2(const char *hn, const char *scheme, const char *port,
     /* cleanup ccEnv after pthread_mutex_unlock */
     cmciRelease(NULL);
     if (rc) {
-      rc->rc = CMPI_RC_ERR_FAILED;
-      rc->msg = NULL;
+      if (rc->rc == CMPI_RC_OK)
+        rc->rc = CMPI_RC_ERR_FAILED;
+      if (rc->msg == NULL && ConnectionControl.ccEnv != NULL)
+        rc->msg = native_new_CMPIString("Connection failed", NULL);
     }
   }
 

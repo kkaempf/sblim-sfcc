@@ -39,6 +39,7 @@ Klaus Kampf, Novell
 03/23/2011 [ 2990315 ] cmciRelease not called in case of error
 04/25/2011 [ 2967265 ] code cleanup in sfcclient
 05/29/2012 [ 3528819 ] Crash in getInstance when instance has NULL properties
+12/04/2012 [ 3586680 ] improve error reporting in cmciConnect2
 
 Suresh Sundriyal, VMWare
 ------------------------
