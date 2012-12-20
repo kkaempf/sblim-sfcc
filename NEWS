@@ -1,5 +1,14 @@
 Small Footprint CIM Client Library NEWS
 
+Changes in 2.2.5
+================
+
+Bugs:
+- 3586680: improve error reporting in cmciConnect2
+- 3566968: sfcc enumInstances fails to parse the xml
+- 3555103: wrong declaration of release attribute in _CIMCArgsFT
+- 3547832: memory leak in backend/cimxml/grammer.c
+
 Changes in 2.2.4
 ================
 
@@ -10,10 +19,6 @@ Bugs:
 - 3528819: Crash in getInstance when instance has NULL properties
 - 3530609: Various BEAM Errors
 - 3435363: Wrong call of curl_global_cleanup()
-- 3547832: memory leak in backend/cimxml/grammer.c
-- 3555103: wrong declaration of release attribute in _CIMCArgsFT
-- 3566968: sfcc enumInstances fails to parse the xml
-- 3586680: improve error reporting in cmciConnect2
 
 Changes in 2.2.3
 ================
