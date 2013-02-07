@@ -39,14 +39,7 @@
   This structure is used to build linked lists of data containers as needed
   for various native data types.
 */
-struct native_qualifier {
-	char * name;		        //!< Qualifier identifier.
-	CMPIType type;		        //!< Associated CMPIType.
-	CMPIValueState state; 	        //!< Current value state.
-	CMPIValue value;	        //!< Current value.
-	struct native_qualifier * next;	//!< Pointer to next qualifier.
-};
-
+// struct native_qualifier {}  // defined in frontend/sfcc/native.h
 
 /****************************************************************************/
 

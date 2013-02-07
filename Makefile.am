@@ -89,7 +89,9 @@ libcimcClientXML_la_SOURCES = \
                    backend/cimxml/instance.c \
                    backend/cimxml/indicationlistener.c \
                    backend/cimxml/constClass.c \
+                   backend/cimxml/method.c \
                    backend/cimxml/objectpath.c \
+                   backend/cimxml/parameter.c \
                    backend/cimxml/property.c \
                    backend/cimxml/qualifier.c \
                    backend/cimxml/string.c \

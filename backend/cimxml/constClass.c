@@ -36,14 +36,6 @@
 
 /****************************************************************************/
 
-extern CMPIConstClass * native_new_CMPIConstClass ( char  *cn,
-						    CMPIStatus * rc );
-extern int addClassProperty( CMPIConstClass * ccls, char * name,
-			     CMPIValue * value, CMPIType type,
-					  CMPIValueState state);
-
-/****************************************************************************/
-
 
 static CMPIStatus __ccft_release ( CMPIConstClass * ccls )
 {
@@ -54,6 +46,7 @@ static CMPIStatus __ccft_release ( CMPIConstClass * ccls )
 		free ( cc->classname );
 		propertyFT.release ( cc->props );
 		qualifierFT.release ( cc->qualifiers );
+        methodFT.release ( cc->methods );
 		free ( cc );
 
 		CMReturn ( CMPI_RC_OK );
@@ -73,6 +66,7 @@ static CMPIConstClass * __ccft_clone ( CMPIConstClass * ccls, CMPIStatus * rc )
 	new->classname = strdup ( cc->classname );
 	new->qualifiers= qualifierFT.clone ( cc->qualifiers, rc );
 	new->props     = propertyFT.clone ( cc->props, rc );
+	new->methods   = methodFT.clone ( cc->methods, rc );
 
 	return (CMPIConstClass *) new;
 }
@@ -183,7 +177,112 @@ static unsigned int __ccft_getPropertyQualifierCount ( CMPIConstClass * ccls,
 	return 0;
 }
 
+static CMPIData __ccft_getMethod ( CMPIConstClass * ccls,
+				      const char * name,
+				      CMPIStatus * rc )
+{
+    struct native_constClass * c = (struct native_constClass *) ccls;
 
+    return methodFT.getDataMethod ( c->methods, name, rc );
+}
+
+static CMPIData __ccft_getMethodAt ( CMPIConstClass * ccls,
+				      unsigned int index,
+				      CMPIString ** name,
+				      CMPIStatus * rc )
+{
+    struct native_constClass * c = (struct native_constClass *) ccls;
+
+    return methodFT.getDataMethodAt ( c->methods, index, name, rc );
+}
+
+static unsigned int __ccft_getMethodCount ( CMPIConstClass * ccls,
+				      CMPIStatus * rc )
+{
+    struct native_constClass * c = (struct native_constClass *) ccls;
+
+    return methodFT.getMethodCount ( c->methods, rc );
+}
+
+static CMPIData __ccft_getMethodQualifier ( CMPIConstClass * ccls,
+				      const char * mname, const char *qname,
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_method *m=methodFT.getMethod ( c->methods, mname );
+
+	if (m) return qualifierFT.getDataQualifier ( m->qualifiers, qname, rc );
+	CMSetStatus ( rc, CMPI_RC_ERR_METHOD_NOT_FOUND );
+	CMPIData ret = { 0, CMPI_nullValue, {0} };
+	return ret;
+}
+
+static CMPIData __ccft_getMethodQualifierAt ( CMPIConstClass * ccls,
+				      const char * mname, 
+				      unsigned int index,
+				      CMPIString ** name,
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_method *m=methodFT.getMethod ( c->methods, mname );
+
+	if (m) return qualifierFT.getDataQualifierAt ( m->qualifiers, index, name, rc );
+	CMSetStatus ( rc, CMPI_RC_ERR_METHOD_NOT_FOUND );
+	CMPIData ret= { 0, CMPI_nullValue, {0} };
+	return ret;
+}
+
+static unsigned int __ccft_getMethodQualifierCount ( CMPIConstClass * ccls,
+				      const char * mname, 
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_method *m=methodFT.getMethod ( c->methods, mname );
+
+	if (m) return qualifierFT.getQualifierCount ( m->qualifiers, rc );
+	CMSetStatus ( rc, CMPI_RC_ERR_METHOD_NOT_FOUND );
+	return 0;
+}
+
+static CMPIData __ccft_getMethodParameter ( CMPIConstClass * ccls,
+				      const char * mname, const char *pname,
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_method *m=methodFT.getMethod ( c->methods, mname );
+
+	if (m) return parameterFT.getDataParameter ( m->parameters, pname, rc );
+	CMSetStatus ( rc, CMPI_RC_ERR_METHOD_NOT_FOUND );
+	CMPIData ret = { 0, CMPI_nullValue, {0} };
+	return ret;
+}
+
+static CMPIData __ccft_getMethodParameterAt ( CMPIConstClass * ccls,
+				      const char * mname, 
+				      unsigned int index,
+				      CMPIString ** name,
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_method *m=methodFT.getMethod ( c->methods, mname );
+
+	if (m) return parameterFT.getDataParameterAt ( m->parameters, index, name, rc );
+	CMSetStatus ( rc, CMPI_RC_ERR_METHOD_NOT_FOUND );
+	CMPIData ret= { 0, CMPI_nullValue, {0} };
+	return ret;
+}
+
+static unsigned int __ccft_getMethodParameterCount ( CMPIConstClass * ccls,
+				      const char * mname, 
+				      CMPIStatus * rc )
+{
+	struct native_constClass * c = (struct native_constClass *) ccls;
+	struct native_method *m=methodFT.getMethod ( c->methods, mname );
+
+	if (m) return parameterFT.getParameterCount ( m->parameters, rc );
+	CMSetStatus ( rc, CMPI_RC_ERR_METHOD_NOT_FOUND );
+	return 0;
+}
 
 
 
@@ -197,12 +296,21 @@ CMPIConstClass * native_new_CMPIConstClass ( char  *cn, CMPIStatus * rc )
 		__ccft_getProperty,
 		__ccft_getPropertyAt,
 		__ccft_getPropertyCount,
-                __ccft_getQualifier,
-                __ccft_getQualifierAt,
-                __ccft_getQualifierCount,
-                __ccft_getPropertyQualifier,
-                __ccft_getPropertyQualifierAt,
-                __ccft_getPropertyQualifierCount
+		__ccft_getQualifier,
+		__ccft_getQualifierAt,
+		__ccft_getQualifierCount,
+		__ccft_getPropertyQualifier,
+		__ccft_getPropertyQualifierAt,
+		__ccft_getPropertyQualifierCount,
+		__ccft_getMethod,
+		__ccft_getMethodAt,
+		__ccft_getMethodCount,
+		__ccft_getMethodParameter,
+		__ccft_getMethodParameterAt,
+		__ccft_getMethodParameterCount,
+		__ccft_getMethodQualifier,
+		__ccft_getMethodQualifierAt,
+		__ccft_getMethodQualifierCount
 	};
 	static CMPIConstClass cc = {
 		"CMPIConstClass",
@@ -286,8 +394,71 @@ int addClassPropertyQualifier( CMPIConstClass* cc, char * pname, char *qname,
 	return ( CMPI_RC_OK );
    }
    return CMPI_RC_ERR_NO_SUCH_PROPERTY;
-}                                      
-                                      
+}
+
+int addClassMethod( CMPIConstClass * cc,
+                     char * name,
+                     CMPIValue * value,
+                     CMPIType type,
+                     CMPIValueState state)
+{
+   struct native_constClass * c = (struct native_constClass *) cc;
+
+   if ( methodFT.setMethod ( c->methods,
+                     name, 
+                     type,
+                     value ) ) {
+        methodFT.addMethod ( &c->methods, 
+                     name,
+                     type,
+                     state,
+                     value );
+   }
+   return ( CMPI_RC_OK );
+}
+
+int addClassMethodQualifier( CMPIConstClass* cc, char * mname, char *qname,
+                     CMPIValue * value,
+                     CMPIType type)
+{
+   struct native_constClass * c = (struct native_constClass *) cc;
+   struct native_method *m=methodFT.getMethod ( c->methods, mname );
+
+   if (m) {
+     if ( qualifierFT.setQualifier ( m->qualifiers,
+                     qname, 
+                     type,
+                     value ) ) {
+        qualifierFT.addQualifier ( &m->qualifiers, 
+                     qname,
+                     type,
+                     0,
+                     value );
+     }
+     return ( CMPI_RC_OK );
+   }
+   return CMPI_RC_ERR_METHOD_NOT_FOUND;
+}
+
+int addClassMethodParameter( CMPIConstClass* cc, char * mname, char *pname,
+                      CMPIType type)
+{
+   struct native_constClass * c = (struct native_constClass *) cc;
+   struct native_method *m=methodFT.getMethod ( c->methods, mname );
+
+   if (m) {
+     if ( parameterFT.setParameter ( m->parameters,
+                     pname,
+                     type ) ) {
+        parameterFT.addParameter ( &m->parameters, 
+                     pname,
+                     type );
+     }
+     return ( CMPI_RC_OK );
+   }
+   return CMPI_RC_ERR_METHOD_NOT_FOUND;
+}
+
 /****************************************************************************/
 
 /*** Local Variables:  ***/

@@ -117,6 +117,33 @@ typedef struct _CMPIConstClassFT {
      unsigned int (*getPropertyQualifierCount)
               (CMPIConstClass * ccls,const char *pname, CMPIStatus* rc);
               
+
+     CMPIData (*getMethod)
+              (CMPIConstClass * ccls, const char *name, CMPIStatus* rc);
+     CMPIData (*getMethodAt)
+              (CMPIConstClass * ccls, unsigned int index, CMPIString** name,
+              CMPIStatus* rc);
+     unsigned int (*getMethodCount)
+              (CMPIConstClass * ccls, CMPIStatus* rc);
+
+
+     CMPIData (*getMethodParameter)
+              (CMPIConstClass * ccls, const char *mname, const char *pname, CMPIStatus* rc);
+     CMPIData (*getMethodParameterAt)
+              (CMPIConstClass * ccls, const char *mname, unsigned int index, CMPIString** name,
+              CMPIStatus* rc);
+     unsigned int (*getMethodParameterCount)
+              (CMPIConstClass * ccls, const char *mname, CMPIStatus* rc);
+
+
+     CMPIData (*getMethodQualifier)
+              (CMPIConstClass * ccls, const char *mname, const char *qname, CMPIStatus* rc);
+     CMPIData (*getMethodQualifierAt)
+              (CMPIConstClass * ccls, const char *mname, unsigned int index, CMPIString** name,
+              CMPIStatus* rc);
+     unsigned int (*getMethodQualifierCount)
+              (CMPIConstClass * ccls, const char *mname, CMPIStatus* rc);
+
 } CMPIConstClassFT;
 
 

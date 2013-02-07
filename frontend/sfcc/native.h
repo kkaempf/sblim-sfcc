@@ -62,6 +62,7 @@ struct native_enum {
 //! Forward declaration for anonymous struct.
 struct native_property;
 struct native_qualifier;
+struct native_method;
 
 struct native_constClass {
 	CMPIConstClass ccls;
@@ -69,7 +70,8 @@ struct native_constClass {
 	char * classname;
 
 	struct native_property * props;
-        struct native_qualifier *qualifiers;
+	struct native_qualifier *qualifiers;
+	struct native_method *methods;
 };
 
 struct native_instance {
@@ -83,8 +85,27 @@ struct native_instance {
 	char ** key_list;
 
 	struct native_property * props;
-        struct native_qualifier *qualifiers;
+    struct native_qualifier *qualifiers;
 };
+
+struct native_method {
+    char * name;                          //!< Method identifier.
+    CMPIType type;                        //!< Associated CMPIType.
+    CMPIValueState state;                 //!< Current value state.
+    CMPIValue value;                      //!< Current value.
+    struct native_parameter *parameters;  //!< Methods have Parameters
+    struct native_qualifier *qualifiers;  //!< Methods have Qualifiers.
+    struct native_method *next;           //!< Pointer to next method.
+};
+
+struct native_parameter {
+    char * name;                          //!< Parameter identifier.
+    CMPIType type;                        //!< Associated CMPIType.
+    CMPIValueState state;                 //!< Current value state.
+    CMPIValue value;                      //!< Current value.
+    struct native_parameter *next;        //!< Pointer to next parameter.
+};
+// TODO: add support for parameter qualifiers, references, reference arrays
 
 struct native_property {
 	char * name;		                //!< Property identifier.
@@ -93,6 +114,14 @@ struct native_property {
 	CMPIValue value;	                //!< Current value.
 	struct native_qualifier *qualifiers;	//!< Qualifiers.
 	struct native_property * next;	        //!< Pointer to next property.
+};
+
+struct native_qualifier {
+	char * name;                          //!< Qualifier identifier.
+	CMPIType type;                        //!< Associated CMPIType.
+	CMPIValueState state;                 //!< Current value state.
+	CMPIValue value;                      //!< Current value.
+	struct native_qualifier * next;       //!< Pointer to next qualifier.
 };
 
 
@@ -196,6 +225,93 @@ struct native_qualifierFT
 					 CMPIStatus * );
 };
 
+struct native_methodFT 
+{
+	//! Function table version
+	int ftVersion;
+
+	//! Releases a complete list of native_method items.
+	void (* release) ( struct native_method * );
+
+	//! Clones a complete list of native_method items.
+	struct native_method * (* clone) ( struct native_method *,
+				CMPIStatus * );
+
+	//! Gets a native_property by name
+	struct native_method* (* getMethod) ( struct native_method *,
+				const char *);
+
+	//! Adds a new native_method to a list.
+	int (* addMethod) ( struct native_method **,
+				const char *,
+				CMPIType,
+				CMPIValueState,
+				CMPIValue * );
+
+	//! Resets the values of an existing native_method, if existent.
+	int (* setMethod) ( struct native_method *,
+				const char *,
+				CMPIType,
+				CMPIValue * );
+
+	//! Looks up a specific native_method in CMPIData format.
+	CMPIData (* getDataMethod) ( struct native_method *,
+				const char *,
+				CMPIStatus * );
+
+	//! Extract an indexed native_method in CMPIData format.
+	CMPIData (* getDataMethodAt) ( struct native_method *,
+				unsigned int,
+				CMPIString **,
+				CMPIStatus * );
+
+	//! Yields the number of native_method items in a list.
+	CMPICount (* getMethodCount) ( struct native_method *,
+				CMPIStatus * );
+};
+
+struct native_parameterFT 
+{
+	//! Function table version
+	int ftVersion;
+
+	//! Releases a complete list of native_parameter items.
+	void (* release) ( struct native_parameter * );
+
+	//! Clones a complete list of native_parameter items.
+	struct native_parameter * (* clone) ( struct native_parameter *,
+				CMPIStatus * );
+
+	//! Gets a native_property by name
+	struct native_parameter* (* getParameter) ( struct native_parameter *,
+				const char *);
+
+	//! Adds a new native_parameter to a list.
+	int (* addParameter) ( struct native_parameter **,
+				const char *,
+				CMPIType );
+
+	//! Resets the values of an existing native_parameter, if existent.
+	int (* setParameter) ( struct native_parameter *,
+				const char *,
+				CMPIType );
+
+	//! Looks up a specific native_parameter in CMPIData format.
+	CMPIData (* getDataParameter) ( struct native_parameter *,
+				const char *,
+				CMPIStatus * );
+
+	//! Extract an indexed native_parameter in CMPIData format.
+	CMPIData (* getDataParameterAt) ( struct native_parameter *,
+				unsigned int,
+				CMPIString **,
+				CMPIStatus * );
+
+	//! Yields the number of native_parameter items in a list.
+	CMPICount (* getParameterCount) ( struct native_parameter *,
+				CMPIStatus * );
+};
+
 extern int addInstQualifier( CMPIInstance* ci, char * name,
 				      CMPIValue * value,
 				      CMPIType type);
@@ -239,6 +355,8 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, struct xtokValueReference
 #define newCMPIArgs native_new_CMPIArgs
 /****************************************************************************/
 
+extern struct native_methodFT const methodFT;
+extern struct native_parameterFT const parameterFT;
 extern struct native_propertyFT const propertyFT;
 extern struct native_qualifierFT const qualifierFT;
 

@@ -1,7 +1,7 @@
 /*
  * $id$
  *
- *  © Copyright IBM Corp. 2007
+ *  © Copyright IBM Corp. 2013
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -43,6 +43,15 @@ extern int addClassPropertyQualifier( CMPIConstClass* cc, char * pname,
                       CMPIType type);
 extern int addClassQualifier( CMPIConstClass* cc, char * name,
                       CMPIValue * value,
+                      CMPIType type);
+extern int addClassMethod( CMPIConstClass* cc, char * mname,
+                      CMPIValue * value, CMPIType type,
+                      CMPIValueState state);
+extern int addClassMethodQualifier( CMPIConstClass* cc, char * mname,
+                      char *qname, CMPIValue * value,
+                      CMPIType type);
+extern int addClassMethodParameter( CMPIConstClass* cc, char * mname,
+                      char *pname,
                       CMPIType type);
 extern char *XmlToAsciiStr(char *XmlStr);
 
@@ -219,6 +228,64 @@ void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
    if (qs) {
       qs->first = qs->last = NULL;
    }
+}
+
+void setClassMethods(CMPIConstClass *cls, XtokMethods *ms)
+{
+   XtokMethod *nm = NULL,*m = ms ? ms->first : NULL;
+   CMPIValue      val;
+   CMPIArray      *arr = NULL;
+   XtokQualifier  *nq,*q;
+   XtokQualifiers *qs;
+   XtokParam      *np,*p;
+   XtokParams     *ps;
+   int rc, n;
+
+   val.uint64=0l;
+   while (m) {
+      addClassMethod(cls, m->name, &val, m->type, CMPI_nullValue);
+
+      qs=&m->qualifiers;
+      q=qs ? qs->first : NULL;
+      n=0;
+      while (q) {
+         if (q->type & CMPI_ARRAY) {
+            CMPIType type=q->type&~CMPI_ARRAY;
+            arr = newCMPIArray(0, type, NULL);
+            int i;
+            if (q->data.array.max) {
+               for (i = 0; i < q->data.array.next; ++i) {
+                  val = str2CMPIValue(type, q->data.array.values[i], NULL);
+                  CMSetArrayElementAt(arr, i, &val, type);
+                  native_release_CMPIValue(type,&val);
+               }
+            }
+            val.array = arr;
+            rc = addClassMethodQualifier(cls, m->name, q->name, &val, q->type);
+            native_release_CMPIValue(q->type,(CMPIValue*)&arr);
+         }
+         else {
+            val = str2CMPIValue(q->type, q->data.value.data.value, NULL);
+            rc= addClassMethodQualifier(cls, m->name, q->name, &val, q->type);
+            native_release_CMPIValue(q->type,&val);
+         }
+         nq = q->next; 
+         q = nq;
+      }
+
+      ps=&m->params;
+      p=ps ? ps->first : NULL;
+      n=0;
+      while (p) {
+         rc= addClassMethodParameter(cls, m->name, p->name, p->type);
+         np = p->next; 
+         p = np;
+      }
+
+      nm = m->next;
+      m = nm;
+   }
+   if (ms) ms->first = ms->last = NULL;
 }
 
 void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
