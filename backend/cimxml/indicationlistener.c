@@ -36,6 +36,10 @@ static int do_listen=1;
 #define hdrBufsize 5000
 #define hdrLimmit 5000
 
+#ifdef __APPLE__
+# define __SOCKADDR_ARG   struct sockaddr *__restrict
+#endif
+
 typedef struct _buffer {
    char *data, *content;
    int length, size, ptr, content_length,trailers;

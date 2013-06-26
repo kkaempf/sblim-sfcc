@@ -107,7 +107,7 @@ libcimcClientXML_la_SOURCES = \
 
 libcimcclient_la_LDFLAGS = \
        -version-info $(Libcimcclient_CURRENT):$(Libcimcclient_REVISION):$(Libcimcclient_AGE) \
-       -Wl,--version-script,$(srcdir)/cimc/libcimcclient.Versions
+       @HOST_LDFLAGS@,$(srcdir)/cimc/libcimcclient.Versions
 libcimcclient_la_LIBADD = -ldl
 libcimcclient_la_CPPFLAGS = -DSFCB_LIBDIR=\"$(SFCB_LIBDIR)\"
 
@@ -116,13 +116,13 @@ libcmpisfcc_la_LIBADD = -lcimcclient
 libcmpisfcc_la_DEPENDENCIES = libcimcclient.la
 libcmpisfcc_la_LDFLAGS = \
        -version-info $(Libcmpisfcc_CURRENT):$(Libcmpisfcc_REVISION):$(Libcmpisfcc_AGE) \
-       -Wl,--version-script,$(srcdir)/frontend/sfcc/libcmpisfcc.Versions
+       @HOST_LDFLAGS@,$(srcdir)/frontend/sfcc/libcmpisfcc.Versions
 
 libcimcClientXML_la_CPPFLAGS = -I$(srcdir)/backend/cimxml/sfcUtil -I$(srcdir)/backend/cimxml  -I$(srcdir)/frontend/sfcc -I$(srcdir)/cimc
 libcimcClientXML_la_LIBADD = -lcurl
 libcimcClientXML_la_LDFLAGS = \
        -version-info $(LibcimcClientXML_CURRENT):$(LibcimcClientXML_REVISION):$(LibcimcClientXML_AGE) \
-       -Wl,--version-script,$(srcdir)/backend/cimxml/libcimcClientXML.Versions
+       @HOST_LDFLAGS@,$(srcdir)/backend/cimxml/libcimcClientXML.Versions
 
 SUBDIRS = . TEST
 
