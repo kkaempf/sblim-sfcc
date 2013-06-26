@@ -79,3 +79,17 @@ esac
 AC_SUBST(HOST_LDFLAGS)
 
 AC_OUTPUT
+
+#### Platform Specific Configuration ####
+AC_CANONICAL_HOST
+case $host_os in
+  darwin* )
+    HOST_LDFLAGS="-Wl"
+ 
+    ;;
+  *)
+    HOST_LDFLAGS="-Wl,--version-script"
+    ;;
+esac
+
+AC_SUBST(HOST_LDFLAGS)
