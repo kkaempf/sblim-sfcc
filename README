@@ -123,8 +123,7 @@ As consequence of this it was necessary to re-version the library which
 will require a re-linking of your application.
 
 B. Feature Freeze
-The version 1 sfcc API is frozen: new features like support for large
-volume results via iterator won't be backported.
+The version 1 sfcc API is frozen: new features won't be backported.
 
 
 Backend Selection:
@@ -175,25 +174,6 @@ To build:
 	- cmpi-tests (currently available 
 	
 	
-Large Volume Data support - CIMXML :
-  The default is to build without this support.
-  To build with this support :
-  
-  #configure --enable-large_volume_support
-  #make
-  #make install
-  
-  Large volume support is provided for the following requests :
-     enumerateClasses
-     enumerateClassNames
-     enumerateInstances
-     enumerateInstanceNames
-     
-  This support will create multiple threads to receive data from the server and 
-  to parse the data as it is received. This creates parallel operation of receiving
-  data and parsing it.
-
-
 Functions:
 ==========
 

@@ -41,23 +41,12 @@ extern "C" {
 /*                                                    */
 /* ************************************************** */
 
-#ifndef LARGE_VOL_SUPPORT 
 struct native_enum {
 	CMPIEnumeration enumeration;
 
 	CMPICount current;
 	CMPIArray * data;
 };
-#else
-struct native_enum {
-	CMPIEnumeration enumeration;
-
-	CMPICount current;
-	CMPIArray * data;
-	CMCIConnection * econ;
-	CMPIObjectPath * ecop;
-};
-#endif
 
 //! Forward declaration for anonymous struct.
 struct native_property;

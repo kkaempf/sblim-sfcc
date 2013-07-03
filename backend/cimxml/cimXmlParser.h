@@ -428,9 +428,6 @@ typedef struct parser_control {
    ResponseHdr respHdr;
    CMPIObjectPath *requestObjectPath;
    ParserHeap *heap;
-#ifdef LARGE_VOL_SUPPORT
-   CMCIConnection * econ ; /* enumeration connection */
-#endif
 } ParserControl;
 
 
