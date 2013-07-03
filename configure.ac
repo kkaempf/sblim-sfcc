@@ -93,3 +93,5 @@ case $host_os in
 esac
 
 AC_SUBST(HOST_LDFLAGS)
+
+AC_OUTPUT
