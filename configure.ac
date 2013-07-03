@@ -77,7 +77,6 @@ then
 fi
 
 AC_CONFIG_FILES([Makefile sfcc.spec TEST/Makefile ])
-AC_OUTPUT
 
 #### Platform Specific Configuration ####
 AC_CANONICAL_HOST
@@ -92,3 +91,5 @@ case $host_os in
 esac
 
 AC_SUBST(HOST_LDFLAGS)
+
+AC_OUTPUT

@@ -3,6 +3,6 @@ set -e
 
 aclocal
 autoheader
-test -x `which glibtoolize` && glibtoolize || libtoolize
+test `which glibtoolize 2> /dev/null` && glibtoolize || libtoolize
 automake -af
 autoconf

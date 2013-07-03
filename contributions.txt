@@ -59,3 +59,7 @@ Michal Minar
 ------------
 07/31/2012 [ 3547832 ] memory leak in backend/cimxml/grammer.c
 09/10/2012 [ 3555103 ] wrong declaration of release attribute in _CIMCArgsFT
+
+James Kyle
+----------
+07/02/2013 [bugs:#2646] sblim-sfcc does not compile on apple systems 
