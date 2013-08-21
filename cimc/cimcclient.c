@@ -52,9 +52,9 @@ CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
         snprintf(*msg,ERRLEN,"Invalid connection type '%s'. Must be 'XML' or 'SfcbLocal'.",id);
     } else {
         if (strcmp(id, "SfcbLocal") == 0) {
-            snprintf(libName, LIBLEN, "%s/libcimcClient%s.so",SFCB_LIBDIR,id);
+            snprintf(libName, LIBLEN, "%s/libcimcClient%s.so.0",SFCB_LIBDIR,id);
         } else {
-            snprintf(libName, LIBLEN, "libcimcClient%s.so",id);
+            snprintf(libName, LIBLEN, "libcimcClient%s.so.0",id);
         }
         library = dlopen(libName, RTLD_NOW);
         if (library==NULL) {
