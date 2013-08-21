@@ -41,6 +41,10 @@
    id - the interface to use, either XML or SfcbLocal
    options - options passed to the given backend (ops in cimc.h)
 
+   todo: for the next interface revamp, passing in a version number 
+         would be a good idea, so we could allow for dlopening different
+         versions of .so libs
+
  */
 CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
 {
@@ -61,9 +65,9 @@ CIMCEnv* NewCIMCEnv(const char *id, unsigned int options, int *rc, char **msg)
     } else {
         if ((strcmp(id, "SfcbLocal") == 0) && 
 	    (stat(SFCB_LIBDIR, &sbuf) == 0)) {
-            snprintf(libName, LIBLEN, "%s/libcimcClient%s.so",SFCB_LIBDIR,id);
+            snprintf(libName, LIBLEN, "%s/libcimcClient%s.so.0",SFCB_LIBDIR,id);
         } else {
-            snprintf(libName, LIBLEN, "libcimcClient%s.so",id);
+            snprintf(libName, LIBLEN, "libcimcClient%s.so.0",id);
         }
         library = dlopen(libName, RTLD_NOW);
         if (library==NULL) {
