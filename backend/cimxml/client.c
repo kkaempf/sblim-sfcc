@@ -304,6 +304,8 @@ static CMPIStatus releaseConnection(CMCIConnection *con)
   if (con->mStatus.msg) CMRelease(con->mStatus.msg);
 
   free(con);
+  con = NULL;
+
   return rc;
 }
 /* --------------------------------------------------------------------------*/
@@ -990,8 +992,9 @@ static CMPIStatus releaseClient(CMCIClient * mb)
   }
  
   if (cl->connection) CMRelease(cl->connection);
-
   free(cl);
+  cl = NULL;
+
   return rc;
 }
 
@@ -2892,8 +2895,6 @@ static void *releaseEnv(CIMCEnv *env)
   if (!(env->options & CIMC_NO_CURL_INIT)) {
     curl_global_cleanup();
   }
-
-  free(env);
 
   return NULL;
 }

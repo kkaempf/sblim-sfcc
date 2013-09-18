@@ -99,9 +99,15 @@ void ReleaseCIMCEnv(CIMCEnv *env)
    void *lib=NULL;
    if (env) {
      lib = env->hdl;
-     env->ft->release(env);
+     void* check = env->ft->release(env);
      if (lib) {
        dlclose(lib);
+     }
+
+     /* if check is for compatability:
+        SFCB pre-1.4.6 free'd the env during release() and returned lib pointer */
+     if (!check) {
+       free(env);
      }
    }
 }
