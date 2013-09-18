@@ -92,7 +92,7 @@ int main()
     }
 
     if (objectpath) CMRelease(objectpath);
-    if (ce) CMRelease(ce);
+    if (ce) ReleaseCIMCEnv(ce);
   
     return 0;
 }

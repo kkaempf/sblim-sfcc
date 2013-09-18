@@ -109,7 +109,7 @@ int count = 0;
     if(enm) enm->ft->release(enm);
     if(op) op->ft->release(op);
     if(client) client->ft->release(client);
-    if(ce) ce->ft->release(ce);
+    if(ce) ReleaseCIMCEnv(ce);
     if(status.msg) CMRelease(status.msg);	
     	
     return 0;

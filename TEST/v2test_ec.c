@@ -93,8 +93,8 @@ int main()
        
     }
     
-    if(ce) ce->ft->release(ce);
     if(client) client->ft->release(client);
+    if(ce) ReleaseCIMCEnv(ce);
     if(op) op->ft->release(op);
     if(enm) enm->ft->release(enm);
     if(status.msg) CMRelease(status.msg);
