@@ -4,9 +4,16 @@ Changes in 2.2.6
 ================
 
 New Features:
--  3529678 getClass does not expose method information
+- 3529678 getClass does not expose method information
 
 Bugs:
+
+- Now compiles under OS X.
+- Remove Large Volume Support from SFCC
+- SFCC should dlopen the versioned .so
+- sfcc cannot reconnect with sfcb if sfcb restarts
+- updated tests to match [bugs:#2663]
+
 
 Changes in 2.2.5
 ================
