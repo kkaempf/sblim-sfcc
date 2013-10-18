@@ -2965,6 +2965,8 @@ static CIMCEnvFT localFT = {
   newDateTimeFromBinary,
   newDateTimeFromChars,
   newIndicationListener,
+  NULL, // markHeap, SfcbLocal only
+  NULL // releaseHeap, SfcbLocal only
 };
 
 /* Factory function for CIMXML Client */

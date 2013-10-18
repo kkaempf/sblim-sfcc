@@ -402,6 +402,8 @@ extern "C" {
     CIMCIndicationListener* (*newIndicationListener)
       (CIMCEnv *ce, int sslMode, int *portNumber, char **socketName, 
        void (*fp) (CIMCInstance *indInstance), CIMCStatus* rc);
+    void* (*markHeap) ();
+    void  (*releaseHeap) (void* heap);
   } CIMCEnvFT;
 
   struct _CIMCEnv {
