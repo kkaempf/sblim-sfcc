@@ -605,6 +605,14 @@ static int procParamValue(parseUnion * lvalp, ParserControl * parm)
          if (attr[1].attr) {
             lvalp->xtokParamValue.type = xmlToCmpiType(attr[1].attr);
          }
+         if (attr[2].attr) {
+           if (strcasecmp(attr[2].attr, "instance") == 0
+               || strcasecmp(attr[2].attr, "object") == 0) {
+             lvalp->xtokParamValue.type = CMPI_instance;
+           } else {
+             Throw(NULL, "Invalid value for attribute EmbeddedObject");
+           }
+         }
          return XTOK_PARAMVALUE;
       }
    }
