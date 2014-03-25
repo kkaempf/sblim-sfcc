@@ -1237,6 +1237,7 @@ static Tags tags[] = {
    {TAG("VALUE.ARRAY"), procValueArray, ZTOK_VALUEARRAY},
    {TAG("VALUE.NAMEDINSTANCE"), procValueNamedInstance, ZTOK_VALUENAMEDINSTANCE},
    {TAG("VALUE.REFERENCE"), procValueReference, ZTOK_VALUEREFERENCE},
+   {TAG("VALUE.REFARRAY"), procValueRefArray, ZTOK_VALUEREFARRAY},
    {TAG("VALUE.OBJECTWITHPATH"), procValueObjectWithPath, ZTOK_VALUEOBJECTWITHPATH},
    {TAG("VALUE"), procValue, ZTOK_VALUE},
    {TAG("HOST"), procHost, ZTOK_HOST},
