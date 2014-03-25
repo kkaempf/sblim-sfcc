@@ -444,6 +444,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 			className(parm, (parseUnion*)&lvalp.xtokClassName);
 			op = newCMPIObjectPath(NULL, lvalp.xtokClassName.value, NULL);
 			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&op,CMPI_ref);
+			if(op) op->ft->release(op);
 			ct = localLex(&lvalp, parm);
 		}
 		while(ct == XTOK_CLASSNAME);
@@ -467,6 +468,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 			instanceName(parm, (parseUnion*)&lvalp.xtokInstanceName);
 			createPath(&op, &lvalp.xtokInstanceName);
 			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&op,CMPI_ref);
+			if(op) op->ft->release(op);
 			ct = localLex(&lvalp, parm);
 		}
 		while(ct == XTOK_INSTANCENAME);
@@ -482,6 +484,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 			//setInstQualifiers(inst, &lvalp.xtokNamedInstance.instance.qualifiers);
 			setInstProperties(inst, &lvalp.xtokNamedInstance.instance.properties);
 			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&inst,CMPI_instance);
+			if(op) op->ft->release(op);
 			ct = localLex(&lvalp, parm);
 		}
 		while(ct == XTOK_VALUENAMEDINSTANCE);
@@ -495,6 +498,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 			CMSetNameSpace(op, lvalp.xtokObjectPath.path.path.nameSpacePath.value);
 			CMSetHostname(op, lvalp.xtokObjectPath.path.path.host.host);
 			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&op,CMPI_ref);
+			if(op) op->ft->release(op);
 			ct = localLex(&lvalp, parm);
 		}
 		while(ct == XTOK_OBJECTPATH);
