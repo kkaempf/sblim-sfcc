@@ -1,5 +1,16 @@
 Small Footprint CIM Client Library NEWS
 
+Changes in 2.2.7
+================
+
+New Features:
+- [bugs:#2692] SFCC: SfcbLocal interface should expose markHeap() and releaseHeap()
+
+Bugs:
+- [bugs:#2728] Missing tag definition for REFARRAY
+- [bugs:#2729] Improper type handling for EmbeddedObject in PARAMVALUE
+- [bugs:#2730] More memory leaks in backend/cimxml/grammer.c
+
 Changes in 2.2.6
 ================
 
