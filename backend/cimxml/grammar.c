@@ -479,6 +479,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 			createPath(&op,&(lvalp.xtokNamedInstance.path));
 			CMSetNameSpace(op, getNameSpaceChars(parm->requestObjectPath));
 			inst = native_new_CMPIInstance(op,NULL);
+			op->ft->release(op);
 			//setInstQualifiers(inst, &lvalp.xtokNamedInstance.instance.qualifiers);
 			setInstProperties(inst, &lvalp.xtokNamedInstance.instance.properties);
 			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&inst,CMPI_instance);
