@@ -6,7 +6,8 @@ Changes in 2.2.8
 New Features:
 
 Bugs:
-
+- [bugs:#2730] back out original patch
+- [bugs:#2730] redo: More memory leaks in backend/cimxml/grammer.c
 
 Changes in 2.2.7
 ================
