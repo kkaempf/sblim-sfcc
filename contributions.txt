@@ -63,3 +63,7 @@ Michal Minar
 James Kyle
 ----------
 07/02/2013 [bugs:#2646] sblim-sfcc does not compile on apple systems 
+
+Zoltan Micskei
+----------
+05/26/2015 [bugs:#2746] Improper handling of ARRAYSIZE in cimXmlParser.c

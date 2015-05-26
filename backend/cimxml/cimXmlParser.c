@@ -976,7 +976,6 @@ static int procPropertyArray(parseUnion * lvalp, ParserControl * parm)
          lvalp->xtokProperty.classOrigin = attr[2].attr;
          if (attr[3].attr)
             lvalp->xtokProperty.propagated = !strcasecmp(attr[3].attr, "true");
-         lvalp->xtokParam.arraySize = attr[4].attr;
          lvalp->xtokProperty.propType = typeProperty_Array;
          lvalp->xtokProperty.val.array.next = lvalp->xtokProperty.val.array.max = 0;
          return XTOK_PROPERTYARRAY;

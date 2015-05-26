@@ -6,6 +6,7 @@ Changes in 2.2.9
 New Features:
 
 Bugs:
+- [bugs:#2746] Improper handling of ARRAYSIZE in cimXmlParser.c
 
 
 Changes in 2.2.8
