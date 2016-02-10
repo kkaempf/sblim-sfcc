@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+#include <string.h>
 
 /*
  * Canonical CIM C API entry points
