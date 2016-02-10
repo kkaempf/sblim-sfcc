@@ -429,6 +429,7 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 			dontLex = 1;
 			class(parm, (parseUnion*)&lvalp.xtokClass);
 			cls = native_new_CMPIConstClass(lvalp.xtokClass.className,NULL);
+			setClassQualifiers(cls, &lvalp.xtokClass.qualifiers);
 			setClassProperties(cls, &lvalp.xtokClass.properties);
 			simpleArrayAdd(parm->respHdr.rvArray,(CMPIValue*)&cls,CMPI_class);
 			ct = localLex(&lvalp, parm);

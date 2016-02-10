@@ -71,6 +71,7 @@ static CMPIConstClass * __ccft_clone ( CMPIConstClass * ccls, CMPIStatus * rc )
 
 	new->ccls      = cc->ccls;
 	new->classname = strdup ( cc->classname );
+	new->qualifiers= qualifierFT.clone ( cc->qualifiers, rc );
 	new->props     = propertyFT.clone ( cc->props, rc );
 
 	return (CMPIConstClass *) new;
