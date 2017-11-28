@@ -291,35 +291,11 @@ void showInstance( CMPIInstance *instance )
    if (objectpath) CMRelease(objectpath);
 }
 
-char *type2Chars(CMPIType type)
-{
-   if (type == CMPI_boolean) return "boolean";
-   if (type == CMPI_dateTime) return "datetime";
-   if (type == CMPI_uint8) return "uint8";
-   if (type == CMPI_uint16) return "uint16";
-   if (type == CMPI_uint32) return "uint32";
-   if (type == CMPI_uint64) return "uint64";
-   if (type == CMPI_sint8) return "sint8";
-   if (type == CMPI_sint16) return "sint16";
-   if (type == CMPI_sint32) return "sint32";
-   if (type == CMPI_sint64) return "sint64";
-   if (type == CMPI_real32) return "real32";
-   if (type == CMPI_real64) return "real64";
-   if (type & (CMPI_INTEGER | CMPI_REAL)) return "numeric";
-   if (type & (CMPI_chars | CMPI_string)) return "string";
-   // TODO: handle remaining types
-#define SBUFLEN 32
-   char str[SBUFLEN];
-   snprintf(str, SBUFLEN, "unknown [CMPIType=%d]", (unsigned short) type);
-   return strdup(str);
-}
-
 void showClass( CMPIConstClass * class )
 {
    CMPIString * classname = class->ft->getClassName(class, NULL);
    int numqualifiers = class->ft->getQualifierCount(class, NULL);
    int numproperties = class->ft->getPropertyCount(class, NULL);
-   int numqualifiers = class->ft->getQualifierCount(class, NULL);
    int nummethods = class->ft->getMethodCount(class, NULL);
    int numparameters;
    int i, j;
