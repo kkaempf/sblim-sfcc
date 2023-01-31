@@ -67,8 +67,6 @@ static CMPIData __convert2CMPIData(struct native_parameter * param,
 static int __addParameter(struct native_parameter ** param, const char * name,
     CMPIType type) {
 
-  CMPIStatus rc;
-
   if (*param == NULL) {
     struct native_parameter * tmp = *param = (struct native_parameter *) calloc(1,
         sizeof(struct native_parameter));
@@ -88,8 +86,6 @@ static int __addParameter(struct native_parameter ** param, const char * name,
  */
 static int __setParameter(struct native_parameter * param, const char * name,
     CMPIType type) {
-
-  CMPIStatus rc;
 
   if (param == NULL)
     return -1;

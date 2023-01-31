@@ -471,7 +471,7 @@ UtilList *getNameSpaceComponents(CMPIObjectPath * cop)
 
 void pathToXml(UtilStringBuffer *sb, CMPIObjectPath *cop)
 {
-   int i,s,m;
+   int i,s;
    CMPIData data;
    CMPIString *name;
    char *cv;

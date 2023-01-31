@@ -419,7 +419,6 @@ static void* establish_listener(int sslMode, int port, struct native_indicationl
     struct timeval timeout;
     fd_set socksset;
     int dataRead;
-    char *xml;
 
     listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     sin_len = sizeof(sin);
