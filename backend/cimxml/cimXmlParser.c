@@ -475,7 +475,6 @@ static int procRetValue(parseUnion * lvalp, ParserControl * parm)
          {NULL}
       };
       XmlAttr attr[3];
-      int i;
       memset(attr, 0, sizeof(attr));
       if (attrsOk(parm->xmb, elm, attr, "RETURNVALUE", ZTOK_RETVALUE)) {
          lvalp->xtokReturnValue.type = CMPI_null;
@@ -595,8 +594,6 @@ static int procParamValue(parseUnion * lvalp, ParserControl * parm)
       {NULL}
    };
    XmlAttr attr[3];
-   int i, m;
-
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PARAMVALUE")) {
       if (attrsOk(parm->xmb, elm, attr, "PARAMVALUE", ZTOK_PARAMVALUE)) {
@@ -893,7 +890,6 @@ static int procQualifier(parseUnion * lvalp, ParserControl * parm)
    {NULL}
    };
    XmlAttr attr[8];
-   int i, m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "QUALIFIER")) {
@@ -930,7 +926,6 @@ static int procProperty(parseUnion * lvalp, ParserControl * parm)
    {NULL}
    };
    XmlAttr attr[5];
-   int i, m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PROPERTY")) {
@@ -963,7 +958,6 @@ static int procPropertyArray(parseUnion * lvalp, ParserControl * parm)
    {NULL}
    };
    XmlAttr attr[6];
-   int i, m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PROPERTY.ARRAY")) {
@@ -1021,7 +1015,6 @@ static int procMethod(parseUnion * lvalp, ParserControl * parm)
    {NULL}
    };
    XmlAttr attr[4];
-   int i, m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "METHOD")) {
@@ -1049,7 +1042,6 @@ static int procParam(parseUnion * lvalp, ParserControl * parm)
      {NULL}
    };
    XmlAttr attr[2];
-   int i,m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PARAMETER")) {
@@ -1076,7 +1068,6 @@ static int procParamArray(parseUnion * lvalp, ParserControl * parm)
      {NULL}
    };
    XmlAttr attr[3];
-   int i,m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PARAMETER.ARRAY")) {

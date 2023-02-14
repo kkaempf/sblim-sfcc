@@ -56,7 +56,6 @@ void startParsing(ParserControl *parm)
 
 static void start(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp = {0};
 	ct = localLex(stateUnion, parm);
 	if(ct == XTOK_XML) {
 		ct = localLex(stateUnion, parm);
@@ -74,7 +73,6 @@ static void start(ParserControl *parm, parseUnion *stateUnion)
 
 static void cim(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp = {0};
 	ct = localLex(stateUnion, parm);
 	if(ct == XTOK_CIM) {
 		message(parm, (parseUnion*)&stateUnion->xtokMessage);
@@ -92,7 +90,6 @@ static void cim(ParserControl *parm, parseUnion *stateUnion)
 
 static void message(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp = {0};
 	ct = localLex((parseUnion*)&stateUnion->xtokMessage, parm);
 	if(ct == XTOK_MESSAGE) {
 		messageContent(parm, stateUnion);
@@ -110,7 +107,6 @@ static void message(ParserControl *parm, parseUnion *stateUnion)
 
 static void messageContent(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp = {0};
 	ct = localLex(stateUnion, parm);
 	if(ct == XTOK_SIMPLERSP) {
 		simpleRspContent(parm, (parseUnion*)&stateUnion->xtokSimpleRespContent);
@@ -137,7 +133,6 @@ static void messageContent(ParserControl *parm, parseUnion *stateUnion)
 
 static void simpleRspContent(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp ={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokSimpleRespContent, parm);
 	if(ct == XTOK_METHODRESP) {
 		methodRespContent(parm, (parseUnion*)&stateUnion->xtokSimpleRespContent.resp);
@@ -165,7 +160,6 @@ static void simpleRspContent(ParserControl *parm, parseUnion *stateUnion)
 
 static void exportIndication(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp = {0};
 	ct = localLex(stateUnion, parm);
 	if(ct == XTOK_EXPORTINDICATION) {
 		exParamValue(parm, stateUnion);
@@ -263,7 +257,6 @@ static void iMethodRespContent(ParserControl *parm, parseUnion *stateUnion)
 
 static void error(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp ={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokErrorResp, parm);
 	if(ct == XTOK_ERROR) {
 		setError(parm, &stateUnion->xtokErrorResp);
@@ -281,7 +274,6 @@ static void error(ParserControl *parm, parseUnion *stateUnion)
 
 static void returnValue(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp ={0};
 	CMPIType  t;
 	CMPIValue val;
 	CMPIInstance *inst;
@@ -321,7 +313,6 @@ static void returnValue(ParserControl *parm, parseUnion *stateUnion)
 
 static void returnValueData(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp ={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokReturnValueData, parm);
 	if(ct == XTOK_VALUE) {
 		dontLex = 1;
@@ -369,7 +360,6 @@ static void paramValue(ParserControl *parm, parseUnion *stateUnion)
 
 static void paramValueData(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokParamValueData, parm);
 	if(ct == XTOK_VALUE) {
 		dontLex = 1;
@@ -400,7 +390,6 @@ static void paramValueData(ParserControl *parm, parseUnion *stateUnion)
 
 static void iReturnValue(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex(stateUnion, parm);
 	if(ct == XTOK_IRETVALUE) {
 		iReturnValueContent(parm, stateUnion);
@@ -527,7 +516,6 @@ static void iReturnValueContent(ParserControl *parm, parseUnion *stateUnion)
 
 static void getPropertyRetValue(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	CMPIType  t;
 	CMPIValue val;
 	ct = localLex((parseUnion*)&stateUnion->xtokGetPropRetContent, parm);
@@ -553,7 +541,6 @@ static void getPropertyRetValue(ParserControl *parm, parseUnion *stateUnion)
 
 static void valueObjectWithPath(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokObjectWithPath, parm);
 	if(ct == XTOK_VALUEOBJECTWITHPATH) {
 		valueObjectWithPathData(parm, (parseUnion*)&stateUnion->xtokObjectWithPath.object);
@@ -572,7 +559,6 @@ static void valueObjectWithPath(ParserControl *parm, parseUnion *stateUnion)
 
 static void valueObjectWithPathData(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	CMPIObjectPath *op = NULL;
 	CMPIInstance *inst;
 	ct = localLex((parseUnion*)&stateUnion->xtokObjectWithPathData, parm);
@@ -601,7 +587,6 @@ static void valueObjectWithPathData(ParserControl *parm, parseUnion *stateUnion)
 
 static void classWithPath(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokClassWithPath, parm);
 	if(ct == XTOK_CLASSPATH) {
 		dontLex = 1;
@@ -615,7 +600,6 @@ static void classWithPath(ParserControl *parm, parseUnion *stateUnion)
 
 static void instanceWithPath(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokInstanceWithPath, parm);
 	if(ct == XTOK_INSTANCEPATH) {
 		dontLex = 1;
@@ -871,7 +855,6 @@ static void parameterArray(ParserControl *parm, parseUnion *stateUnion)
 
 static void objectPath(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokObjectPath, parm);
 	if(ct == XTOK_OBJECTPATH) {
 		instancePath(parm, (parseUnion*)&stateUnion->xtokObjectPath.path);
@@ -889,7 +872,6 @@ static void objectPath(ParserControl *parm, parseUnion *stateUnion)
 
 static void classPath(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokClassPath, parm);
 	if(ct == XTOK_CLASSPATH) {
 		nameSpacePath(parm, (parseUnion*)&stateUnion->xtokClassPath.name);
@@ -908,7 +890,6 @@ static void classPath(ParserControl *parm, parseUnion *stateUnion)
 
 static void className(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokClassName, parm);
 	if(ct == XTOK_CLASSNAME) {
 		ct = localLex((parseUnion*)&stateUnion->xtokClassName, parm);
@@ -925,7 +906,6 @@ static void className(ParserControl *parm, parseUnion *stateUnion)
 
 static void instancePath(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokInstancePath, parm);
 	if(ct == XTOK_INSTANCEPATH) {
 		nameSpacePath(parm, (parseUnion*)&stateUnion->xtokInstancePath.path);
@@ -944,7 +924,6 @@ static void instancePath(ParserControl *parm, parseUnion *stateUnion)
 
 static void localInstancePath(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokLocalInstancePath, parm);
 	if(ct == XTOK_LOCALINSTANCEPATH) {
 		localNameSpacePath(parm, (parseUnion*)&stateUnion->xtokLocalInstancePath.path);
@@ -963,7 +942,6 @@ static void localInstancePath(ParserControl *parm, parseUnion *stateUnion)
 
 static void nameSpacePath(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokNameSpacePath, parm);
 	if(ct == XTOK_NAMESPACEPATH) {
 		host(parm, (parseUnion*)&stateUnion->xtokNameSpacePath.host);
@@ -982,7 +960,6 @@ static void nameSpacePath(ParserControl *parm, parseUnion *stateUnion)
 
 static void host(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokHost, parm);
 	if(ct == XTOK_HOST) {
 		ct = localLex((parseUnion*)&stateUnion->xtokHost, parm);
@@ -1036,7 +1013,6 @@ static void localNameSpacePath(ParserControl *parm, parseUnion *stateUnion)
 
 static void nameSpace(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokNameSpace, parm);
 	if(ct == XTOK_NAMESPACE) {
 		ct = localLex((parseUnion*)&stateUnion->xtokNameSpace, parm);
@@ -1053,7 +1029,6 @@ static void nameSpace(ParserControl *parm, parseUnion *stateUnion)
 
 static void valueNamedInstance(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokNamedInstance, parm);
 	if(ct == XTOK_VALUENAMEDINSTANCE) {
 		instanceName(parm, (parseUnion*)&stateUnion->xtokNamedInstance.path);
@@ -1113,7 +1088,6 @@ static void instance(ParserControl *parm, parseUnion *stateUnion)
 
 static void genProperty(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokProperty, parm);
 	if(ct == XTOK_PROPERTY) {
 		dontLex = 1;
@@ -1164,7 +1138,6 @@ static void qualifier(ParserControl *parm, parseUnion *stateUnion)
 
 static void qualifierData(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokQualifierData, parm);
 	if(ct == XTOK_VALUE) {
 		dontLex = 1;
@@ -1320,7 +1293,6 @@ static void instanceName(ParserControl *parm, parseUnion *stateUnion)
 
 static void keyBinding(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokKeyBinding, parm);
 	if(ct == XTOK_KEYBINDING) {
 		keyBindingContent(parm, (parseUnion*)&stateUnion->xtokKeyBinding.val);
@@ -1339,7 +1311,6 @@ static void keyBinding(ParserControl *parm, parseUnion *stateUnion)
 
 static void keyBindingContent(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokKeyBindingContent, parm);
 	if(ct == XTOK_KEYVALUE) {
 		dontLex = 1;
@@ -1358,7 +1329,6 @@ static void keyBindingContent(ParserControl *parm, parseUnion *stateUnion)
 
 static void keyValue(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokKeyValue, parm);
 	if(ct == XTOK_KEYVALUE) {
 		ct = localLex((parseUnion*)&stateUnion->xtokKeyValue, parm);
@@ -1375,7 +1345,6 @@ static void keyValue(ParserControl *parm, parseUnion *stateUnion)
 
 static void value(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokValue, parm);
 	if(ct == XTOK_VALUE) {
 		valueData(parm, (parseUnion*)&stateUnion->xtokValue.data);
@@ -1394,7 +1363,6 @@ static void value(ParserControl *parm, parseUnion *stateUnion)
 
 static void valueData(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokValueData, parm);
 	if(ct == ZTOK_VALUE) {
 		stateUnion->xtokValueData.type=typeValue_charP;
@@ -1484,7 +1452,6 @@ static void valueRefArray(ParserControl *parm, parseUnion *stateUnion)
 
 static void valueReference(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokValueReference, parm);
 	if(ct == XTOK_VALUEREFERENCE) {
 		valueReferenceData(parm, (parseUnion*)&stateUnion->xtokValueReference.data);
@@ -1503,7 +1470,6 @@ static void valueReference(ParserControl *parm, parseUnion *stateUnion)
 
 static void valueReferenceData(ParserControl *parm, parseUnion *stateUnion)
 {
-	parseUnion lvalp={0};
 	ct = localLex((parseUnion*)&stateUnion->xtokValueReferenceData, parm);
 	if(ct == XTOK_INSTANCEPATH) {
 		dontLex = 1;

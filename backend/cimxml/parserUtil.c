@@ -70,7 +70,6 @@ static inline int isBoolean(CMPIData data)
 
 void createPath(CMPIObjectPath **op, XtokInstanceName *p)
 {
-   int i;
    CMPIValue val,*valp;
    CMPIType type;
    XtokKeyBinding *b;
@@ -92,7 +91,6 @@ void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
 {
    XtokProperty *np = NULL,*p = ps ? ps->first : NULL;
    CMPIValue val;
-   CMPIObjectPath *op;
    CMPIStatus status;
    CMPIType   type = CMPI_null;
    XtokQualifier *nq = NULL,*q;
