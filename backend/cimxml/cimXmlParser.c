@@ -234,7 +234,6 @@ static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
    strcat(ptr," ");
    strcat(ptr, tag);
    Throw(xb, ptr);
-   return 0;
 }
 
 /* Is this Broken?  I guess we don't allow escaping the quotes */
