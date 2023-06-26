@@ -158,7 +158,6 @@ static void add_to_beginning(Generic_list list, void *pointer)
 //      mlogf(M_ERROR,M_SHOW, "%s: NULL pointer passed 1\n", module);
       fprintf(stderr, "%s: NULL pointer passed 1\n", module);
       return;
-      exit(EXIT_FAILURE);
    }
 
    element = NEW(Generic_list_element);
@@ -183,7 +182,6 @@ static void add_to_end(Generic_list list, void *pointer)
       fprintf(stderr,"%s: NULL pointer passed 2\n", module);
   //    abort();
       return;
-      exit(EXIT_FAILURE);
    }
 
    element = NEW(Generic_list_element);
