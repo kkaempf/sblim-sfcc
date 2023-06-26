@@ -405,7 +405,11 @@ static char* genRequest(ClientEnc *cle, const char *op,
    curl_easy_setopt(con->mHandle, CURLOPT_CONNECTTIMEOUT, CIMSERVER_TIMEOUT);
 
    /* setup callback for client timeout calculations */
+#if LIBCURL_VERSION_NUM >= 0x073200
+   curl_easy_setopt(con->mHandle, CURLOPT_XFERINFOFUNCTION, checkProgress);
+#else
    curl_easy_setopt(con->mHandle, CURLOPT_PROGRESSFUNCTION, checkProgress);
+#endif
    curl_easy_setopt(con->mHandle, CURLOPT_PROGRESSDATA, &con->mTimeout);
 
    // Initialize default headers
