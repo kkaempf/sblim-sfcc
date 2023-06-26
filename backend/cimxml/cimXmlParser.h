@@ -430,6 +430,7 @@ typedef struct parser_control {
    ParserHeap *heap;
 } ParserControl;
 
+void startParsing(ParserControl *parm);
 
 /* Tokens.  */
 #define XTOK_XML 258
