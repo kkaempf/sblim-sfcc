@@ -34,7 +34,6 @@ extern CMPIConstClass * native_new_CMPIConstClass ( char  *cn, CMPIStatus * rc )
 extern int addClassProperty( CMPIConstClass * ccls, char * name,
                  CMPIValue * value, CMPIType type,
                  CMPIValueState state);
-extern CMPIType guessType(char *val);
 extern int addInstPropertyQualifier( CMPIInstance* ci, char * pname,
                      char *qname, CMPIValue * value,
                      CMPIType type);

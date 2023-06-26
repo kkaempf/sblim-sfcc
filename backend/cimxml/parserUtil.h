@@ -41,3 +41,4 @@ void addParam(ParserControl *parm, XtokParams *ps, XtokParam *p);
 void setError(ParserControl *parm, XtokErrorResp *e);
 void setReturnArgs(ParserControl *parm, XtokParamValues *ps);
 
+extern CMPIType guessType(char *val);
