@@ -76,8 +76,6 @@ static void releaseXmlBuffer(XmlBuffer *xb)
 
 inline void skipWS(XmlBuffer * xb)
 {
-   static int c = 0;
-   c++;
    while (*xb->cur <= ' ' && xb->last > xb->cur)
       xb->cur++;
 }
