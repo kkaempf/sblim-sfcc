@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cimc/cimcft.h>
 
 #include "show.h"
 
@@ -60,6 +61,43 @@ void showObjectPath( CMPIObjectPath * objectpath )
 
    if (classname) CMRelease(classname); 
    if (namespace) CMRelease(namespace);
+}
+
+void showCObjectPath( CIMCObjectPath * objectpath )
+{
+   CIMCString * namespace = objectpath->ft->getNameSpace(objectpath, NULL);
+   CIMCString * classname = objectpath->ft->getClassName(objectpath, NULL);
+   int numkeys = objectpath->ft->getKeyCount(objectpath, NULL);
+   int i;
+   char *cv;
+
+    if (namespace && namespace->hdl)
+    {
+        printf("namespace=%s\n", (char *)namespace->hdl);
+    }
+
+    if (classname && classname->hdl)
+    {
+        printf("classname=%s\n", (char *)classname->hdl);
+    }
+
+    if (numkeys)
+    {
+      printf("keys:\n");
+        for (i=0; i<numkeys; i++)
+        {
+         CIMCString * keyname;
+            CIMCData data = objectpath->ft->getKeyAt(objectpath, i,
+                                                     &keyname, NULL);
+            printf("\t%s=%s\n", (char *)keyname->hdl,
+                   cv=value2Chars(data.type, &data.value));
+	 if(cv) free(cv);
+	 if(keyname) CMRelease(keyname);
+      }
+   }
+
+   if (classname) classname->ft->release(classname); 
+   if (namespace) namespace->ft->release(namespace);
 }
 
 static char *CMPIState_str(CMPIValueState state)

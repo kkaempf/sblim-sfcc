@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "cmcimacs.h"
+#include "show.h"
 
-extern char *value2Chars(CMPIType type, CMPIValue * value);
 /*
  * comment out this define to use v2 http XML interface
  */

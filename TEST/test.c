@@ -120,8 +120,20 @@ int main( int argc, char * argv[] )
    CMPIValue yesValue;
    char hostName[512];
 
-   /* Setup a conncetion to the CIMOM */   
-   cc = cmciConnect("localhost", NULL, "5988", "clp", NULL, NULL);
+   char *cim_host, *cim_host_passwd, *cim_host_userid;
+
+   /* Setup a connection to the CIMOM */
+   cim_host = getenv("CIM_HOST");
+   if (cim_host == NULL)
+	cim_host = "localhost";
+   cim_host_userid = getenv("CIM_HOST_USERID");
+   if (cim_host_userid == NULL)
+	cim_host_userid = "root";
+   cim_host_passwd = getenv("CIM_HOST_PASSWD");
+   if (cim_host_passwd == NULL)
+	cim_host_passwd = "password";
+   cc = cmciConnect(cim_host, NULL, "5988",
+			cim_host_userid, cim_host_passwd, NULL);
    
    gethostname(hostName,511);
    _HOSTNAME=strdup(hostName);

@@ -90,7 +90,7 @@ int count = 0;
        	  
           data = enm->ft->getNext(enm, NULL);
 
-          showObjectPath((CMPIObjectPath *)data.value.ref);
+          showCObjectPath(data.value.ref);
           /*
            * see if we have any more
            */
