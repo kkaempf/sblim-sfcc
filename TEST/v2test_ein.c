@@ -4,10 +4,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "cmcimacs.h"
+#include "show.h"
 
-extern char *value2Chars(CMPIType type, CMPIValue * value);
-void showProperty( CMPIData , char * );
-void showInstance( CMPIInstance * );
 static char * CMPIState_str(CMPIValueState);
 /*
  * comment out this define to use v2 http XML interface
@@ -92,7 +90,7 @@ int count = 0;
        	  
           data = enm->ft->getNext(enm, NULL);
 
-          showObjectPath(data.value.ref);
+          showObjectPath((CMPIObjectPath *)data.value.ref);
           /*
            * see if we have any more
            */
