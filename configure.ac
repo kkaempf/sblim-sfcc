@@ -5,7 +5,7 @@ AC_PREREQ([2.71])
 AC_INIT([sblim-sfcc],[2.2.9-preview],[sblim-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([cimc/cimcclient.c])
 AC_CONFIG_HEADERS([config.h])
-
+AC_CONFIG_MACRO_DIRS([m4])
 AM_INIT_AUTOMAKE([subdir-objects])
 
 AC_ARG_ENABLE(http-chunking,

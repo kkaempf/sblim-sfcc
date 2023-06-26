@@ -17,6 +17,8 @@ Libcmpisfcc_AGE=0
 AM_LFLAGS=-i
 AM_YFLAGS=-d
 
+ACLOCAL_AMFLAGS=-I m4
+
 dist_man_MANS = man/man3/CMCIClient.3 man/man3/CMCIClientFT.associatorNames.3 \
 	man/man3/CMCIClientFT.associators.3 \
 	man/man3/CMCIClientFT.createInstance.3 \

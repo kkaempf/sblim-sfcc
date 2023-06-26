@@ -68,3 +68,4 @@ INSTALL
 compile
 stamp-h1
 test-driver
+m4/
