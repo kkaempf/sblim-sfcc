@@ -1339,7 +1339,7 @@ ResponseHdr scanCimXmlResponse(const char *xmlData, CMPIObjectPath *cop)
 
    control.heap = parser_heap_init();
 
-   control.respHdr.rc = startParsing(&control);
+   startParsing(&control);
 
    parser_heap_term(control.heap);
 
