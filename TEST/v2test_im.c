@@ -36,7 +36,6 @@ int main()
   int rc;
 
   CIMCObjectPath	* objectpath;
-  CMPIStatus		status;
   CIMCArgs		* args; 
   char 		*cim_host, *cim_host_passwd, *cim_host_userid, *cim_host_port;
   CIMCData		retval;
@@ -80,13 +79,13 @@ int main()
 
     /* Print the results */
     printf( "invokeMethod() rc=%d, msg=%s\n", 
-            status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+            cstatus.rc, (cstatus.msg)? (char *)cstatus.msg->hdl : NULL);
 
     //    if (args) CMRelease(args);
     printf("release status\n");
-    if (status.msg) CMRelease(status.msg);
+    if (cstatus.msg) cstatus.msg->ft->release(cstatus.msg);
 
-    if (!status.rc) {
+    if (!cstatus.rc) {
       char *cv = value2Chars(retval.type,(CMPIValue*)&(retval.value));
       printf("result(s):\n\treturn value: \"%s\"\n", cv);
     }

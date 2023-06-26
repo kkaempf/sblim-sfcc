@@ -265,7 +265,6 @@ static void processIndication(struct native_indicationlistener *i, char *xml)
 static void handleConnection(int connFd, struct native_indicationlistener *i)
 {
     Buffer inBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
-    int badReq = 0;
     int discardInput=0;
     char *path, *hdr;
     char *cp;
@@ -320,7 +319,7 @@ static void handleConnection(int connFd, struct native_indicationlistener *i)
     }
     
     inBuf.httpHdr = getNextHdr(&inBuf);
-    for (badReq = 1;;) {
+    for (;;) {
         if (inBuf.httpHdr == NULL) {
             break;
         }
@@ -335,7 +334,6 @@ static void handleConnection(int connFd, struct native_indicationlistener *i)
         if (inBuf.protocol == NULL) {
             break;
         }
-        badReq = 0;
     }
     
     while ((hdr = getNextHdr(&inBuf)) != NULL) {

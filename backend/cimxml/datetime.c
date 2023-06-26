@@ -172,7 +172,7 @@ static void bin2chars(CMPIUint64 msecs, CMPIBoolean interval, CMPIStatus * rc, c
 
    else {
 		struct tm tm_time;
-		char us_utc_time[11];
+		char us_utc_time[26];
 
 		if ( localtime_r ( &secs, &tm_time ) == NULL ) {
          CMSetStatus(rc, CMPI_RC_ERR_FAILED);
@@ -181,7 +181,7 @@ static void bin2chars(CMPIUint64 msecs, CMPIBoolean interval, CMPIStatus * rc, c
 
 		tzset ();
 
-		snprintf ( us_utc_time, 11, "%6.6ld%+4.3ld", 
+		snprintf ( us_utc_time, 26, "%6.6ld%+4.3ld",
 			   usecs, ( daylight != 0 ) * 60 - timezone / 60 );
 
 		strftime ( str_time, 26, "%Y%m%d%H%M%S.", &tm_time );

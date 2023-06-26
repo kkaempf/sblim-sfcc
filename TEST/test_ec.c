@@ -24,8 +24,6 @@
 
 #include "show.h"
 
-static char * _HOSTNAME = "bestorga.ibm.com";
-
 int main()
 {
     CMCIClient *cc;
@@ -62,7 +60,7 @@ int main()
          printf("result(s):\n");
          while (enumeration->ft->hasNext(enumeration, NULL)) {
             CMPIData data = enumeration->ft->getNext(enumeration, NULL);
-            showClass(data.value.cls);
+            showClass((CMPIConstClass *)data.value.cls);
         }
     }
 

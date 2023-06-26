@@ -26,7 +26,6 @@
 #include <cmcidt.h>
 
 #include "cimXmlParser.h"
-#include "grammar.h"
 
 #ifdef DMALLOC
 #include "dmalloc.h"
@@ -48,7 +47,7 @@ typedef struct tags {
 #define TAG(t) t,(sizeof(t)-1)
 
 
-static void Throw(XmlBuffer * xb, char *msg)
+static void __attribute__((__noreturn__)) Throw(XmlBuffer * xb, char *msg)
 {
    printf("*** Error: %s\n", msg);
    exit(1);

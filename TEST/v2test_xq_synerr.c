@@ -21,10 +21,7 @@ CIMCStatus status;
 CMPIObjectPath *op = NULL ;
 CIMCEnumeration *enm = NULL;
 CIMCClient *client = NULL;
-CIMCInstance *instance = NULL;
-CIMCData data;
 char 	*cim_host, *cim_host_passwd, *cim_host_userid, *cim_host_port;
-int count = 0;
 
     /*
      * Setup a connection to the CIMOM by checking environment 

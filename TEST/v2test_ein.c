@@ -6,7 +6,6 @@
 #include "cmcimacs.h"
 #include "show.h"
 
-static char * CMPIState_str(CMPIValueState);
 /*
  * comment out this define to use v2 http XML interface
  */
@@ -22,7 +21,6 @@ CIMCStatus status;
 CMPIObjectPath *op = NULL ;
 CIMCEnumeration *enm = NULL;
 CIMCClient *client = NULL;
-CIMCInstance *instance = NULL;
 CIMCData data;
 char 	*cim_host, *cim_host_passwd, *cim_host_userid, *cim_host_port;
 int count = 0;

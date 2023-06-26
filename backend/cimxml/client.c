@@ -232,7 +232,7 @@ static curl_socket_t opensockCb(void *clientp,
     * in lib/connect.c within libcurl for details */ 
    memset(unaddr, 0, caddr->addrlen);
    unaddr->sun_family = AF_UNIX;
-   strncpy(unaddr->sun_path, path, sizeof(unaddr->sun_path));
+   strncpy(unaddr->sun_path, path, sizeof(unaddr->sun_path)-1);
    caddr->protocol = 0; 
    return socket(caddr->family, caddr->socktype, caddr->protocol);
 }
@@ -683,7 +683,7 @@ static void addXmlValue(UtilStringBuffer *sb,
     CMPIType  valtyp      = data.type & ~CMPI_ARRAY; 
     char      *xmlTypeStr = cmpiToXmlType(valtyp);
     char      *cv;
-    int       i, n;
+    int       i, n = 0;
     /* If empty data item, skip out without outputting */
     if ((data.state & CMPI_nullValue) ||
         (isArray && (n = CMGetArrayCount(data.value.array, NULL)) == 0) )
@@ -930,10 +930,6 @@ static void addXmlNamedInstance(UtilStringBuffer *sb,
                                 CMPIObjectPath * cop, CMPIInstance * inst)
 {
    CMPIString       * cn;
-   int		      i;
-   int                numproperties = inst->ft->getPropertyCount(inst, NULL);
-   CMPIData	      propertydata;
-   CMPIString	    * propertyname;
 
    if (cop == NULL)
        cop = inst->ft->getObjectPath(inst, NULL);
@@ -960,7 +956,8 @@ static void addXmlNamedInstance(UtilStringBuffer *sb,
 static CMCIClient * cloneClient ( CMCIClient * cl, CMPIStatus * st )
 {
   CMPIStatus rc;
-  CMSetStatusWithChars(&rc, CMPI_RC_ERR_NOT_SUPPORTED, "Clone function not supported");
+  CMPIStatus *rcptr = &rc;
+  CMSetStatusWithChars(rcptr, CMPI_RC_ERR_NOT_SUPPORTED, "Clone function not supported");
   if (st) *st=rc;
   return NULL;
 }  
@@ -1203,9 +1200,6 @@ static CMPIObjectPath * createInstance(
    UtilStringBuffer *sb  = UtilFactory->newStringBuffer(2048);
    char             *error;
    ResponseHdr	    rh;
-   int		    i, numproperties = inst->ft->getPropertyCount(inst, NULL);
-   CMPIString	    *classname, *propertyname;
-   CMPIData	    propertydata;
    CMPIObjectPath   *retval;
 
    START_TIMING(CreateInstance);
@@ -1335,6 +1329,7 @@ static CMPIStatus setInstance(
    char             *error;
    ResponseHdr      rh;
    CMPIStatus	    rc;
+   CMPIStatus	    *rcptr = &rc;
 
    START_TIMING(ModifyInstance);
    SET_DEBUG();
@@ -1364,7 +1359,7 @@ static CMPIStatus setInstance(
    error = con->ft->addPayload(con,sb);
 
    if (error || (error = con->ft->getResponse(con, cop))) {
-      CMSetStatusWithChars(&rc,CMPI_RC_ERR_FAILED,error);
+      CMSetStatusWithChars(rcptr,CMPI_RC_ERR_FAILED,error);
       free(error);
       CMRelease(sb);
       END_TIMING(_T_FAILED);
@@ -1382,12 +1377,12 @@ static CMPIStatus setInstance(
 
    rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
-      CMSetStatusWithChars(&rc, rh.errCode, rh.description);
+      CMSetStatusWithChars(rcptr, rh.errCode, rh.description);
       free(rh.description);
       CMRelease(rh.rvArray);
    }
    else
-   CMSetStatus(&rc, CMPI_RC_OK);
+   CMSetStatus(rcptr, CMPI_RC_OK);
 
    END_TIMING(_T_GOOD);
    return rc;
@@ -1431,6 +1426,7 @@ static CMPIStatus deleteInstance(
    ResponseHdr		rh;
    CMPIString		*classname;
    CMPIStatus		rc;
+   CMPIStatus           *rcptr = &rc;
 
    START_TIMING(DeleteInstance);
    SET_DEBUG();
@@ -1459,7 +1455,7 @@ static CMPIStatus deleteInstance(
    error = con->ft->addPayload(con,sb);
 
    if (error || (error = con->ft->getResponse(con, cop))) {
-      CMSetStatusWithChars(&rc,CMPI_RC_ERR_FAILED,error);
+      CMSetStatusWithChars(rcptr,CMPI_RC_ERR_FAILED,error);
       free(error);
       CMRelease(sb);
       END_TIMING(_T_FAILED);
@@ -1477,12 +1473,12 @@ static CMPIStatus deleteInstance(
 
    rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse), cop);
    if (rh.errCode != 0) {
-      CMSetStatusWithChars(&rc, rh.errCode, rh.description);
+      CMSetStatusWithChars(rcptr, rh.errCode, rh.description);
       free(rh.description);
       CMRelease(rh.rvArray);
    }
    else
-   CMSetStatus(&rc, CMPI_RC_OK);
+   CMSetStatus(rcptr, CMPI_RC_OK);
 
    END_TIMING(_T_GOOD);
    return rc;
@@ -2161,7 +2157,6 @@ CMPIData invokeMethod(
    CMPIString		*cn;
    CMPIData		retval= { 0, CMPI_nullValue, {0} };
    int			i, numinargs = 0;
-   char                 *cv;
 
    START_TIMING(method);
    SET_DEBUG();
@@ -2192,9 +2187,9 @@ CMPIData invokeMethod(
 
    /* Add the input parameters */
    for (i = 0; i < numinargs; i++) {
-      CMPIString * argname, * name;
+      CMPIString * argname;
       CMPIData argdata = in->ft->getArgAt(in, i, &argname, NULL);
-      CMPIObjectPath *argcop;
+
       // Output XML for IN arg values, specific by type
       switch (argdata.type & ~CMPI_ARRAY) {
          case CMPI_boolean:
@@ -2258,8 +2253,6 @@ CMPIData invokeMethod(
              sb->ft->appendChars(sb,"</PARAMVALUE>\n");
              break;
          default:
-
-           not_supported:
 
 	     CMSetStatusWithChars(rc, CMPI_RC_ERR_FAILED,
                                   strdup("Unsupported IN argument type"));
@@ -2387,6 +2380,7 @@ static CMPIStatus setProperty(
    ResponseHdr      rh;
    CMPIString	    *cn;
    CMPIStatus	    rc = {CMPI_RC_OK, NULL};
+   CMPIStatus       *rcptr = &rc;
    char             *cv;
 
    START_TIMING(SetProperty);
@@ -2424,7 +2418,7 @@ static CMPIStatus setProperty(
    error = con->ft->addPayload(con,sb);
 
    if (error || (error = con->ft->getResponse(con, cop))) {
-      CMSetStatusWithChars(&rc,CMPI_RC_ERR_FAILED,error);
+      CMSetStatusWithChars(rcptr,CMPI_RC_ERR_FAILED,error);
       free(error);
       CMRelease(sb);
       END_TIMING(_T_FAILED);
@@ -2443,7 +2437,7 @@ static CMPIStatus setProperty(
    rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse),cop);
 
    if (rh.errCode != 0) {
-      CMSetStatusWithChars(&rc, rh.errCode, rh.description);
+      CMSetStatusWithChars(rcptr, rh.errCode, rh.description);
       free(rh.description);
    }
    
@@ -2894,8 +2888,6 @@ static CIMCClient *xmlConnect(CIMCEnv *env, const char *hn, const char *scheme, 
 
 static void *releaseEnv(CIMCEnv *env)
 {
-  CMPIStatus rc = {CMPI_RC_OK,NULL};
-  
   if (!(env->options & CIMC_NO_CURL_INIT)) {
     curl_global_cleanup();
   }

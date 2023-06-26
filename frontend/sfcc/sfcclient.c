@@ -227,7 +227,6 @@ char * value2Chars (CMPIType type, CMPIValue *value)
 {
 #define SBUFLEN 32
    char str[SBUFLEN], *p;
-   unsigned int size;
    CMPIString *cStr;
 
    str[0]=0;

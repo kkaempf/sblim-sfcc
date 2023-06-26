@@ -19,19 +19,11 @@ int main()
     CIMCStatus status;
     CIMCClient *client;
     CIMCObjectPath *op;
-    CMPIConstClass* clas ;
     CIMCEnumeration *enm;
-    CIMCString *path;
-    CMPIString * classname ;
     CIMCData data;
-    CMPIData cdata ;
     char 	*cim_host, *cim_host_passwd, *cim_host_userid , *cim_host_port;
-    int i = 0 ;
     int retc = 0;
     int count = 0;
-    int numproperties = 0;
-    CMPIString * propertyname;
-    char *cv;
     
     /* Setup a connection to the CIMOM */
     cim_host = getenv("CIM_HOST");
@@ -82,7 +74,7 @@ int main()
        count = enm->ft->hasNext(enm, NULL) ;
        while (count > 0) {
           data = enm->ft->getNext(enm, NULL);
-          showClass(data.value.cls);          
+          showClass((CMPIConstClass *)data.value.cls);          
           /*
            * see if we have any more
            */

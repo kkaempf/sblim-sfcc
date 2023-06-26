@@ -54,7 +54,7 @@ int main()
 
     /* Print the results */
     printf( "deleteInstance() rc=%d, msg=%s\n", 
-            status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
+            status.rc, (status.msg)? (char *)status.msg->hdl : "");
 
     if (objectpath) CMRelease(objectpath);
     if (status.msg) CMRelease(status.msg);

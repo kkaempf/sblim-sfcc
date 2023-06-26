@@ -51,7 +51,7 @@ static struct native_string * __new_string ( const char *, CMPIStatus * );
 static CMPIStatus __sft_release ( CMPIString * string )
 {
 	struct native_string * s = (struct native_string *) string;
-int i;
+
 //	for (i=0; i<strTabNext; i++) if (strTab[i]==string) { strTab[i]=NULL; break; }
         if ( s ) {
 

@@ -90,7 +90,7 @@ void showCObjectPath( CIMCObjectPath * objectpath )
             CIMCData data = objectpath->ft->getKeyAt(objectpath, i,
                                                      &keyname, NULL);
             printf("\t%s=%s\n", (char *)keyname->hdl,
-                   cv=value2Chars(data.type, &data.value));
+                   cv=value2Chars(data.type, (CMPIValue *)&data.value));
 	 if(cv) free(cv);
 	 if(keyname) CMRelease(keyname);
       }

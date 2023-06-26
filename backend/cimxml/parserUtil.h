@@ -26,7 +26,7 @@
 
 extern CMPIConstClass * native_new_CMPIConstClass ( char  *cn, CMPIStatus * rc );
 
-static inline int isBoolean(CMPIData data);
+int isBoolean(CMPIData data);
 void createPath(CMPIObjectPath **op, XtokInstanceName *p);
 void setInstProperties(CMPIInstance *ci, XtokProperties *ps);
 void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs);

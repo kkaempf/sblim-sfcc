@@ -27,9 +27,6 @@
 #include "cimXmlParser.h"
 #include "sfcUtil/utilft.h"
 
-static int ct = 0;
-static int dontLex = 0;
-
 extern CMPIConstClass * native_new_CMPIConstClass ( char  *cn, CMPIStatus * rc );
 extern int addClassProperty( CMPIConstClass * ccls, char * name,
                  CMPIValue * value, CMPIType type,
@@ -58,7 +55,7 @@ extern char *XmlToAsciiStr(char *XmlStr);
 extern int do_debug;
 #endif
 
-static inline int isBoolean(CMPIData data)
+int isBoolean(CMPIData data)
 {
    if (data.type == CMPI_chars) {
       if (strcasecmp(data.value.chars,"true") == 0) return 0xffff;
@@ -94,7 +91,7 @@ void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
    CMPIType   type = CMPI_null;
    XtokQualifier *nq = NULL,*q;
    XtokQualifiers *qs;
-   int rc, n, setq;
+   int setq;
 
    while (p) {
       setq=1;
@@ -151,12 +148,13 @@ void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
             setq = 0;
          }
          break;
+      case typeProperty_Unknown:
+         break;
       }
 
       if (setq) {
          qs=&p->val.qualifiers;
          q=qs ? qs->first : NULL;  
-         n=0;   
          while (q) {
             if (q->type & CMPI_ARRAY) {
                CMPIArray *arr = NULL;
@@ -170,13 +168,13 @@ void setInstProperties(CMPIInstance *ci, XtokProperties *ps)
                   native_release_CMPIValue(type,&val);
                }
                }
-               rc = addInstPropertyQualifier(ci, p->name, q->name,
+               (void)addInstPropertyQualifier(ci, p->name, q->name,
                          (CMPIValue *)&arr, q->type); 
                native_release_CMPIValue(q->type,(CMPIValue*)&arr);
             }
             else {
                val = str2CMPIValue(q->type, q->data.value.data.value, NULL);
-               rc= addInstPropertyQualifier(ci, p->name, q->name, &val, q->type);
+               (void)addInstPropertyQualifier(ci, p->name, q->name, &val, q->type);
                native_release_CMPIValue(q->type,&val);
             }   
             nq = q->next; 
@@ -197,7 +195,6 @@ void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
 {
    XtokQualifier *nq = NULL,*q = qs ? qs->first : NULL;
    CMPIValue val;
-   int rc;
    
    while (q) {
       if (q->type & CMPI_ARRAY) {
@@ -210,13 +207,13 @@ void setInstQualifiers(CMPIInstance *ci, XtokQualifiers *qs)
                   CMSetArrayElementAt(arr, i, &val, type);
                   native_release_CMPIValue(type,&val);
                }
-               rc = addInstQualifier(ci, q->name, (CMPIValue*)&arr, q->type);
+               (void)addInstQualifier(ci, q->name, (CMPIValue*)&arr, q->type);
                native_release_CMPIValue(q->type,(CMPIValue*)&arr);
       }
       }
       else {
          val = str2CMPIValue(q->type, q->data.value.data.value, NULL);
-         rc = addInstQualifier(ci, q->name, &val, q->type);
+         (void)addInstQualifier(ci, q->name, &val, q->type);
          native_release_CMPIValue( q->type,&val);
       }
       nq = q->next;
@@ -236,7 +233,6 @@ void setClassMethods(CMPIConstClass *cls, XtokMethods *ms)
    XtokQualifiers *qs;
    XtokParam      *np,*p;
    XtokParams     *ps;
-   int rc, n;
 
    val.uint64=0l;
    while (m) {
@@ -244,7 +240,6 @@ void setClassMethods(CMPIConstClass *cls, XtokMethods *ms)
 
       qs=&m->qualifiers;
       q=qs ? qs->first : NULL;
-      n=0;
       while (q) {
          if (q->type & CMPI_ARRAY) {
             CMPIType type=q->type&~CMPI_ARRAY;
@@ -258,12 +253,12 @@ void setClassMethods(CMPIConstClass *cls, XtokMethods *ms)
                }
             }
             val.array = arr;
-            rc = addClassMethodQualifier(cls, m->name, q->name, &val, q->type);
+            (void)addClassMethodQualifier(cls, m->name, q->name, &val, q->type);
             native_release_CMPIValue(q->type,(CMPIValue*)&arr);
          }
          else {
             val = str2CMPIValue(q->type, q->data.value.data.value, NULL);
-            rc= addClassMethodQualifier(cls, m->name, q->name, &val, q->type);
+            (void)addClassMethodQualifier(cls, m->name, q->name, &val, q->type);
             native_release_CMPIValue(q->type,&val);
          }
          nq = q->next; 
@@ -272,9 +267,8 @@ void setClassMethods(CMPIConstClass *cls, XtokMethods *ms)
 
       ps=&m->params;
       p=ps ? ps->first : NULL;
-      n=0;
       while (p) {
-         rc= addClassMethodParameter(cls, m->name, p->name, p->type);
+         (void)addClassMethodParameter(cls, m->name, p->name, p->type);
          np = p->next; 
          p = np;
       }
@@ -292,7 +286,6 @@ void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
    CMPIArray       *arr = NULL;
    XtokQualifier   *nq,*q;
    XtokQualifiers *qs;
-   int rc, n;
 
       val.uint64=0l;
    while (p) {
@@ -308,11 +301,12 @@ void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
      addClassProperty(cls, p->name, &val,
                                p->valueType | CMPI_ARRAY, CMPI_nullValue);
          break;
+      case typeProperty_Unknown:
+         break;
       }
 
       qs=&p->val.qualifiers;
       q=qs ? qs->first : NULL;  
-      n=0;   
       while (q) {
          if (q->type & CMPI_ARRAY) {
             CMPIType type=q->type&~CMPI_ARRAY;
@@ -326,12 +320,12 @@ void setClassProperties(CMPIConstClass *cls, XtokProperties *ps)
             }
             }
             val.array = arr;
-            rc = addClassPropertyQualifier(cls, p->name, q->name, &val, q->type); 
+            (void)addClassPropertyQualifier(cls, p->name, q->name, &val, q->type); 
             native_release_CMPIValue(q->type,(CMPIValue*)&arr);
          }
          else {
             val = str2CMPIValue(q->type, q->data.value.data.value, NULL);
-            rc= addClassPropertyQualifier(cls, p->name, q->name, &val, q->type);
+            (void)addClassPropertyQualifier(cls, p->name, q->name, &val, q->type);
             native_release_CMPIValue(q->type,&val);
          }   
          nq = q->next; 
@@ -348,7 +342,6 @@ void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
 {
    XtokQualifier *nq = NULL,*q = qs ? qs->first : NULL;
    CMPIValue val;
-   int rc;
    
    while (q) {
       if (q->type & CMPI_ARRAY) {
@@ -369,7 +362,7 @@ void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
                   CMSetArrayElementAt(arr, i, &val, type);
                   native_release_CMPIValue(type,&val);
                }
-               rc = addClassQualifier(cls, q->name, (CMPIValue*)&arr, q->type);
+               (void)addClassQualifier(cls, q->name, (CMPIValue*)&arr, q->type);
                native_release_CMPIValue(q->type,(CMPIValue*)&arr);
       }
       }
@@ -383,7 +376,7 @@ void setClassQualifiers(CMPIConstClass *cls, XtokQualifiers *qs)
           }
           else
               val = str2CMPIValue(q->type, valStr, NULL);
-         rc = addClassQualifier(cls, q->name, &val, q->type);
+         (void)addClassQualifier(cls, q->name, &val, q->type);
          native_release_CMPIValue( q->type,&val);
       }
       nq = q->next;

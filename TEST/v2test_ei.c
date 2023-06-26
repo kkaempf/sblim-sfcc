@@ -6,7 +6,6 @@
 #include "cmcimacs.h"
 #include "show.h"
 
-static char * CMPIState_str(CMPIValueState);
 /*
  * comment out this define to use v2 http XML interface
  */

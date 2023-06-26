@@ -150,7 +150,6 @@ CMPIValue native_clone_CMPIValue ( CMPIType type,
 static char *value2CharsUri(CMPIType type, CMPIValue * value, int uri)
 {
    char str[2048], *p;
-   unsigned int size;
    CMPIString *cStr;
 
    str[0]=0;
@@ -286,7 +285,6 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
          char *hn="",*ns="",*cn;
          CMPIType type = 0;
          CMPIValue v, *valp;
-         int i,m;
          XtokInstanceName *in; 
          
          switch(ref->type) {
@@ -361,7 +359,7 @@ CMPIType guessType(char *val)
 
 CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
 {
-   CMPIValue value,*valp;
+   CMPIValue value;
  //  char *val=p->value;
    CMPIType t;
 
@@ -445,7 +443,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       value.dateTime = native_new_CMPIDateTime_fromChars(val, NULL);
       break;
    case CMPI_ref:
-      valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t);
+      (void)getKeyValueTypePtr("ref", NULL, ref, &value, &t);
       break;
    case CMPI_instance:
       value.inst=getInstFromEmbedded((XtokInstance*)val);
